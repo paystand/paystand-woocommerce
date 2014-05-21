@@ -7,15 +7,17 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
  *
  * Provides a PayStand Payment Gateway.
  *
- * @class     WC_Paystand
- * @extends    WC_Gateway_Paystand
+ * @class      WC_Gateway_PayStand
+ * @extends    WC_Payment_Gateway
  * @version    1.0.0
  * @package    WooCommerce/Classes/Payment
  * @author     PayStand
  */
-class WC_Gateway_Paystand extends WC_Payment_Gateway {
+class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
   var $notify_url;
+  var $org_id;
+  var $api_key;
 
   /**
    * Constructor for the gateway.
@@ -26,19 +28,24 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
   public function __construct() {
 
     $this->id = 'paystand';
-    $this->icon = apply_filters('woocommerce_paystand_icon', WC()->plugin_url() . '/assets/images/icons/paystand.png');
+    $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
-    $this->order_button_text = __( 'Proceed to PayStand', 'woocommerce' );
+    $this->method_title = __('PayStand', 'wc-paystand');
+    $this->method_description = 'Process payments with the PayStand payment gateway.';
+
+    $this->order_button_text = __('PayStand Checkout', 'wc-paystand');
     $this->liveurl = 'https://app.paystand.com';
     $this->testurl = 'https://sandbox.paystand.co';
-    $this->method_title = __( 'PayStand', 'woocommerce' );
-    $this->notify_url = WC()->api_request_url('WC_Gateway_Paystand');
+    $this->notify_url = WC()->api_request_url('WC_Gateway_PayStand');
 
-    // Load the settings.
+    // Init settings
     $this->init_form_fields();
     $this->init_settings();
 
-    // Define user set variables
+    // User defined
+    $this->org_id = $this->get_option('org_id');
+    $this->api_key = $this->get_option('api_key');
+
     $this->title = $this->get_option('title');
     $this->description = $this->get_option('description');
     $this->email = $this->get_option('email');
@@ -56,9 +63,10 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
     }
 
     // Actions
-    add_action('valid-paystand-request', array($this, 'successful_request'));
-    add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+    add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
+
+    add_action('valid-paystand-request', array($this, 'successful_request'));
     add_action('woocommerce_thankyou_paystand', array($this, 'pdt_return_handler'));
 
     // Payment listener/API hook
@@ -66,6 +74,176 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
 
     if (!$this->is_valid_for_use()) {
       $this->enabled = false;
+    }
+  }
+
+
+  /**
+   * Initialize Gateway Settings Form Fields
+   *
+   * @access public
+   * @return void
+   */
+  function init_form_fields() {
+
+    $this->form_fields = array(
+        'enabled' => array(
+            'title' => __('Enable/Disable', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable PayStand', 'wc-paystand'),
+            'default' => 'yes'
+        ),
+        'title' => array(
+            'title' => __('Title', 'wc-paystand'),
+            'type' => 'text',
+            'description' => __('This controls the title which the user sees during checkout.', 'wc-paystand'),
+            'default' => __('PayStand', 'wc-paystand'),
+            'desc_tip' => true,
+        ),
+        'description' => array(
+            'title' => __('Description', 'wc-paystand'),
+            'type' => 'textarea',
+            'description' => __('This controls the description which the user sees during checkout.', 'wc-paystand'),
+            'default' => __('Pay via PayStand: You can pay with your credit card, eCheck, or other means.', 'wc-paystand')
+        ),
+        'org_id' => array(
+            'title' => __('Org ID', 'wc-paystand'),
+            'type' => 'text',
+            'description' => __('Your PayStand organization id.', 'wc-paystand'),
+            'default' => '',
+            'desc_tip' => true,
+        ),
+        'api_key' => array(
+            'title' => __('API Key', 'wc-paystand'),
+            'type' => 'text',
+            'description' => __('Your PayStand public api key used for checkout.', 'wc-paystand'),
+            'default' => __('PayStand', 'wc-paystand'),
+            'desc_tip' => true,
+        ),
+        'email' => array(
+            'title' => __( 'Email', 'wc-paystand'),
+            'type' => 'email',
+            'description' => __( 'Please enter your email address.  This is needed in order to take payment.', 'wc-paystand'),
+            'default' => '',
+            'desc_tip' => true,
+            'placeholder' => 'you@example.com'
+        ),
+        'paymentaction' => array(
+            'title' => __('Payment Action', 'wc-paystand'),
+            'type' => 'select',
+            'description' => __('Choose whether you wish to capture funds immediately or authorize payment only.', 'wc-paystand'),
+            'default' => 'sale',
+            'desc_tip' => true,
+            'options' => array(
+                'sale' => __('Capture', 'wc-paystand'),
+                'authorization' => __('Authorize', 'wc-paystand')
+            )
+        ),
+        'form_submission_method' => array(
+            'title' => __('Submission method', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Use form submission method.', 'wc-paystand'),
+            'description' => __('Enable this to post order data to PayStand via a form instead of using a redirect/querystring.', 'wc-paystand'),
+            'default' => 'no'
+        ),
+        'page_style' => array(
+            'title' => __('Page Style', 'wc-paystand'),
+            'type' => 'text',
+            'description' => __('Optionally enter the name of the page style you wish to use. These are defined within your PayStand account.', 'wc-paystand'),
+            'default' => '',
+            'desc_tip' => true,
+            'placeholder' => __('Optional', 'wc-paystand')
+        ),
+        'shipping' => array(
+            'title' => __('Shipping options', 'wc-paystand'),
+            'type' => 'title',
+            'description' => '',
+        ),
+        'send_shipping' => array(
+            'title' => __('Shipping details', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Send shipping details to PayStand instead of billing.', 'wc-paystand'),
+            'description' => __('PayStand allows us to send 1 address. If you are using PayStand for shipping labels you may prefer to send the shipping address rather than billing.', 'wc-paystand'),
+            'default' => 'no'
+        ),
+        'address_override' => array(
+            'title' => __('Address override', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable "address_override" to prevent address information from being changed.', 'wc-paystand'),
+            'description' => __('PayStand verifies addresses therefore this setting can cause errors (we recommend keeping it disabled).', 'wc-paystand'),
+            'default' => 'no'
+        ),
+        'testing' => array(
+            'title' => __('Gateway Testing', 'wc-paystand'),
+            'type' => 'title',
+            'description' => '',
+        ),
+        'testmode' => array(
+            'title' => __('PayStand sandbox', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable PayStand sandbox', 'wc-paystand'),
+            'default' => 'no',
+            'description' => sprintf(__('PayStand sandbox can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'wc-paystand'), 'https://www.paystand.com/'),
+        ),
+        'debug' => array(
+            'title' => __('Debug Log', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable logging', 'wc-paystand'),
+            'default' => 'no',
+            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'wc-paystand'), sanitize_file_name(wp_hash('paystand'))),
+        )
+    );
+  }
+
+
+  /**
+   * Process the payment and return the result
+   *
+   * @access public
+   * @param int $order_id
+   * @return array
+   */
+  function process_payment($order_id) {
+
+    global $woocommerce;
+    $order = new WC_Order($order_id);
+
+    $order->update_status('on-hold', __('Payment pending', 'wc-paystand'));
+
+    // XXX do we want this here or after checkout?
+    $order->reduce_order_stock();
+    $woocommerce->cart->empty_cart();
+
+    // XXX after checkout
+    // XXX if payment success
+    // XXX reduces stock automatically and sets status
+    //$order->payment_complete();
+    // XXX else payment failed
+    //$woocommerce->add_error(__('Payment error:', 'woothemes') . $error_message);
+    //return;
+
+    if (!$this->form_submission_method) {
+      $paystand_args = $this->get_paystand_args($order);
+      $paystand_args = http_build_query($paystand_args, '', '&');
+
+      if ('yes' == $this->testmode) {
+        $paystand_adr = $this->testurl . '?test=1&';
+      } else {
+        $paystand_adr = $this->liveurl . '?';
+      }
+
+      return array(
+          'result' => 'success',
+          'redirect' => $paystand_adr . $paystand_args
+      );
+
+    } else {
+
+      return array(
+          'result' => 'success',
+          /*'redirect' => $this->get_return_url( $order )*/
+          'redirect' => $order->get_checkout_payment_url(true)
+      );
     }
   }
 
@@ -99,8 +277,8 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
   public function admin_options() {
 
     ?>
-    <h3><?php _e('PayStand', 'woocommerce'); ?></h3>
-    <p><?php _e('PayStand works by sending the user to PayStand to enter their payment information.', 'woocommerce'); ?></p>
+    <h3><?php _e('PayStand', 'wc-paystand'); ?></h3>
+    <p><?php _e('PayStand provides modern payment processing solutions.', 'wc-paystand'); ?></p>
 
     <?php if ($this->is_valid_for_use()) : ?>
 
@@ -112,113 +290,9 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
       </table><!--/.form-table-->
 
     <?php else : ?>
-      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'woocommerce'); ?></strong>: <?php _e('PayStand does not support your store currency.', 'woocommerce'); ?></p></div>
+      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'wc-paystand'); ?></strong>: <?php _e('PayStand does not support your store currency.', 'wc-paystand'); ?></p></div>
     <?php
       endif;
-  }
-
-
-  /**
-   * Initialize Gateway Settings Form Fields
-   *
-   * @access public
-   * @return void
-   */
-  function init_form_fields() {
-
-    $this->form_fields = array(
-        'enabled' => array(
-            'title' => __('Enable/Disable', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Enable PayStand', 'woocommerce'),
-            'default' => 'yes'
-        ),
-        'title' => array(
-            'title' => __('Title', 'woocommerce'),
-            'type' => 'text',
-            'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-            'default' => __('PayStand', 'woocommerce'),
-            'desc_tip' => true,
-        ),
-        'description' => array(
-            'title' => __('Description', 'woocommerce'),
-            'type' => 'textarea',
-            'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-            'default' => __('Pay via PayStand: You can pay with your credit card, eCheck, or other means.', 'woocommerce')
-        ),
-        'email' => array(
-            'title' => __( 'Email', 'woocommerce'),
-            'type' => 'email',
-            'description' => __( 'Please enter your email address.  This is needed in order to take payment.', 'woocommerce'),
-            'default' => '',
-            'desc_tip' => true,
-            'placeholder' => 'you@example.com'
-        ),
-        'paymentaction' => array(
-            'title' => __('Payment Action', 'woocommerce'),
-            'type' => 'select',
-            'description' => __('Choose whether you wish to capture funds immediately or authorize payment only.', 'woocommerce'),
-            'default' => 'sale',
-            'desc_tip' => true,
-            'options' => array(
-                'sale' => __('Capture', 'woocommerce'),
-                'authorization' => __('Authorize', 'woocommerce')
-            )
-        ),
-        'form_submission_method' => array(
-            'title' => __('Submission method', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Use form submission method.', 'woocommerce'),
-            'description' => __('Enable this to post order data to PayStand via a form instead of using a redirect/querystring.', 'woocommerce'),
-            'default' => 'no'
-        ),
-        'page_style' => array(
-            'title' => __('Page Style', 'woocommerce'),
-            'type' => 'text',
-            'description' => __('Optionally enter the name of the page style you wish to use. These are defined within your PayStand account.', 'woocommerce'),
-            'default' => '',
-            'desc_tip' => true,
-            'placeholder' => __('Optional', 'woocommerce')
-        ),
-        'shipping' => array(
-            'title' => __('Shipping options', 'woocommerce'),
-            'type' => 'title',
-            'description' => '',
-        ),
-        'send_shipping' => array(
-            'title' => __('Shipping details', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Send shipping details to PayStand instead of billing.', 'woocommerce'),
-            'description' => __('PayStand allows us to send 1 address. If you are using PayStand for shipping labels you may prefer to send the shipping address rather than billing.', 'woocommerce'),
-            'default' => 'no'
-        ),
-        'address_override' => array(
-            'title' => __('Address override', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Enable "address_override" to prevent address information from being changed.', 'woocommerce'),
-            'description' => __('PayStand verifies addresses therefore this setting can cause errors (we recommend keeping it disabled).', 'woocommerce'),
-            'default' => 'no'
-        ),
-        'testing' => array(
-            'title' => __('Gateway Testing', 'woocommerce'),
-            'type' => 'title',
-            'description' => '',
-        ),
-        'testmode' => array(
-            'title' => __('PayStand sandbox', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Enable PayStand sandbox', 'woocommerce'),
-            'default' => 'no',
-            'description' => sprintf(__('PayStand sandbox can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'woocommerce'), 'https://www.paystand.com/'),
-        ),
-        'debug' => array(
-            'title' => __('Debug Log', 'woocommerce'),
-            'type' => 'checkbox',
-            'label' => __('Enable logging', 'woocommerce'),
-            'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce'), sanitize_file_name(wp_hash('paystand'))),
-        )
-    );
   }
 
 
@@ -341,7 +415,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
         }
       }
 
-      $paystand_args['item_name_1'] = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce'), $order->get_order_number()) . " - " . implode(', ', $item_names));
+      $paystand_args['item_name_1'] = $this->paystand_item_name(sprintf(__('Order %s' , 'wc-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
       $paystand_args['quantity_1'] = 1;
       $paystand_args['amount_1'] = number_format($order->get_total() - $order->get_total_shipping() - $order->get_shipping_tax() + $order->get_order_discount(), 2, '.', '');
 
@@ -351,7 +425,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
       //    a) paystand ignore it if *any* shipping rules are within paystand
       //    b) paystand ignore anything over 5 digits, so 999.99 is the max
       if (($order->get_total_shipping() + $order->get_shipping_tax()) > 0) {
-        $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'woocommerce') . ' ' . ucwords($order->get_shipping_method()));
+        $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'wc-paystand') . ' ' . ucwords($order->get_shipping_method()));
         $paystand_args['quantity_2'] = '1';
         $paystand_args['amount_2'] = number_format($order->get_total_shipping() + $order->get_shipping_tax(), 2, '.', '');
       }
@@ -406,7 +480,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
       // Shipping Cost item - paystand only allows shipping per item, we want to send shipping for the order
       if ($order->get_total_shipping() > 0) {
         $item_loop++;
-        $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name(sprintf(__('Shipping via %s', 'woocommerce'), $order->get_shipping_method()));
+        $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name(sprintf(__('Shipping via %s', 'wc-paystand'), $order->get_shipping_method()));
         $paystand_args['quantity_' . $item_loop] = '1';
         $paystand_args['amount_' . $item_loop] = number_format($order->get_total_shipping(), 2, '.', '');
       }
@@ -445,7 +519,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
 
     wc_enqueue_js('
         $.blockUI({
-            message: "' . esc_js(__('Thank you for your order. We are now going to PayStand to make payment.', 'woocommerce')) . '",
+            message: "' . esc_js(__('Thank you for your order. We are now going to PayStand to make payment.', 'wc-paystand')) . '",
             baseZ: 99999,
             overlayCSS: {
                 background: "#fff",
@@ -469,7 +543,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
         ' . implode('', $paystand_args_array) . '
         <!-- Button Fallback -->
         <div class="payment_buttons">
-          <input type="submit" class="button alt" id="submit_paystand_payment_form" value="' . __('Pay via PayStand', 'woocommerce') . '" /> <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'woocommerce') . '</a>
+          <input type="submit" class="button alt" id="submit_paystand_payment_form" value="' . __('Pay via PayStand', 'wc-paystand') . '" /> <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'wc-paystand') . '</a>
         </div>
         <script type="text/javascript">
           jQuery(".payment_buttons").hide();
@@ -480,56 +554,20 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
 
 
   /**
-   * Process the payment and return the result
-   *
-   * @access public
-   * @param int $order_id
-   * @return array
-   */
-  function process_payment($order_id) {
-
-    $order = new WC_Order($order_id);
-
-    if (!$this->form_submission_method) {
-      $paystand_args = $this->get_paystand_args($order);
-      $paystand_args = http_build_query($paystand_args, '', '&');
-
-      if ('yes' == $this->testmode) {
-        $paystand_adr = $this->testurl . '?test=1&';
-      } else {
-        $paystand_adr = $this->liveurl . '?';
-      }
-
-      return array(
-          'result' => 'success',
-          'redirect' => $paystand_adr . $paystand_args
-      );
-
-    } else {
-
-      return array(
-          'result' => 'success',
-          'redirect' => $order->get_checkout_payment_url(true)
-      );
-    }
-  }
-
-
-  /**
    * Output for the order received page.
    *
    * @access public
    * @return void
    */
   function receipt_page($order) {
-    echo '<p>' . __('Thank you!  Your order is now pending payment. You should be automatically sent to PayStand to make payment.', 'woocommerce') . '</p>';
+    echo '<p>' . __('Thank you!  Your order is now pending payment.', 'wc-paystand') . '</p>';
 
     echo $this->generate_paystand_form($order);
   }
 
 
   /**
-   * Check PayStand IPN validity
+   * Check PayStand validity
    **/
   function check_request_is_valid($response) {
 
@@ -674,7 +712,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
             }
 
             // Put this order on-hold for manual checking
-            $order->update_status('on-hold', sprintf(__('Validation error: PayStand currencies do not match (code %s).', 'woocommerce'), $posted['mc_currency']));
+            $order->update_status('on-hold', sprintf(__('Validation error: PayStand currencies do not match (code %s).', 'wc-paystand'), $posted['mc_currency']));
             exit;
           }
 
@@ -685,7 +723,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
             }
 
             // Put this order on-hold for manual checking
-            $order->update_status('on-hold', sprintf(__('Validation error: PayStand amounts do not match (gross %s).', 'woocommerce'), $posted['mc_gross']));
+            $order->update_status('on-hold', sprintf(__('Validation error: PayStand amounts do not match (gross %s).', 'wc-paystand'), $posted['mc_gross']));
             exit;
           }
 
@@ -707,10 +745,10 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
           }
 
           if ($posted['payment_status'] == 'completed') {
-            $order->add_order_note(__('Payment completed', 'woocommerce'));
+            $order->add_order_note(__('Payment completed', 'wc-paystand'));
             $order->payment_complete();
           } else {
-            $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce'), $posted['pending_reason']));
+            $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $posted['pending_reason']));
           }
 
           if ('yes' == $this->debug) {
@@ -723,48 +761,48 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
         case 'failed':
         case 'voided':
           // Order failed
-          $order->update_status('failed', sprintf(__('Payment %s.', 'woocommerce'), strtolower($posted['payment_status'])));
+          $order->update_status('failed', sprintf(__('Payment %s.', 'wc-paystand'), strtolower($posted['payment_status'])));
           break;
         case 'refunded':
           // Only handle full refunds, not partial
           if ($order->get_total() == ($posted['mc_gross'] * -1)) {
             // Mark order as refunded
-            $order->update_status('refunded', sprintf(__('Payment %s.', 'woocommerce'), strtolower($posted['payment_status'])));
+            $order->update_status('refunded', sprintf(__('Payment %s.', 'wc-paystand'), strtolower($posted['payment_status'])));
 
             $mailer = WC()->mailer();
 
             $message = $mailer->wrap_message(
-                __('Order refunded/reversed', 'woocommerce'),
-                sprintf(__('Order %s has been marked as refunded - PayStand reason code: %s', 'woocommerce'), $order->get_order_number(), $posted['reason_code'])
+                __('Order refunded/reversed', 'wc-paystand'),
+                sprintf(__('Order %s has been marked as refunded - PayStand reason code: %s', 'wc-paystand'), $order->get_order_number(), $posted['reason_code'])
             );
 
-            $mailer->send(get_option('admin_email'), sprintf(__('Payment for order %s refunded/reversed', 'woocommerce'), $order->get_order_number()), $message);
+            $mailer->send(get_option('admin_email'), sprintf(__('Payment for order %s refunded/reversed', 'wc-paystand'), $order->get_order_number()), $message);
           }
 
           break;
         case 'reversed':
           // Mark order as refunded
-          $order->update_status('on-hold', sprintf(__('Payment %s.', 'woocommerce' ), strtolower($posted['payment_status'])));
+          $order->update_status('on-hold', sprintf(__('Payment %s.', 'wc-paystand' ), strtolower($posted['payment_status'])));
 
           $mailer = WC()->mailer();
 
           $message = $mailer->wrap_message(
-              __('Order reversed', 'woocommerce'),
-              sprintf(__('Order %s has been marked on-hold due to a reversal - PayStand reason code: %s', 'woocommerce'), $order->get_order_number(), $posted['reason_code'])
+              __('Order reversed', 'wc-paystand'),
+              sprintf(__('Order %s has been marked on-hold due to a reversal - PayStand reason code: %s', 'wc-paystand'), $order->get_order_number(), $posted['reason_code'])
           );
 
-          $mailer->send(get_option('admin_email'), sprintf(__('Payment for order %s reversed', 'woocommerce'), $order->get_order_number()), $message);
+          $mailer->send(get_option('admin_email'), sprintf(__('Payment for order %s reversed', 'wc-paystand'), $order->get_order_number()), $message);
 
           break;
         case 'canceled_reversal':
           $mailer = WC()->mailer();
 
           $message = $mailer->wrap_message(
-              __('Reversal Cancelled', 'woocommerce'),
-              sprintf(__('Order %s has had a reversal cancelled. Please check the status of payment and update the order status accordingly.', 'woocommerce'), $order->get_order_number())
+              __('Reversal Cancelled', 'wc-paystand'),
+              sprintf(__('Order %s has had a reversal cancelled. Please check the status of payment and update the order status accordingly.', 'wc-paystand'), $order->get_order_number())
           );
 
-          $mailer->send(get_option('admin_email'), sprintf(__('Reversal cancelled for order %s', 'woocommerce'), $order->get_order_number()), $message);
+          $mailer->send(get_option('admin_email'), sprintf(__('Reversal cancelled for order %s', 'wc-paystand'), $order->get_order_number()), $message);
 
           break;
         default :
@@ -833,7 +871,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
             }
 
             // Put this order on-hold for manual checking
-            $order->update_status('on-hold', sprintf(__('Validation error: PayStand amounts do not match (amt %s).', 'woocommerce'), $posted['amt']));
+            $order->update_status('on-hold', sprintf(__('Validation error: PayStand amounts do not match (amt %s).', 'wc-paystand'), $posted['amt']));
             return true;
 
           } else {
@@ -841,7 +879,7 @@ class WC_Gateway_Paystand extends WC_Payment_Gateway {
             // Store PP Details
             update_post_meta($order->id, 'Transaction ID', wc_clean($posted['tx']));
 
-            $order->add_order_note(__('PDT payment completed', 'woocommerce'));
+            $order->add_order_note(__('PDT payment completed', 'wc-paystand'));
             $order->payment_complete();
             return true;
           }
