@@ -58,10 +58,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     // Actions
     add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
-    add_action('valid-paystand-request', array($this, 'successful_request'));
-
-    // Payment listener/API hook
-    add_action('woocommerce_api_wc_gateway_paystand', array($this, 'check_response'));
+    add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
+    add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
 
     if (!$this->is_valid_for_use()) {
       $this->enabled = false;
@@ -417,114 +415,57 @@ EOF;
   }
 
 
-  /**
-   * Check request validity
-   **/
-  function check_request_is_valid($response) {
-
-    if ('yes' == $this->testmode) {
-      $paystand_url = $this->testurl;
-    } else {
-      $paystand_url = $this->liveurl;
-    }
-
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Checking response is valid via ' . $paystand_url . '...' );
-    }
-
-    // Get recieved values from post data
-    $validate = array('cmd' => '_notify-validate');
-    $validate += stripslashes_deep($response);
-
-    // Send back post vars to paystand
-    $params = array(
-        'body' => $validate,
-        'sslverify' => false,
-        'timeout' => 60,
-        'httpversion' => '1.1',
-        'compress' => false,
-        'decompress' => false,
-        'user-agent' => 'WooCommerce/' . WC()->version
-    );
-
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Request: ' . print_r($params, true));
-    }
-
-    // Post back to get a response
-    $response = wp_remote_post($paystand_url, $params);
-
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Response: ' . print_r($response, true));
-    }
-
-    // check to see if the request was valid
-    if (!is_wp_error($response) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 && (strcmp($response['body'], "VERIFIED") == 0)) {
-      if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'Received valid response from PayStand');
-      }
-
-      return true;
-    }
-
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Received invalid response from PayStand');
-      if (is_wp_error($response)) {
-        $this->log->add('paystand', 'Error response: ' . $response->get_error_message());
-      }
-    }
-
-    return false;
+  function check_callback_data($data) {
+    // XXX implement
+    return true;
   }
 
 
   /**
-   * Check PayStand Response
+   * Handle callback from PayStand.
    *
    * @access public
    * @return void
    */
-  function check_response() {
+  function paystand_callback() {
 
-    @ob_clean();
+    $data = !empty($_POST) ? $_POST : false;
 
-    $response = !empty($_POST) ? $_POST : false;
-
-    if ($response && $this->check_request_is_valid($response)) {
+    if ($data && $this->check_callback_data($data)) {
       header('HTTP/1.1 200 OK');
-      do_action("valid-paystand-request", $response);
-
+      do_action("valid-paystand-callback", $data);
     } else {
-
-      wp_die("PayStand Request Failure", "PayStand", array('response' => 200));
+      wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
     }
   }
 
 
   /**
-   * Successful Payment!
+   * Valid PayStand callback
    *
    * @access public
-   * @param array $posted
+   * @param array $data
    * @return void
    */
-  function successful_request($posted) {
-error_log('successful_request: ' . print_r($posted, true));
+  function valid_paystand_callback($data) {
+error_log('valid_paystand_callback: ' . print_r($data, true));
+
+    // XXX implement
 
     // Sandbox fix
-    if (1 == $posted['test'] && 'pending' == $posted['payment_status']) {
-      $posted['payment_status'] = 'completed';
+    if (1 == $data['test'] && 'pending' == $data['payment_status']) {
+      $data['payment_status'] = 'completed';
     }
 
     if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Payment status: ' . $posted['payment_status']);
+      $this->log->add('paystand', 'Payment status: ' . $data['payment_status']);
     }
 
-    if ($posted['payment_status'] == 'completed') {
+    if ($data['payment_status'] == 'completed') {
       $order->add_order_note(__('Payment completed', 'wc-paystand'));
       $order->payment_complete();
     } else {
-      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $posted['pending_reason']));
+      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $data['pending_reason']));
     }
 
     if ('yes' == $this->debug) {
