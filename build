@@ -1,0 +1,4 @@
+#!/bin/bash
+
+zip -r woocommerce-paystand.zip woocommerce-paystand
+
