@@ -30,7 +30,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
+    $this->title = __('PayStand', 'wc-paystand');
     $this->method_title = __('PayStand', 'wc-paystand');
+    $this->description = 'Process payments with the PayStand payment gateway.';
     $this->method_description = 'Process payments with the PayStand payment gateway.';
 
     $this->order_button_text = __('PayStand Checkout', 'wc-paystand');
@@ -45,9 +47,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     // User defined
     $this->org_id = $this->get_option('org_id');
     $this->api_key = $this->get_option('api_key');
-
-    $this->title = $this->get_option('title');
-    $this->description = $this->get_option('description');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
 
@@ -85,19 +84,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'label' => __('Enable PayStand', 'wc-paystand'),
             'default' => 'yes'
         ),
-        'title' => array(
-            'title' => __('Title', 'wc-paystand'),
-            'type' => 'text',
-            'description' => __('This controls the title which the user sees during checkout.', 'wc-paystand'),
-            'default' => __('PayStand', 'wc-paystand'),
-            'desc_tip' => true,
-        ),
-        'description' => array(
-            'title' => __('Description', 'wc-paystand'),
-            'type' => 'textarea',
-            'description' => __('This controls the description which the user sees during checkout.', 'wc-paystand'),
-            'default' => __('Pay via PayStand: You can pay with your credit card, eCheck, or other means.', 'wc-paystand')
-        ),
         'org_id' => array(
             'title' => __('Org ID', 'wc-paystand'),
             'type' => 'text',
@@ -120,7 +106,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
         'testmode' => array(
             'title' => __('PayStand Sandbox', 'wc-paystand'),
             'type' => 'checkbox',
-            'label' => __('Enable PayStand sandbox', 'wc-paystand'),
+            'label' => __('Enable PayStand Sandbox', 'wc-paystand'),
             'default' => 'no',
             'description' => sprintf(__('PayStand sandbox can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'wc-paystand'), 'https://www.paystand.com/'),
         ),
@@ -190,9 +176,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
   /**
    * Admin Panel Options
-   * Options for bits like 'title' and availability on a country-by-country
-   * basis.
-   *
    */
   public function admin_options() {
 
