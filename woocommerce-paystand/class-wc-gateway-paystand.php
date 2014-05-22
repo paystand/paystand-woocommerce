@@ -357,8 +357,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       }
     }
 
+    // Convert to pennies
+    $amount = $order->order_total * 100;
 
-  $markup = <<<EOF
+    $markup = <<<EOF
 <div id="paystand_element_id"></div>
 <script type="text/javascript">
 
@@ -386,14 +388,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       input: false,
       variants: false
     },
-    amount: "{$order->order_total}",
+    amount: "{$amount}",
     shipping_handling: "0",
     tax: "0",
     items: [
       {
         title: "PayStand Payment",
         quantity: "1",
-        item_price: "{$order->order_total}"
+        item_price: "{$amount}"
       }
     ],
     meta: {
