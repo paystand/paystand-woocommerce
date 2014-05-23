@@ -373,7 +373,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   PayStand.checkoutComplete = function() {
-    console.log('checkoutComplete called');
+    console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
     window.location = "{$paystand_args['return']}"
   }
 
@@ -399,7 +399,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       }
     ],
     meta: {
-      order_id: "{$order->id}"
+      order_id: "{$order->id}",
+      callback: "{$paystand_args['notify_url']}"
     }
   }
   PayStand.checkouts.push(checkout);
