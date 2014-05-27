@@ -9,13 +9,13 @@ The WooCommerce-Paystand plugin adds a WooCommerce payment gateway for PayStand.
 
 == Description ==
 
-[PayStand](http://www.paystand.com) is a modern payment processing service for your website. [Sign up for PayStand](http://www.paystand.com/signup) and you can use this plugin to to process payments for your WooCommerce site.
+[PayStand](http://www.paystand.com) is a modern payment processing service for your website. [Sign up for PayStand](http://www.paystand.com/signup) and you can use this plugin to process payments for your WooCommerce site.
 
 == Installation ==
 
 1. Upload woocommerce-paystand to the `/wp-content/plugins/` folder.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Under Settings > PayStand, add your Org ID and API key, and.
+3. Under WooCommerce > Settings > Checkout > PayStand > Settings, add your Org ID and API key and choose whether you want to use the sandbox server for testing or the live production server.
 
 == Frequently Asked Questions ==
 
