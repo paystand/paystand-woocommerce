@@ -448,6 +448,8 @@ EOF;
    * @return void
    */
   function paystand_callback() {
+error_log('paystand_callback');
+$this->log->add('paystand', 'paystand_callback');
 
     $data = !empty($_POST) ? $_POST : false;
 
@@ -469,6 +471,7 @@ EOF;
    */
   function valid_paystand_callback($data) {
 error_log('valid_paystand_callback: ' . print_r($data, true));
+$this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
 
     // XXX implement
 
