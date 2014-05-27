@@ -18,6 +18,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $notify_url;
   var $org_id;
   var $api_key;
+  // XXX
+  var $stageurl;
 
   /**
    * Constructor for the gateway.
@@ -38,6 +40,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->order_button_text = __('PayStand Checkout', 'wc-paystand');
     $this->liveurl = 'https://app.paystand.com';
     $this->testurl = 'https://sandbox.paystand.co';
+    // XXX
+    $this->stageurl = 'https://staging.paystand.us';
     $this->notify_url = WC()->api_request_url('WC_Gateway_PayStand');
 
     // Init settings
@@ -48,6 +52,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->org_id = $this->get_option('org_id');
     $this->api_key = $this->get_option('api_key');
     $this->testmode = $this->get_option('testmode');
+    // XXX
+    $this->stagemode = $this->get_option('stagemode');
     $this->debug = $this->get_option('debug');
 
     // Logs
@@ -101,12 +107,19 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'title',
             'description' => '',
         ),
+        'stagemode' => array(
+            'title' => __('XXX PayStand Staging', 'wc-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Use PayStand Staging Server', 'wc-paystand'),
+            'default' => 'no',
+            'description' => sprintf(__('XXX The PayStand staging server can be used to test payments.', 'wc-paystand'), 'https://www.paystand.com/'),
+        ),
         'testmode' => array(
             'title' => __('PayStand Sandbox', 'wc-paystand'),
             'type' => 'checkbox',
-            'label' => __('Enable PayStand Sandbox', 'wc-paystand'),
+            'label' => __('Use PayStand Sandbox Server', 'wc-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('PayStand sandbox can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'wc-paystand'), 'https://www.paystand.com/'),
+            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'wc-paystand'), 'https://www.paystand.com/'),
         ),
         'debug' => array(
             'title' => __('Debug Log', 'wc-paystand'),
@@ -220,6 +233,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     $order = new WC_Order($order_id);
 
+    // XXX
+    if ('yes' == $this->stagemode) {
+      $paystand_url = $this->stageurl;
+    } else
     if ('yes' == $this->testmode) {
       $paystand_url = $this->testurl;
     } else {
