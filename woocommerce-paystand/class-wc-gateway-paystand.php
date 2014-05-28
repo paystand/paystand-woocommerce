@@ -192,7 +192,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     ?>
     <h3><?php _e('PayStand', 'wc-paystand'); ?></h3>
-    <p><?php _e('PayStand provides modern payment processing solutions.', 'wc-paystand'); ?></p>
+    <p><?php _e('PayStand - Modern commerce with multiple payment methods and no transaction fees.', 'wc-paystand'); ?></p>
 
     <?php if ($this->is_valid_for_use()) : ?>
 
@@ -400,11 +400,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
-    button_options: {
-      button_name: "Pay with PayStand",
-      input: false,
-      variants: false
-    },
     amount: "{$amount}",
     shipping_handling: "0",
     tax: "0",
@@ -420,7 +415,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       callback: "{$paystand_args['notify_url']}"
     }
   }
-  PayStand.checkouts.push(checkout);
+
+  PayStand.onLoad = function() {
+    PayStand.execute(checkout);
+  };
 
   PayStand.script = document.createElement('script');
   PayStand.script.type = 'text/javascript';
