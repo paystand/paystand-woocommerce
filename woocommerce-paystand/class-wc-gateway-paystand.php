@@ -436,8 +436,10 @@ EOF;
 
 
   function check_callback_data($data) {
-    // XXX implement
-    return true;
+    if (is_array($data) && !empty($data)) {
+      return true;
+    }
+    return false;
   }
 
 
@@ -453,7 +455,7 @@ $this->log->add('paystand', 'paystand_callback');
 
     $data = !empty($_POST) ? $_POST : false;
 
-    if ($data && $this->check_callback_data($data)) {
+    if ($this->check_callback_data($data)) {
       header('HTTP/1.1 200 OK');
       do_action("valid-paystand-callback", $data);
     } else {
@@ -473,26 +475,31 @@ $this->log->add('paystand', 'paystand_callback');
 error_log('valid_paystand_callback: ' . print_r($data, true));
 $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
 
-    // XXX implement
-
-    // Sandbox fix
-    if (1 == $data['test'] && 'pending' == $data['payment_status']) {
-      $data['payment_status'] = 'completed';
+    $success = false;
+    if (!empty($data['success'])) {
+      $success = $data['success'];
     }
-
     if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Payment status: ' . $data['payment_status']);
+      $this->log->add('paystand', 'Payment status: ' . $success);
     }
 
-    if ($data['payment_status'] == 'completed') {
+    $order_id = false;
+    if (!empty($data['order_id'])) {
+      $order_id = $data['order_id'];
+    }
+    $order = false;
+    if ($order_id) {
+      $order = new WC_Order($order_id);
+    }
+    if (!$order) {
+      return;
+    }
+
+    if ($success) {
       $order->add_order_note(__('Payment completed', 'wc-paystand'));
       $order->payment_complete();
     } else {
-      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $data['pending_reason']));
-    }
-
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Payment complete.');
+      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $data['payment_status']));
     }
   }
 
