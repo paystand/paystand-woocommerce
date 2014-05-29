@@ -142,27 +142,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    */
   function process_payment($order_id) {
 
-    //global $woocommerce;
     $order = new WC_Order($order_id);
+    $order->update_status('on-hold', __('Payment pending', 'wc-paystand'));
 
-    //$order->update_status('on-hold', __('Payment pending', 'wc-paystand'));
-
-    // XXX do we want this here or after checkout?
-    //$order->reduce_order_stock();
-    //$woocommerce->cart->empty_cart();
-
-    // XXX after checkout
-    // XXX if payment success
-    // XXX reduces stock automatically and sets status
-    //$order->payment_complete();
-    // XXX else payment failed
-    //$woocommerce->add_error(__('Payment error:', 'woothemes') . $error_message);
-    //return;
-
-      return array(
-          'result' => 'success',
-          'redirect' => $this->get_return_url($order)
-      );
+    return array(
+        'result' => 'success',
+        'redirect' => $this->get_return_url($order)
+    );
   }
 
 
