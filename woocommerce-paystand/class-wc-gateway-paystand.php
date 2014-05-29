@@ -143,11 +143,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   function process_payment($order_id) {
 
     $order = new WC_Order($order_id);
-    $order->update_status('on-hold', __('Payment pending', 'wc-paystand'));
-
     return array(
         'result' => 'success',
-        'redirect' => $this->get_return_url($order)
+        'redirect' => $order->get_checkout_payment_url(true)
     );
   }
 
@@ -264,7 +262,8 @@ echo '<h1>receipt_page</h1>';
             'org_id' => $this->org_id,
             'api_key' => $this->api_key,
             'currency' => get_woocommerce_currency(),
-            'return' => esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))),
+            /*'return' => esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))),*/
+            'return' => esc_url($order->get_checkout_order_received_url()),
             'cancel_return' => esc_url($order->get_cancel_order_url()),
             'order_id' => $order->id,
             'notify_url' => $this->notify_url,
@@ -385,6 +384,7 @@ echo '<h1>receipt_page</h1>';
   }
 
   PayStand.checkoutComplete = function() {
+console.log('XXX!!!');
     console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
     window.location = "{$paystand_args['return']}"
   }
