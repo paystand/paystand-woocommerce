@@ -66,7 +66,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
-    add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
+    // XXX
+    //add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
     if (!$this->is_valid_for_use()) {
       $this->enabled = false;
@@ -207,11 +208,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
 
   /**
-   * Output for the order received page.
+   * Output for the thank you page.
    */
-  public function thankyou_page( $order_id ) {
+/* XXX
+  public function thankyou_page($order_id) {
+      $this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
+echo "<script>console.log('XXX thankyou_page');</script>";
 echo '<h1>thankyou_page</h1>';
   }
+XXX */
 
 
   /**
@@ -221,6 +226,8 @@ echo '<h1>thankyou_page</h1>';
    * @return void
    */
   function receipt_page($order_id) {
+      $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
+echo "<script>console.log('XXX receipt_page');</script>";
 echo '<h1>receipt_page</h1>';
     echo '<p>' . __('Thank you!  Your order is now pending payment.', 'wc-paystand') . '</p>';
 
@@ -263,7 +270,8 @@ echo '<h1>receipt_page</h1>';
             'api_key' => $this->api_key,
             'currency' => get_woocommerce_currency(),
             /*'return' => esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))),*/
-            'return' => esc_url($order->get_checkout_order_received_url()),
+            /*'return' => esc_url($order->get_checkout_order_received_url()),*/
+            'return' => esc_url($order->get_view_order_url()),
             'cancel_return' => esc_url($order->get_cancel_order_url()),
             'order_id' => $order->id,
             'notify_url' => $this->notify_url,
@@ -425,6 +433,11 @@ console.log('XXX!!!');
 EOF;
 
     echo $markup;
+
+echo '<h1>XXX</h1>';
+echo 'return: ' . esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order)));
+echo 'order_received: ' . esc_url($order->get_checkout_order_received_url());
+echo 'view_order: ' . esc_url($order->get_view_order_url());
   }
 
 
