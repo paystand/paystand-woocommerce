@@ -62,10 +62,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     }
 
     // Actions
-    add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+    add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
+    add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
     if (!$this->is_valid_for_use()) {
       $this->enabled = false;
@@ -223,12 +224,20 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
   /**
    * Output for the order received page.
+   */
+  public function thankyou_page( $order_id ) {
+echo '<h1>thankyou_page</h1>';
+  }
+
+
+  /**
+   * Output for the order received page.
    *
    * @access public
    * @return void
    */
   function receipt_page($order_id) {
-
+echo '<h1>receipt_page</h1>';
     echo '<p>' . __('Thank you!  Your order is now pending payment.', 'wc-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
@@ -434,10 +443,48 @@ EOF;
 
 
   function check_callback_data($data) {
-    if (is_array($data) && !empty($data)) {
-      return true;
+    if (empty($data) || !is_array($data)) {
+      return false;
     }
-    return false;
+    $defined = array(
+        'txn_id', 'org_id', 'consumer_id', 'order_id', 'pre_fee_total',
+        'fee_merchant_owes', 'rate_merchant_owes', 'fee_consumer_owes',
+        'rate_consumer_owes', 'total_amount', 'tax', 'shipping_handling',
+        'amount', 'payment_status', 'success', 'currency', 'created',
+        'changed'
+    );
+    $numerics = array(
+        'pre_fee_total', 'fee_merchant_owes', 'rate_merchant_owes',
+        'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
+        'tax', 'shipping_handling', 'amount', 'txn_id', 'org_id',
+        'consumer_id', 'order_id', 'created', 'changed'
+    );
+    $status = array(
+        'failed', 'voided', 'pending', 'achpending', 'responded', 'paid',
+        'shipped', 'downloaded', 'donated', 'refunded', 'chargeback'
+    );
+
+    foreach ($defined as $def) {
+      if (!isset($data[$def])) {
+        $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
+        return false;
+      }
+    }
+
+    foreach ($numerics as $numeric) {
+      if (!is_numeric($data[$numeric])) {
+        $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
+        return false;
+      }
+    }
+
+    if (!in_array($data['payment_status'], $status)) {
+      $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $data["payment_status"] . ')');
+      // XXX
+      //return false;
+    }
+
+    return true;
   }
 
 
