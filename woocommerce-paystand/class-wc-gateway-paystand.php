@@ -161,7 +161,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
       return array(
           'result' => 'success',
-          'redirect' => $order->get_checkout_payment_url(true)
+          'redirect' => $this->get_return_url($order)
       );
   }
 
