@@ -66,8 +66,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
-    // XXX
-    //add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
+    add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
     if (!$this->is_valid_for_use()) {
       $this->enabled = false;
@@ -107,7 +106,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
         'webhook' => array(
             'title' => __('Webhook', 'woocommerce-paystand'),
             'type' => 'title',
-            'description' => 'Set your webhook url to ' . $this->notify_url . ' in your PayStand dashboard under Settings > Checkout Features',
+            'description' => 'Set your webhook url to ' . $this->notify_url . ' in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
         ),
         'testing' => array(
             'title' => __('Gateway Testing', 'woocommerce-paystand'),
@@ -148,6 +147,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    */
   function process_payment($order_id) {
 
+$this->log->add('paystand', 'XXX process_payment: ' . $order_id);
     $order = new WC_Order($order_id);
     return array(
         'result' => 'success',
@@ -211,17 +211,29 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     return html_entity_decode($item_name, ENT_NOQUOTES, 'UTF-8');
   }
 
+  /**
+   * Get the server url
+   */
+  public function get_paystand_url() {
+    // XXX
+    if ('yes' == $this->stagemode) {
+      return $this->stageurl;
+    } else
+    if ('yes' == $this->testmode) {
+      return $this->testurl;
+    }
+    return $this->liveurl;
+  }
+
 
   /**
    * Output for the thank you page.
    */
-/* XXX
   public function thankyou_page($order_id) {
       $this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
 echo "<script>console.log('XXX thankyou_page');</script>";
 echo '<h1>thankyou_page</h1>';
   }
-XXX */
 
 
   /**
@@ -231,22 +243,14 @@ XXX */
    * @return void
    */
   function receipt_page($order_id) {
-      $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
+$this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
 echo "<script>console.log('XXX receipt_page');</script>";
 echo '<h1>receipt_page</h1>';
-    echo '<p>' . __('Thank you!  Your order is now pending payment.', 'woocommerce-paystand') . '</p>';
+    echo '<p>' . __('Thank you!  Your order has been received.', 'woocommerce-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
 
-    // XXX
-    if ('yes' == $this->stagemode) {
-      $paystand_url = $this->stageurl;
-    } else
-    if ('yes' == $this->testmode) {
-      $paystand_url = $this->testurl;
-    } else {
-      $paystand_url = $this->liveurl;
-    }
+    $paystand_url = $this->get_paystand_url();
 
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
@@ -274,9 +278,11 @@ echo '<h1>receipt_page</h1>';
             'org_id' => $this->org_id,
             'api_key' => $this->api_key,
             'currency' => get_woocommerce_currency(),
+            /* XXX */
             /*'return' => esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))),*/
             /*'return' => esc_url($order->get_checkout_order_received_url()),*/
-            'return' => esc_url($order->get_view_order_url()),
+            /*'return' => esc_url($order->get_view_order_url()),*/
+            'return' => $order->get_checkout_order_received_url(),
             'cancel_return' => esc_url($order->get_cancel_order_url()),
             'order_id' => $order->id,
             'notify_url' => $this->notify_url,
@@ -401,7 +407,7 @@ echo '<h1>receipt_page</h1>';
     window.location = "{$paystand_args['return']}"
   }
 
-  var checkout = {
+  var autoCheckout = {
     api_key: "{$paystand_args['api_key']}",
     org_id: "{$paystand_args['org_id']}",
     element_ids: ["paystand_element_id"],
@@ -419,15 +425,41 @@ echo '<h1>receipt_page</h1>';
     ],
     meta: {
       order_id: "{$order->id}",
-      callback: "{$paystand_args['notify_url']}"
+      order_token: "{$order->order_key}"
     }
   }
 
-  // XXX can we use checkout for both checkouts.push and onLoad?
-  PayStand.checkouts.push(checkout);
+  var buttonCheckout = {
+    api_key: "{$paystand_args['api_key']}",
+    org_id: "{$paystand_args['org_id']}",
+    element_ids: ["paystand_element_id"],
+    data_source: "org_defined",
+    checkout_type: "button",
+    button_options: {
+      button_name: 'Pay with PayStand',
+      input: false,
+      variants: false
+    },
+    amount: "{$amount}",
+    shipping_handling: "0",
+    tax: "0",
+    items: [
+      {
+        title: "PayStand Payment",
+        quantity: "1",
+        item_price: "{$amount}"
+      }
+    ],
+    meta: {
+      order_id: "{$order->id}",
+      order_token: "{$order->order_key}"
+    }
+  }
+
+  PayStand.checkouts.push(buttonCheckout);
 
   PayStand.onLoad = function() {
-    PayStand.execute(checkout);
+    PayStand.execute(autoCheckout);
   };
 
   PayStand.script = document.createElement('script');
@@ -441,53 +473,84 @@ EOF;
 
     echo $markup;
 
-echo '<h1>XXX</h1>';
-echo 'return: ' . esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order)));
-echo 'order_received: ' . esc_url($order->get_checkout_order_received_url());
-echo 'view_order: ' . esc_url($order->get_view_order_url());
+$this->log->add('paystand', 'return: ' . esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))));
+$this->log->add('paystand', 'order_received: ' . esc_url($order->get_checkout_order_received_url()));
+$this->log->add('paystand', 'view_order: ' . esc_url($order->get_view_order_url()));
   }
 
 
-  function check_callback_data($data) {
-    if (empty($data) || !is_array($data)) {
+  function check_callback_data($psn) {
+    if (empty($psn) || !is_array($psn)) {
+$this->log->add('paystand', 'check_callback_data psn is empty');
       return false;
     }
+
+    $paystand_url = $this->get_paystand_url();
+    $endpoint = $paystand_url . '/api/v2/orders';
+
+    $request = array(
+        'action' => 'verify_psn',
+        'api_key' => $secret_key,
+        'order_id' => $psn['txn_id'],
+        'psn' => $psn
+    );
+
+    $context = stream_context_create(array(
+        'http' => array(
+            'method' => 'POST',
+            'header' => "Content-Type: application/json\r\n",
+            'content' => json_encode($request)
+        )
+    ));
+
+    $response = file_get_contents($endpoint, false, $context);
+    if ($response === false) {
+$this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      return false;
+    }
+
+    $response_data = json_decode($response, true);
+
+    if (strpos($response_data['data'],'success') !== false) {
+      // continue
+    } else {
+$this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      return false;
+    }
+
     $defined = array(
-        'txn_id', 'org_id', 'consumer_id', 'order_id', 'pre_fee_total',
-        'fee_merchant_owes', 'rate_merchant_owes', 'fee_consumer_owes',
-        'rate_consumer_owes', 'total_amount', 'tax', 'shipping_handling',
-        'amount', 'payment_status', 'success', 'currency', 'created',
-        'changed'
+        'txn_id', 'org_id', 'consumer_id', 'pre_fee_total',
+        'fee_merchant_owes', 'rate_merchant_owes',
+        'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
+        'payment_status', 'success'
     );
     $numerics = array(
         'pre_fee_total', 'fee_merchant_owes', 'rate_merchant_owes',
         'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
-        'tax', 'shipping_handling', 'amount', 'txn_id', 'org_id',
-        'consumer_id', 'order_id', 'created', 'changed'
+        'txn_id', 'org_id', 'consumer_id'
     );
-    $status = array(
-        'failed', 'voided', 'pending', 'achpending', 'responded', 'paid',
-        'shipped', 'downloaded', 'donated', 'refunded', 'chargeback'
+    $status =  array(
+        'failed','voided','pending','achpending','responded','paid',
+        'shipped','downloaded','donated','refunded','chargeback'
     );
 
     foreach ($defined as $def) {
-      if (!isset($data[$def])) {
+      if (!isset($psn[$def])) {
         $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
         return false;
       }
     }
 
     foreach ($numerics as $numeric) {
-      if (!is_numeric($data[$numeric])) {
+      if (!is_numeric($psn[$numeric])) {
         $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
         return false;
       }
     }
 
-    if (!in_array($data['payment_status'], $status)) {
-      $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $data["payment_status"] . ')');
-      // XXX
-      //return false;
+    if (!in_array($psn['payment_status'], $status)) {
+      $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      return false;
     }
 
     return true;
@@ -503,11 +566,15 @@ echo 'view_order: ' . esc_url($order->get_view_order_url());
   function paystand_callback() {
 $this->log->add('paystand', 'paystand_callback');
 
-    $data = !empty($_POST) ? $_POST : false;
+    $psn = $_POST;
+    if (empty($psn)) {
+      $psn = json_decode(file_get_contents("php://input"), true);
+    }
+$this->log->add('paystand', 'psn: ' . print_r($psn, true));
 
-    if ($this->check_callback_data($data)) {
+    if ($this->check_callback_data($psn)) {
       header('HTTP/1.1 200 OK');
-      do_action("valid-paystand-callback", $data);
+      do_action("valid-paystand-callback", $psn);
     } else {
       wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
     }
@@ -528,8 +595,13 @@ $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
     if (!empty($data['success'])) {
       $success = $data['success'];
     }
+    $payment_status = false;
+    if (!empty($data['payment_status'])) {
+      $payment_status = $data['payment_status'];
+    }
     if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'Payment status: ' . $success);
+      $this->log->add('paystand', 'Payment success: ' . $success);
+      $this->log->add('paystand', 'Payment status: ' . $payment_status);
     }
 
     $order_id = false;
@@ -541,6 +613,15 @@ $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
       $order = new WC_Order($order_id);
     }
     if (!$order) {
+      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      return;
+    }
+    $order_token = false;
+    if (!empty($data['order_token'])) {
+      $order_token = $data['order_token'];
+    }
+    if (!$order->key_is_valid($order_token)) {
+      $this->log->add('paystand', 'Order key not valid: ' . $order_token);
       return;
     }
 
@@ -548,7 +629,7 @@ $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
       $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
     } else {
-      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $data['payment_status']));
+      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $payment_status));
     }
   }
 
