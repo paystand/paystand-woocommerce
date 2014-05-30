@@ -32,7 +32,7 @@ if (!function_exists('add_action')) {
 
 function init_paystand_gateway_class() {
   include_once('class-wc-gateway-paystand.php');
-  load_plugin_textdomain('wc-paystand', false, dirname(plugin_basename(__FILE__)) . '/languages');
+  load_plugin_textdomain('woocommerce-paystand', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
 add_action('plugins_loaded', 'init_paystand_gateway_class');
 

@@ -32,12 +32,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('PayStand', 'wc-paystand');
-    $this->method_title = __('PayStand', 'wc-paystand');
+    $this->title = __('PayStand', 'woocommerce-paystand');
+    $this->method_title = __('PayStand', 'woocommerce-paystand');
     $this->description = 'Process payments with the PayStand payment gateway.';
     $this->method_description = 'Process payments with the PayStand payment gateway.';
 
-    $this->order_button_text = __('PayStand Checkout', 'wc-paystand');
+    $this->order_button_text = __('PayStand Checkout', 'woocommerce-paystand');
     $this->liveurl = 'https://app.paystand.com';
     $this->testurl = 'https://sandbox.paystand.co';
     // XXX
@@ -85,50 +85,55 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     $this->form_fields = array(
         'enabled' => array(
-            'title' => __('Enable/Disable', 'wc-paystand'),
+            'title' => __('Enable/Disable', 'woocommerce-paystand'),
             'type' => 'checkbox',
-            'label' => __('Enable PayStand', 'wc-paystand'),
+            'label' => __('Enable PayStand', 'woocommerce-paystand'),
             'default' => 'yes'
         ),
         'org_id' => array(
-            'title' => __('Org ID', 'wc-paystand'),
+            'title' => __('Org ID', 'woocommerce-paystand'),
             'type' => 'text',
-            'description' => __('Your PayStand organization id.', 'wc-paystand'),
+            'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
             'default' => '',
             'desc_tip' => true,
         ),
         'api_key' => array(
-            'title' => __('API Key', 'wc-paystand'),
+            'title' => __('API Key', 'woocommerce-paystand'),
             'type' => 'text',
-            'description' => __('Your PayStand public api key used for checkout.', 'wc-paystand'),
-            'default' => __('PayStand', 'wc-paystand'),
+            'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
+            'default' => __('PayStand', 'woocommerce-paystand'),
             'desc_tip' => true,
         ),
+        'webhook' => array(
+            'title' => __('Webhook', 'woocommerce-paystand'),
+            'type' => 'title',
+            'description' => 'Set your webhook url to ' . $this->notify_url . ' in your PayStand dashboard under Settings > Checkout Features',
+        ),
         'testing' => array(
-            'title' => __('Gateway Testing', 'wc-paystand'),
+            'title' => __('Gateway Testing', 'woocommerce-paystand'),
             'type' => 'title',
             'description' => '',
         ),
         'stagemode' => array(
-            'title' => __('XXX PayStand Staging', 'wc-paystand'),
+            'title' => __('XXX PayStand Staging', 'woocommerce-paystand'),
             'type' => 'checkbox',
-            'label' => __('Use PayStand Staging Server', 'wc-paystand'),
+            'label' => __('Use PayStand Staging Server', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('XXX The PayStand staging server can be used to test payments.', 'wc-paystand'), 'https://www.paystand.com/'),
+            'description' => sprintf(__('XXX The PayStand staging server can be used to test payments.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
         ),
         'testmode' => array(
-            'title' => __('PayStand Sandbox', 'wc-paystand'),
+            'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
             'type' => 'checkbox',
-            'label' => __('Use PayStand Sandbox Server', 'wc-paystand'),
+            'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'wc-paystand'), 'https://www.paystand.com/'),
+            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
         ),
         'debug' => array(
-            'title' => __('Debug Log', 'wc-paystand'),
+            'title' => __('Debug Log', 'woocommerce-paystand'),
             'type' => 'checkbox',
-            'label' => __('Enable logging', 'wc-paystand'),
+            'label' => __('Enable logging', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'wc-paystand'), sanitize_file_name(wp_hash('paystand'))),
+            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce-paystand'), sanitize_file_name(wp_hash('paystand'))),
         )
     );
   }
@@ -177,8 +182,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   public function admin_options() {
 
     ?>
-    <h3><?php _e('PayStand', 'wc-paystand'); ?></h3>
-    <p><?php _e('PayStand - Modern commerce with multiple payment methods and no transaction fees.', 'wc-paystand'); ?></p>
+    <h3><?php _e('PayStand', 'woocommerce-paystand'); ?></h3>
+    <p><?php _e('PayStand - Modern commerce with multiple payment methods and no transaction fees.', 'woocommerce-paystand'); ?></p>
 
     <?php if ($this->is_valid_for_use()) : ?>
 
@@ -188,7 +193,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     <?php else : ?>
 
-      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'wc-paystand'); ?></strong>: <?php _e('PayStand does not support your store currency.', 'wc-paystand'); ?></p></div>
+      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'woocommerce-paystand'); ?></strong>: <?php _e('PayStand does not support your store currency.', 'woocommerce-paystand'); ?></p></div>
     <?php
       endif;
   }
@@ -229,7 +234,7 @@ XXX */
       $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
 echo "<script>console.log('XXX receipt_page');</script>";
 echo '<h1>receipt_page</h1>';
-    echo '<p>' . __('Thank you!  Your order is now pending payment.', 'wc-paystand') . '</p>';
+    echo '<p>' . __('Thank you!  Your order is now pending payment.', 'woocommerce-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
 
@@ -307,7 +312,7 @@ echo '<h1>receipt_page</h1>';
         }
       }
 
-      $paystand_args['item_name_1'] = $this->paystand_item_name(sprintf(__('Order %s' , 'wc-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
+      $paystand_args['item_name_1'] = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
       $paystand_args['quantity_1'] = 1;
       $paystand_args['amount_1'] = number_format($order->get_total() - $order->get_total_shipping() - $order->get_shipping_tax() + $order->get_order_discount(), 2, '.', '');
 
@@ -315,7 +320,7 @@ echo '<h1>receipt_page</h1>';
       // XXX
       // No longer using shipping_1
       if (($order->get_total_shipping() + $order->get_shipping_tax()) > 0) {
-        $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'wc-paystand') . ' ' . ucwords($order->get_shipping_method()));
+        $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'woocommerce-paystand') . ' ' . ucwords($order->get_shipping_method()));
         $paystand_args['quantity_2'] = '1';
         $paystand_args['amount_2'] = number_format($order->get_total_shipping() + $order->get_shipping_tax(), 2, '.', '');
       }
@@ -370,7 +375,7 @@ echo '<h1>receipt_page</h1>';
       // Shipping Cost item - paystand only allows shipping per item, we want to send shipping for the order
       if ($order->get_total_shipping() > 0) {
         $item_loop++;
-        $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name(sprintf(__('Shipping via %s', 'wc-paystand'), $order->get_shipping_method()));
+        $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name(sprintf(__('Shipping via %s', 'woocommerce-paystand'), $order->get_shipping_method()));
         $paystand_args['quantity_' . $item_loop] = '1';
         $paystand_args['amount_' . $item_loop] = number_format($order->get_total_shipping(), 2, '.', '');
       }
@@ -392,7 +397,6 @@ echo '<h1>receipt_page</h1>';
   }
 
   PayStand.checkoutComplete = function() {
-console.log('XXX!!!');
     console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
     window.location = "{$paystand_args['return']}"
   }
@@ -418,6 +422,9 @@ console.log('XXX!!!');
       callback: "{$paystand_args['notify_url']}"
     }
   }
+
+  // XXX can we use checkout for both checkouts.push and onLoad?
+  PayStand.checkouts.push(checkout);
 
   PayStand.onLoad = function() {
     PayStand.execute(checkout);
@@ -538,10 +545,10 @@ $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
     }
 
     if ($success) {
-      $order->add_order_note(__('Payment completed', 'wc-paystand'));
+      $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
     } else {
-      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'wc-paystand'), $data['payment_status']));
+      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $data['payment_status']));
     }
   }
 
