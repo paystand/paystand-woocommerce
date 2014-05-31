@@ -477,10 +477,11 @@ EOF;
 
     $request = array(
         'action' => 'verify_psn',
-        'api_key' => $secret_key,
+        'api_key' => $this->api_key,
         'order_id' => $psn['txn_id'],
         'psn' => $psn
     );
+$this->log->add('paystand', 'XXX check_callback_data verify_psn endpoint: ' . $endpoint);
 $this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . print_r($request, true));
 
     $context = stream_context_create(array(
@@ -498,6 +499,7 @@ $this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . pri
     }
 
     $response_data = json_decode($response, true);
+$this->log->add('paystand', 'XXX check_callback_data verify_psn response: ' . $response_data);
 
     if (strpos($response_data['data'],'success') !== false) {
       // continue
@@ -538,6 +540,12 @@ $this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . pri
 
     if (!in_array($psn['payment_status'], $status)) {
       $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      return false;
+    }
+
+    // order_total is in dollars, pre_fee_total is in pennies
+    if ($psn['pre_fee_total'] != ($order->order_total * 100)) {
+      $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . ($order_total * 100));
       return false;
     }
 
