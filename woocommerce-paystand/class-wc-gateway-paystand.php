@@ -230,9 +230,7 @@ $this->log->add('paystand', 'XXX process_payment: ' . $order_id);
    * Output for the thank you page.
    */
   public function thankyou_page($order_id) {
-      $this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
-echo "<script>console.log('XXX thankyou_page');</script>";
-echo '<h1>thankyou_page</h1>';
+$this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
   }
 
 
@@ -244,12 +242,9 @@ echo '<h1>thankyou_page</h1>';
    */
   function receipt_page($order_id) {
 $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
-echo "<script>console.log('XXX receipt_page');</script>";
-echo '<h1>receipt_page</h1>';
     echo '<p>' . __('Thank you!  Your order has been received.', 'woocommerce-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
-
     $paystand_url = $this->get_paystand_url();
 
     if ('yes' == $this->debug) {
@@ -278,12 +273,8 @@ echo '<h1>receipt_page</h1>';
             'org_id' => $this->org_id,
             'api_key' => $this->api_key,
             'currency' => get_woocommerce_currency(),
-            /* XXX */
-            /*'return' => esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))),*/
-            /*'return' => esc_url($order->get_checkout_order_received_url()),*/
-            /*'return' => esc_url($order->get_view_order_url()),*/
             'return' => $order->get_checkout_order_received_url(),
-            'cancel_return' => esc_url($order->get_cancel_order_url()),
+            'cancel_return' => $order->get_cancel_order_url(),
             'order_id' => $order->id,
             'notify_url' => $this->notify_url,
             // Billing Address info
@@ -324,7 +315,7 @@ echo '<h1>receipt_page</h1>';
 
       // Shipping Cost
       // XXX
-      // No longer using shipping_1
+      // Not using shipping_1
       if (($order->get_total_shipping() + $order->get_shipping_tax()) > 0) {
         $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'woocommerce-paystand') . ' ' . ucwords($order->get_shipping_method()));
         $paystand_args['quantity_2'] = '1';
@@ -403,7 +394,7 @@ echo '<h1>receipt_page</h1>';
   }
 
   PayStand.checkoutComplete = function() {
-    console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
+console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
     window.location = "{$paystand_args['return']}"
   }
 
@@ -472,16 +463,12 @@ echo '<h1>receipt_page</h1>';
 EOF;
 
     echo $markup;
-
-$this->log->add('paystand', 'return: ' . esc_url(add_query_arg('utm_nooverride', '1', $this->get_return_url($order))));
-$this->log->add('paystand', 'order_received: ' . esc_url($order->get_checkout_order_received_url()));
-$this->log->add('paystand', 'view_order: ' . esc_url($order->get_view_order_url()));
   }
 
 
   function check_callback_data($psn) {
     if (empty($psn) || !is_array($psn)) {
-$this->log->add('paystand', 'check_callback_data psn is empty');
+      $this->log->add('paystand', 'check_callback_data psn is empty');
       return false;
     }
 
@@ -494,6 +481,7 @@ $this->log->add('paystand', 'check_callback_data psn is empty');
         'order_id' => $psn['txn_id'],
         'psn' => $psn
     );
+$this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . print_r($request, true));
 
     $context = stream_context_create(array(
         'http' => array(
@@ -505,7 +493,7 @@ $this->log->add('paystand', 'check_callback_data psn is empty');
 
     $response = file_get_contents($endpoint, false, $context);
     if ($response === false) {
-$this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      $this->log->add('paystand', 'check_callback_data verify_psn returned false');
       return false;
     }
 
@@ -514,7 +502,7 @@ $this->log->add('paystand', 'check_callback_data verify_psn returned false');
     if (strpos($response_data['data'],'success') !== false) {
       // continue
     } else {
-$this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
       return false;
     }
 
@@ -564,13 +552,13 @@ $this->log->add('paystand', 'check_callback_data verify_psn response was not suc
    * @return void
    */
   function paystand_callback() {
-$this->log->add('paystand', 'paystand_callback');
+$this->log->add('paystand', 'XXX paystand_callback');
 
     $psn = $_POST;
     if (empty($psn)) {
       $psn = json_decode(file_get_contents("php://input"), true);
     }
-$this->log->add('paystand', 'psn: ' . print_r($psn, true));
+$this->log->add('paystand', 'XXX psn: ' . print_r($psn, true));
 
     if ($this->check_callback_data($psn)) {
       header('HTTP/1.1 200 OK');
@@ -589,7 +577,7 @@ $this->log->add('paystand', 'psn: ' . print_r($psn, true));
    * @return void
    */
   function valid_paystand_callback($data) {
-$this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
+$this->log->add('paystand', 'XXX valid_paystand_callback' . print_r($data, true));
 
     $success = false;
     if (!empty($data['success'])) {
