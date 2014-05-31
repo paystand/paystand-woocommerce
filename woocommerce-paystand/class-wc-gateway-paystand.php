@@ -90,14 +90,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'default' => 'yes'
         ),
         'org_id' => array(
-            'title' => __('Org ID', 'woocommerce-paystand'),
+            'title' => __('PayStand Org ID', 'woocommerce-paystand'),
             'type' => 'text',
             'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
             'default' => '',
             'desc_tip' => true,
         ),
         'api_key' => array(
-            'title' => __('API Key', 'woocommerce-paystand'),
+            'title' => __('PayStand API Key', 'woocommerce-paystand'),
             'type' => 'text',
             'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
             'default' => __('PayStand', 'woocommerce-paystand'),
