@@ -147,7 +147,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    */
   function process_payment($order_id) {
 
-$this->log->add('paystand', 'XXX process_payment: ' . $order_id);
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'process_payment order_id: ' . $order_id);
+    }
+
     $order = new WC_Order($order_id);
     return array(
         'result' => 'success',
@@ -230,7 +233,9 @@ $this->log->add('paystand', 'XXX process_payment: ' . $order_id);
    * Output for the thank you page.
    */
   public function thankyou_page($order_id) {
-$this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'thankyou_page order_id: ' . $order_id);
+    }
   }
 
 
@@ -241,7 +246,9 @@ $this->log->add('paystand', 'XXX thankyou_page: ' . $order_id);
    * @return void
    */
   function receipt_page($order_id) {
-$this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'receipt_page order_id: ' . $order_id);
+    }
     echo '<p>' . __('Thank you!  Your order has been received.', 'woocommerce-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
@@ -251,135 +258,26 @@ $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
       $this->log->add('paystand', 'Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
     }
 
-    if (in_array($order->billing_country, array('US','CA'))) {
-      $order->billing_phone = str_replace(array('(', '-', ' ', ')', '.'), '', $order->billing_phone);
-      $phone_args = array(
-          'night_phone_a' => substr($order->billing_phone, 0, 3),
-          'night_phone_b' => substr($order->billing_phone, 3, 3),
-          'night_phone_c' => substr($order->billing_phone, 6, 4),
-          'day_phone_a' => substr($order->billing_phone, 0, 3),
-          'day_phone_b' => substr($order->billing_phone, 3, 3),
-          'day_phone_c' => substr($order->billing_phone, 6, 4)
-      );
-    } else {
-      $phone_args = array(
-        'night_phone_b' => $order->billing_phone,
-        'day_phone_b' => $order->billing_phone
-      );
+    $return_url = $order->get_checkout_order_received_url();
+    $currency = get_woocommerce_currency();
+
+    $item_names = array();
+    $items = $order->get_items();
+    if (sizeof($items) > 0) {
+      foreach ($items as $item) {
+        if ($item['qty']) {
+          $item_names[] = $item['name'] . ' x ' . $item['qty'];
+        }
+      }
     }
 
-    $paystand_args = array_merge(
-        array(
-            'org_id' => $this->org_id,
-            'api_key' => $this->api_key,
-            'currency' => get_woocommerce_currency(),
-            'return' => $order->get_checkout_order_received_url(),
-            'cancel_return' => $order->get_cancel_order_url(),
-            'order_id' => $order->id,
-            'notify_url' => $this->notify_url,
-            // Billing Address info
-            'first_name' => $order->billing_first_name,
-            'last_name' => $order->billing_last_name,
-            'company' => $order->billing_company,
-            'address1' => $order->billing_address_1,
-            'address2' => $order->billing_address_2,
-            'city' => $order->billing_city,
-            'state' => $this->get_paystand_state($order->billing_country, $order->billing_state),
-            'zip' => $order->billing_postcode,
-            'country' => $order->billing_country,
-            'email' => $order->billing_email
-        ),
-        $phone_args
-    );
-
-    // If prices include tax or have order discounts, send the whole order as a single item
-    if (get_option('woocommerce_prices_include_tax') == 'yes' || $order->get_order_discount() > 0 || (sizeof($order->get_items()) + sizeof($order->get_fees())) >= 9) {
-
-      // Discount
-      $paystand_args['discount_amount_cart'] = $order->get_order_discount();
-
-      // Don't pass items. Pass 1 item for the order items overall
-      $item_names = array();
-
-      if (sizeof($order->get_items()) > 0) {
-        foreach ($order->get_items() as $item) {
-          if ($item['qty']) {
-            $item_names[] = $item['name'] . ' x ' . $item['qty'];
-          }
-        }
-      }
-
-      $paystand_args['item_name_1'] = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
-      $paystand_args['quantity_1'] = 1;
-      $paystand_args['amount_1'] = number_format($order->get_total() - $order->get_total_shipping() - $order->get_shipping_tax() + $order->get_order_discount(), 2, '.', '');
-
-      // Shipping Cost
-      // XXX
-      // Not using shipping_1
-      if (($order->get_total_shipping() + $order->get_shipping_tax()) > 0) {
-        $paystand_args['item_name_2'] = $this->paystand_item_name(__('Shipping via', 'woocommerce-paystand') . ' ' . ucwords($order->get_shipping_method()));
-        $paystand_args['quantity_2'] = '1';
-        $paystand_args['amount_2'] = number_format($order->get_total_shipping() + $order->get_shipping_tax(), 2, '.', '');
-      }
-
-    } else {
-
-      // Tax
-      $paystand_args['tax_cart'] = $order->get_total_tax();
-
-      // Cart Contents
-      $item_loop = 0;
-      if (sizeof($order->get_items()) > 0) {
-        foreach ($order->get_items() as $item) {
-          if ($item['qty']) {
-            $item_loop++;
-            $product = $order->get_product_from_item($item);
-            $item_name = $item['name'];
-
-            $item_meta = new WC_Order_Item_Meta($item['item_meta']);
-            if ($meta = $item_meta->display(true, true)) {
-              $item_name .= ' ( ' . $meta . ' )';
-            }
-
-            $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name($item_name);
-            $paystand_args['quantity_' . $item_loop] = $item['qty'];
-            $paystand_args['amount_' . $item_loop] = $order->get_item_subtotal($item, false);
-
-            if ($product->get_sku()) {
-              $paystand_args['item_number_' . $item_loop] = $product->get_sku();
-            }
-          }
-        }
-      }
-
-      // Discount
-      if ($order->get_cart_discount() > 0) {
-        $paystand_args['discount_amount_cart'] = round($order->get_cart_discount(), 2);
-      }
-
-      // Fees
-      if (sizeof($order->get_fees()) > 0) {
-        foreach ($order->get_fees() as $item) {
-          $item_loop++;
-
-          $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name($item['name']);
-          $paystand_args['quantity_' . $item_loop] = 1;
-          $paystand_args['amount_' . $item_loop] = $item['line_total'];
-        }
-      }
-
-      // XXX
-      // Shipping Cost item - paystand only allows shipping per item, we want to send shipping for the order
-      if ($order->get_total_shipping() > 0) {
-        $item_loop++;
-        $paystand_args['item_name_' . $item_loop] = $this->paystand_item_name(sprintf(__('Shipping via %s', 'woocommerce-paystand'), $order->get_shipping_method()));
-        $paystand_args['quantity_' . $item_loop] = '1';
-        $paystand_args['amount_' . $item_loop] = number_format($order->get_total_shipping(), 2, '.', '');
-      }
-    }
+    $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
 
     // Convert to pennies
     $amount = $order->order_total * 100;
+    $shipping_handling = $order->get_total_shipping() * 100;
+    $tax = $order->get_total_tax() * 100;
+    $final_item_amount = $amount - $shipping_handling - $tax;
 
     $markup = <<<EOF
 <div id="paystand_element_id"></div>
@@ -394,24 +292,25 @@ $this->log->add('paystand', 'XXX receipt_page: ' . $order_id);
   }
 
   PayStand.checkoutComplete = function() {
-console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args['return']}");
-    window.location = "{$paystand_args['return']}"
+console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
+    window.location = "{$return_url}"
   }
 
   var autoCheckout = {
-    api_key: "{$paystand_args['api_key']}",
-    org_id: "{$paystand_args['org_id']}",
+    api_key: "{$this->api_key}",
+    org_id: "{$this->org_id}",
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
+    currency: "{$currency}",
     amount: "{$amount}",
-    shipping_handling: "0",
-    tax: "0",
+    shipping_handling: "{$shipping_handling}",
+    tax: "{$tax}0",
     items: [
       {
-        title: "PayStand Payment",
+        title: "{$final_item_name}",
         quantity: "1",
-        item_price: "{$amount}"
+        item_price: "{$final_item_amount}"
       }
     ],
     meta: {
@@ -421,8 +320,8 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args[
   }
 
   var buttonCheckout = {
-    api_key: "{$paystand_args['api_key']}",
-    org_id: "{$paystand_args['org_id']}",
+    api_key: "{$this->api_key}",
+    org_id: "{$this->org_id}",
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
@@ -431,14 +330,15 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$paystand_args[
       input: false,
       variants: false
     },
+    currency: "{$currency}",
     amount: "{$amount}",
-    shipping_handling: "0",
-    tax: "0",
+    shipping_handling: "{$shipping_handling}",
+    tax: "{$tax}0",
     items: [
       {
-        title: "PayStand Payment",
+        title: "{$final_item_name}",
         quantity: "1",
-        item_price: "{$amount}"
+        item_price: "{$final_item_amount}"
       }
     ],
     meta: {
@@ -481,8 +381,11 @@ EOF;
         'order_id' => $psn['txn_id'],
         'psn' => $psn
     );
-$this->log->add('paystand', 'XXX check_callback_data verify_psn endpoint: ' . $endpoint);
-$this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . print_r($request, true));
+
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'check_callback_data verify_psn endpoint: ' . $endpoint);
+      $this->log->add('paystand', 'check_callback_data verify_psn request: ' . print_r($request, true));
+    }
 
     $context = stream_context_create(array(
         'http' => array(
@@ -499,7 +402,9 @@ $this->log->add('paystand', 'XXX check_callback_data verify_psn request: ' . pri
     }
 
     $response_data = json_decode($response, true);
-$this->log->add('paystand', 'XXX check_callback_data verify_psn response: ' . $response_data);
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'check_callback_data verify_psn response: ' . $response_data);
+    }
 
     if (strpos($response_data['data'],'success') !== false) {
       // continue
@@ -560,13 +465,17 @@ $this->log->add('paystand', 'XXX check_callback_data verify_psn response: ' . $r
    * @return void
    */
   function paystand_callback() {
-$this->log->add('paystand', 'XXX paystand_callback');
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'paystand_callback');
+    }
 
     $psn = $_POST;
     if (empty($psn)) {
       $psn = json_decode(file_get_contents("php://input"), true);
     }
-$this->log->add('paystand', 'XXX psn: ' . print_r($psn, true));
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'psn: ' . print_r($psn, true));
+    }
 
     if ($this->check_callback_data($psn)) {
       header('HTTP/1.1 200 OK');
@@ -585,7 +494,9 @@ $this->log->add('paystand', 'XXX psn: ' . print_r($psn, true));
    * @return void
    */
   function valid_paystand_callback($data) {
-$this->log->add('paystand', 'XXX valid_paystand_callback' . print_r($data, true));
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
+    }
 
     $success = false;
     if (!empty($data['success'])) {
