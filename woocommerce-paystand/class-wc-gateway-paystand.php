@@ -452,7 +452,11 @@ EOF;
     if (!empty($psn['order_id'])) {
       $order_id = $psn['order_id'];
     }
-$this->log->add('paystand', 'check_callback_data order_id: ' . $order_id);
+
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'check_callback_data order_id: ' . $order_id);
+    }
+
     $order = false;
     if ($order_id) {
       $order = new WC_Order($order_id);
@@ -461,9 +465,25 @@ $this->log->add('paystand', 'check_callback_data order_id: ' . $order_id);
       $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
       return false;
     }
-$this->log->add('paystand', 'check_callback_data order: ' . print_r($order, true));
 
-    if ($psn['pre_fee_total'] != $order->order_total) {
+    if ('yes' == $this->debug) {
+      $this->log->add('paystand', 'check_callback_data order: ' . print_r($order, true));
+    }
+
+    $order_token = false;
+    if (!empty($psn['order_token'])) {
+      $order_token = $psn['order_token'];
+    }
+    if (!$order->key_is_valid($order_token)) {
+      $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
+      return false;
+    }
+
+    $pre_fee_total = false;
+    if (!empty($psn['pre_fee_total'])) {
+      $pre_fee_total = $psn['pre_fee_total'];
+    }
+    if ($pre_fee_total != $order->order_total) {
       $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
       return false;
     }
@@ -535,14 +555,6 @@ $this->log->add('paystand', 'check_callback_data order: ' . print_r($order, true
     }
     if (!$order) {
       $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
-      return;
-    }
-    $order_token = false;
-    if (!empty($data['order_token'])) {
-      $order_token = $data['order_token'];
-    }
-    if (!$order->key_is_valid($order_token)) {
-      $this->log->add('paystand', 'Order key not valid: ' . $order_token);
       return;
     }
 
