@@ -448,9 +448,23 @@ EOF;
       return false;
     }
 
-    // order_total is in dollars, pre_fee_total is in pennies
-    if ($psn['pre_fee_total'] != ($order->order_total * 100)) {
-      $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . ($order_total * 100));
+    $order_id = false;
+    if (!empty($psn['order_id'])) {
+      $order_id = $psn['order_id'];
+    }
+$this->log->add('paystand', 'check_callback_data order_id: ' . $order_id);
+    $order = false;
+    if ($order_id) {
+      $order = new WC_Order($order_id);
+    }
+    if (!$order) {
+      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      return false;
+    }
+$this->log->add('paystand', 'check_callback_data order: ' . print_r($order, true));
+
+    if ($psn['pre_fee_total'] != $order->order_total) {
+      $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
       return false;
     }
 
