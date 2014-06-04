@@ -279,21 +279,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $tax = $order->get_total_tax() * 100;
     $final_item_amount = $amount - $shipping_handling - $tax;
 
-    // XXX company, phone, street2, postal_code, first_name, last_name?
+    $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
     $billing_street = trim($order->billing_address_1 . ' ' . $order->billing_address_2);
     $billing_city = $order->billing_city;
     $billing_postalcode = $order->billing_postcode;
     $billing_state = $order->billing_state;
     $billing_country = $order->billing_country;
-    $billing_shipping_same = true;
-
-    $shipping_full_name = trim($order->shipping_first_name . ' ' . $order->shipping_last_name);
-    $shipping_street = trim($order->shipping_address_1 . ' ' . $order->shipping_address_2);
-    $shipping_city = $order->shipping_city;
-    $shipping_postalcode = $order->shipping_postcode;
-    $shipping_state = $order->shipping_state;
-    $shipping_country = $order->shipping_country;
 
     $markup = <<<EOF
 <div id="paystand_element_id"></div>
@@ -330,21 +322,14 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
       }
     ],
     billing: {
+      full_name: "{$billing_full_name}",
       email_address: "{$billing_email_address}",
       street: "{$billing_street}",
       city: "{$billing_city}",
       postalcode: "{$billing_postalcode}",
       state: "{$billing_state}",
       country: "{$billing_country}",
-      shipping_same: false
-    },
-    shipping: {
-      full_name: "{$shipping_full_name}",
-      street: "{$shipping_street}",
-      city: "{$shipping_city}",
-      postalcode: "{$shipping_postalcode}",
-      state: "{$shipping_state}",
-      country: "{$shipping_country}"
+      shipping_same: true
     },
     meta: {
       order_id: "{$order->id}",
@@ -375,21 +360,14 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
       }
     ],
     billing: {
+      full_name: "{$billing_full_name}",
       email_address: "{$billing_email_address}",
       street: "{$billing_street}",
       city: "{$billing_city}",
       postalcode: "{$billing_postalcode}",
       state: "{$billing_state}",
       country: "{$billing_country}",
-      shipping_same: false
-    },
-    shipping: {
-      full_name: "{$shipping_full_name}",
-      street: "{$shipping_street}",
-      city: "{$shipping_city}",
-      postalcode: "{$shipping_postalcode}",
-      state: "{$shipping_state}",
-      country: "{$shipping_country}"
+      shipping_same: true
     },
     meta: {
       order_id: "{$order->id}",
