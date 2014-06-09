@@ -18,8 +18,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $notify_url;
   var $org_id;
   var $api_key;
-  // XXX
-  var $stageurl;
 
   /**
    * Constructor for the gateway.
@@ -40,8 +38,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->order_button_text = __('PayStand Checkout', 'woocommerce-paystand');
     $this->liveurl = 'https://app.paystand.com';
     $this->testurl = 'https://sandbox.paystand.co';
-    // XXX
-    $this->stageurl = 'https://staging.paystand.us';
     $this->notify_url = WC()->api_request_url('WC_Gateway_PayStand');
 
     // Init settings
@@ -52,8 +48,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->org_id = $this->get_option('org_id');
     $this->api_key = $this->get_option('api_key');
     $this->testmode = $this->get_option('testmode');
-    // XXX
-    $this->stagemode = $this->get_option('stagemode');
     $this->debug = $this->get_option('debug');
 
     // Logs
@@ -113,13 +107,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'title',
             'description' => '',
         ),
-        'stagemode' => array(
-            'title' => __('XXX PayStand Staging', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Use PayStand Staging Server', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => sprintf(__('XXX The PayStand staging server can be used to test payments.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
-        ),
         'testmode' => array(
             'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
             'type' => 'checkbox',
@@ -166,11 +153,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    * @return bool
    */
   function is_valid_for_use() {
-    /* XXX Add other currencies
+    /* Add other currencies soon
     if (!in_array(get_woocommerce_currency(), apply_filters('woocommerce_paystand_supported_currencies', array('AUD', 'BRL', 'CAD', 'MXN', 'NZD', 'HKD', 'SGD', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'CZK', 'DKK', 'HUF', 'ILS', 'MYR', 'PHP', 'PLN', 'SEK', 'CHF', 'TWD', 'THB', 'GBP', 'RMB', 'RUB')))) {
       return false;
     }
-    XXX */
+    */
     if (!in_array(get_woocommerce_currency(), apply_filters('woocommerce_paystand_supported_currencies', array('USD')))) {
       return false;
     }
@@ -218,10 +205,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    * Get the server url
    */
   public function get_paystand_url() {
-    // XXX
-    if ('yes' == $this->stagemode) {
-      return $this->stageurl;
-    } else
     if ('yes' == $this->testmode) {
       return $this->testurl;
     }
