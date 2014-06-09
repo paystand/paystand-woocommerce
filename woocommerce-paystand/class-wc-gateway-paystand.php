@@ -283,8 +283,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   PayStand.checkoutComplete = function() {
-console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
-    window.location = "{$return_url}"
+    console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
+    //window.location = "{$return_url}"
   }
 
   var autoCheckout = {
@@ -293,6 +293,7 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
+    redirect_url: "{$return_url}",
     currency: "{$currency}",
     amount: "{$amount}",
     shipping_handling: "{$shipping_handling}",
@@ -326,6 +327,7 @@ console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
+    redirect_url: "{$return_url}",
     button_options: {
       button_name: 'Pay with PayStand',
       input: false,
