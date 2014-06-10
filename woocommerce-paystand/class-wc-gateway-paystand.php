@@ -257,10 +257,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
 
     // Convert to pennies
-    $amount = $order->order_total * 100;
+    $total = $order->order_total * 100;
     $shipping_handling = $order->get_total_shipping() * 100;
     $tax = $order->get_total_tax() * 100;
-    $final_item_amount = $amount - $shipping_handling - $tax;
+    $subtotal = $total - $shipping_handling - $tax;
 
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
@@ -295,14 +295,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     checkout_type: "button",
     redirect_url: "{$return_url}",
     currency: "{$currency}",
-    amount: "{$amount}",
+    amount: "{$subtotal}",
     shipping_handling: "{$shipping_handling}",
     tax: "{$tax}",
     items: [
       {
         title: "{$final_item_name}",
         quantity: "1",
-        item_price: "{$final_item_amount}"
+        item_price: "{$subtotal}"
       }
     ],
     billing: {
@@ -334,14 +334,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       variants: false
     },
     currency: "{$currency}",
-    amount: "{$amount}",
+    amount: "{$subtotal}",
     shipping_handling: "{$shipping_handling}",
     tax: "{$tax}",
     items: [
       {
         title: "{$final_item_name}",
         quantity: "1",
-        item_price: "{$final_item_amount}"
+        item_price: "{$subtotal}"
       }
     ],
     billing: {
