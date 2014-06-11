@@ -572,6 +572,25 @@ EOF;
     }
 
     if ($success) {
+      $total = get_post_meta($order_id, '_order_total', true);
+$this->log->add('paystand', '_order_total: ' . $total);
+      $flat = $data['fee_consumer_owes'];
+      $rate = $data['rate_consumer_owes'];
+      $fee = $flat + $rate;
+$this->log->add('paystand', 'adding fee: ' . $fee);
+      $item = array('order_item_name' => 'Processing Fee',
+          'order_item_type' => 'fee');
+      $item_id = wc_add_order_item($order_id, $item);
+      if ($item_id) {
+        wc_add_order_item_meta($item_id, '_tax_class', '0');
+        wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee));
+        wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+      }
+      $total += $fee;
+$this->log->add('paystand', 'new total: ' . $total);
+      update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
+$total = get_post_meta($order_id, '_order_total', true);
+$this->log->add('paystand', '_order_total: ' . $total);
       $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
     } else {
