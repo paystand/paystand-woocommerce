@@ -279,12 +279,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   PayStand.load = PayStand.load || function(){};
 
   PayStand.checkoutUpdated = function() {
-    console.log('checkoutUpdated called');
+    console.log('checkoutUpdated called.');
   }
 
   PayStand.checkoutComplete = function() {
-    console.log('checkoutComplete called! Setting locatino to: ' + "{$return_url}");
-    //window.location = "{$return_url}"
+    console.log('checkoutComplete called.');
   }
 
   var autoCheckout = {
