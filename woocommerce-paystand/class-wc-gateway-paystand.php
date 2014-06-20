@@ -415,10 +415,10 @@ EOF;
 
     $response_data = json_decode($response, true);
     if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'check_callback_data verify_psn response: ' . $response_data);
+      $this->log->add('paystand', 'check_callback_data verify_psn response: ' . print_r($response_data, true));
     }
 
-    if (strpos($response_data['data'],'success') !== false) {
+    if ($response_data['data'] === true) {
       // continue
     } else {
       $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
