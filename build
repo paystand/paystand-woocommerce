@@ -1,4 +1,10 @@
 #!/bin/bash
 
-zip -r woocommerce-paystand.zip woocommerce-paystand
+DIST=../../dist
+VERSION=`cat version.txt`
+
+echo "Creating zip file"
+zip -r ${DIST}/woocommerce-paystand-${VERSION}.zip woocommerce-paystand
+echo "Creating tgz file"
+tar cvfz ${DIST}/woocommerce-paystand-${VERSION}.tgz woocommerce-paystand
 
