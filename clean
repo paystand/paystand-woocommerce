@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIST=../../dist
+DIST=../../dist/woocommerce
 VERSION=`cat version.txt`
 rm -f ${DIST}/woocommerce-paystand-${VERSION}.zip
 rm -f ${DIST}/woocommerce-paystand-${VERSION}.tgz
