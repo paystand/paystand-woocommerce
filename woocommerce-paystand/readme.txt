@@ -31,8 +31,12 @@ Use PayStand (and this plugin) to process payments on your site. Check it out at
 
 It adds payment processing to your WooCommerce site using PayStand.
 
+= What version of WooCommerce does this plugin work with? =
+
+This plugin works with WooCommerce version 2.1.0 and above.
+
 == Changelog ==
 
 = 1.0 =
-* First verison. Please provide feedback.
+* First version. Please provide feedback.
 
