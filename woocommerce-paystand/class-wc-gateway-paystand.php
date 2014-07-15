@@ -53,13 +53,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     // Logs
     if ('yes' == $this->debug) {
       $this->log = new WC_Logger();
+      $this->log->add('paystand', 'WC_Gateway_PayStand __construct');
     }
 
     // Actions
     add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
-    add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
+    add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
     if (!$this->is_valid_for_use()) {
@@ -380,7 +381,9 @@ EOF;
 
   function check_callback_data($psn) {
     if (empty($psn) || !is_array($psn)) {
-      $this->log->add('paystand', 'check_callback_data psn is empty');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data psn is empty');
+      }
       return false;
     }
 
@@ -409,7 +412,9 @@ EOF;
 
     $response = file_get_contents($endpoint, false, $context);
     if ($response === false) {
-      $this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      }
       return false;
     }
 
@@ -421,7 +426,9 @@ EOF;
     if ($response_data['data'] === true) {
       // continue
     } else {
-      $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      }
       return false;
     }
 
@@ -443,20 +450,26 @@ EOF;
 
     foreach ($defined as $def) {
       if (!isset($psn[$def])) {
-        $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
+        }
         return false;
       }
     }
 
     foreach ($numerics as $numeric) {
       if (!is_numeric($psn[$numeric])) {
-        $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
+        }
         return false;
       }
     }
 
     if (!in_array($psn['payment_status'], $status)) {
-      $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      }
       return false;
     }
 
@@ -474,7 +487,9 @@ EOF;
       $order = new WC_Order($order_id);
     }
     if (!$order) {
-      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      }
       return false;
     }
 
@@ -487,7 +502,9 @@ EOF;
       $order_token = $psn['order_token'];
     }
     if (!$order->key_is_valid($order_token)) {
-      $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
+      }
       return false;
     }
 
@@ -496,7 +513,9 @@ EOF;
       $pre_fee_total = $psn['pre_fee_total'];
     }
     if ($pre_fee_total != $order->order_total) {
-      $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
+      }
       return false;
     }
 
@@ -525,7 +544,7 @@ EOF;
 
     if ($this->check_callback_data($psn)) {
       header('HTTP/1.1 200 OK');
-      do_action("valid-paystand-callback", $psn);
+      do_action("valid_paystand_callback", $psn);
     } else {
       wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
     }
@@ -566,7 +585,9 @@ EOF;
       $order = new WC_Order($order_id);
     }
     if (!$order) {
-      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      }
       return;
     }
 
