@@ -534,6 +534,10 @@ EOF;
       $this->log->add('paystand', 'paystand_callback');
     }
 
+    if (isset($_GET['status'])) {
+      wp_die("PayStand Callback Status: " . print_r($this, true), "PayStand", array('response' => 200));
+    }
+
     $psn = $_POST;
     if (empty($psn)) {
       $psn = json_decode(file_get_contents("php://input"), true);
