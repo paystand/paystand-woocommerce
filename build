@@ -3,8 +3,8 @@
 DIST=../../dist
 VERSION=`cat version.txt`
 
-echo "Creating zip file"
+echo Creating ${DIST}/woocommerce-paystand-${VERSION}.zip
 zip -r ${DIST}/woocommerce-paystand-${VERSION}.zip woocommerce-paystand
-echo "Creating tgz file"
+echo Creating ${DIST}/woocommerce-paystand-${VERSION}.tgz
 tar cvfz ${DIST}/woocommerce-paystand-${VERSION}.tgz woocommerce-paystand
 
