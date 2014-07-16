@@ -271,6 +271,26 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $billing_state = $order->billing_state;
     $billing_country = $order->billing_country;
 
+    // json_encode parameters that users can enter to protect against quotes
+    // and other troublesome characters
+    $api_key_json = json_encode($this->api_key);
+    if (is_numeric($this->org_id)) {
+      // We want to pass it as a string
+      $org_id_json = '"' . $this->org_id . '"';
+    } else {
+      // Probably bogus but maybe valid in the future
+      $org_id_json = json_encode($this->org_id);
+    }
+    $return_url_json = json_encode($return_url);
+    $final_item_name_json = json_encode($final_item_name);
+    $billing_full_name_json = json_encode($billing_full_name);
+    $billing_email_address_json = json_encode($billing_email_address);
+    $billing_street_json = json_encode($billing_street);
+    $billing_city_json = json_encode($billing_city);
+    $billing_postalcode_json = json_encode($billing_postalcode);
+    $billing_state_json = json_encode($billing_state);
+    $billing_country_json = json_encode($billing_country);
+
     $markup = <<<EOF
 <div id="paystand_element_id"></div>
 <script type="text/javascript">
@@ -288,31 +308,31 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   var autoCheckout = {
-    api_key: "{$this->api_key}",
-    org_id: "{$this->org_id}",
+    api_key: {$api_key_json},
+    org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
-    redirect_url: "{$return_url}",
+    redirect_url: {$return_url_json},
     currency: "{$currency}",
     amount: "{$subtotal}",
     shipping_handling: "{$shipping_handling}",
     tax: "{$tax}",
     items: [
       {
-        title: "{$final_item_name}",
+        title: {$final_item_name_json},
         quantity: "1",
         item_price: "{$subtotal}"
       }
     ],
     billing: {
-      full_name: "{$billing_full_name}",
-      email_address: "{$billing_email_address}",
-      street: "{$billing_street}",
-      city: "{$billing_city}",
-      postalcode: "{$billing_postalcode}",
-      state: "{$billing_state}",
-      country: "{$billing_country}",
+      full_name: {$billing_full_name_json},
+      email_address: {$billing_email_address_json},
+      street: {$billing_street_json},
+      city: {$billing_city_json},
+      postalcode: {$billing_postalcode_json},
+      state: {$billing_state_json},
+      country: {$billing_country_json},
       shipping_same: true
     },
     meta: {
@@ -322,12 +342,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   var buttonCheckout = {
-    api_key: "{$this->api_key}",
-    org_id: "{$this->org_id}",
+    api_key: {$api_key_json},
+    org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
-    redirect_url: "{$return_url}",
+    redirect_url: {$return_url_json},
     button_options: {
       button_name: 'Pay with PayStand',
       input: false,
@@ -339,19 +359,19 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     tax: "{$tax}",
     items: [
       {
-        title: "{$final_item_name}",
+        title: {$final_item_name_json},
         quantity: "1",
         item_price: "{$subtotal}"
       }
     ],
     billing: {
-      full_name: "{$billing_full_name}",
-      email_address: "{$billing_email_address}",
-      street: "{$billing_street}",
-      city: "{$billing_city}",
-      postalcode: "{$billing_postalcode}",
-      state: "{$billing_state}",
-      country: "{$billing_country}",
+      full_name: {$billing_full_name_json},
+      email_address: {$billing_email_address_json},
+      street: {$billing_street_json},
+      city: {$billing_city_json},
+      postalcode: {$billing_postalcode_json},
+      state: {$billing_state_json},
+      country: {$billing_country_json},
       shipping_same: true
     },
     meta: {
