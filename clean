@@ -2,6 +2,8 @@
 
 DIST=../../dist/woocommerce
 VERSION=`cat version.txt`
+echo Deleting ${DIST}/woocommerce-paystand-${VERSION}.zip
 rm -f ${DIST}/woocommerce-paystand-${VERSION}.zip
+echo Deleting ${DIST}/woocommerce-paystand-${VERSION}.tgz
 rm -f ${DIST}/woocommerce-paystand-${VERSION}.tgz
 

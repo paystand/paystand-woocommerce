@@ -53,13 +53,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     // Logs
     if ('yes' == $this->debug) {
       $this->log = new WC_Logger();
+      $this->log->add('paystand', 'WC_Gateway_PayStand __construct');
     }
 
     // Actions
     add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
-    add_action('valid-paystand-callback', array($this, 'valid_paystand_callback'));
+    add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
     if (!$this->is_valid_for_use()) {
@@ -270,6 +271,26 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $billing_state = $order->billing_state;
     $billing_country = $order->billing_country;
 
+    // json_encode parameters that users can enter to protect against quotes
+    // and other troublesome characters
+    $api_key_json = json_encode($this->api_key);
+    if (is_numeric($this->org_id)) {
+      // We want to pass it as a string
+      $org_id_json = '"' . $this->org_id . '"';
+    } else {
+      // Probably bogus but maybe valid in the future
+      $org_id_json = json_encode($this->org_id);
+    }
+    $return_url_json = json_encode($return_url);
+    $final_item_name_json = json_encode($final_item_name);
+    $billing_full_name_json = json_encode($billing_full_name);
+    $billing_email_address_json = json_encode($billing_email_address);
+    $billing_street_json = json_encode($billing_street);
+    $billing_city_json = json_encode($billing_city);
+    $billing_postalcode_json = json_encode($billing_postalcode);
+    $billing_state_json = json_encode($billing_state);
+    $billing_country_json = json_encode($billing_country);
+
     $markup = <<<EOF
 <div id="paystand_element_id"></div>
 <script type="text/javascript">
@@ -287,31 +308,31 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   var autoCheckout = {
-    api_key: "{$this->api_key}",
-    org_id: "{$this->org_id}",
+    api_key: {$api_key_json},
+    org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
-    redirect_url: "{$return_url}",
+    redirect_url: {$return_url_json},
     currency: "{$currency}",
     amount: "{$subtotal}",
     shipping_handling: "{$shipping_handling}",
     tax: "{$tax}",
     items: [
       {
-        title: "{$final_item_name}",
+        title: {$final_item_name_json},
         quantity: "1",
         item_price: "{$subtotal}"
       }
     ],
     billing: {
-      full_name: "{$billing_full_name}",
-      email_address: "{$billing_email_address}",
-      street: "{$billing_street}",
-      city: "{$billing_city}",
-      postalcode: "{$billing_postalcode}",
-      state: "{$billing_state}",
-      country: "{$billing_country}",
+      full_name: {$billing_full_name_json},
+      email_address: {$billing_email_address_json},
+      street: {$billing_street_json},
+      city: {$billing_city_json},
+      postalcode: {$billing_postalcode_json},
+      state: {$billing_state_json},
+      country: {$billing_country_json},
       shipping_same: true
     },
     meta: {
@@ -321,12 +342,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   }
 
   var buttonCheckout = {
-    api_key: "{$this->api_key}",
-    org_id: "{$this->org_id}",
+    api_key: {$api_key_json},
+    org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
     checkout_type: "button",
-    redirect_url: "{$return_url}",
+    redirect_url: {$return_url_json},
     button_options: {
       button_name: 'Pay with PayStand',
       input: false,
@@ -338,19 +359,19 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     tax: "{$tax}",
     items: [
       {
-        title: "{$final_item_name}",
+        title: {$final_item_name_json},
         quantity: "1",
         item_price: "{$subtotal}"
       }
     ],
     billing: {
-      full_name: "{$billing_full_name}",
-      email_address: "{$billing_email_address}",
-      street: "{$billing_street}",
-      city: "{$billing_city}",
-      postalcode: "{$billing_postalcode}",
-      state: "{$billing_state}",
-      country: "{$billing_country}",
+      full_name: {$billing_full_name_json},
+      email_address: {$billing_email_address_json},
+      street: {$billing_street_json},
+      city: {$billing_city_json},
+      postalcode: {$billing_postalcode_json},
+      state: {$billing_state_json},
+      country: {$billing_country_json},
       shipping_same: true
     },
     meta: {
@@ -380,7 +401,9 @@ EOF;
 
   function check_callback_data($psn) {
     if (empty($psn) || !is_array($psn)) {
-      $this->log->add('paystand', 'check_callback_data psn is empty');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data psn is empty');
+      }
       return false;
     }
 
@@ -409,7 +432,9 @@ EOF;
 
     $response = file_get_contents($endpoint, false, $context);
     if ($response === false) {
-      $this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data verify_psn returned false');
+      }
       return false;
     }
 
@@ -421,7 +446,9 @@ EOF;
     if ($response_data['data'] === true) {
       // continue
     } else {
-      $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+      }
       return false;
     }
 
@@ -443,20 +470,26 @@ EOF;
 
     foreach ($defined as $def) {
       if (!isset($psn[$def])) {
-        $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
+        }
         return false;
       }
     }
 
     foreach ($numerics as $numeric) {
       if (!is_numeric($psn[$numeric])) {
-        $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
+        }
         return false;
       }
     }
 
     if (!in_array($psn['payment_status'], $status)) {
-      $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
+      }
       return false;
     }
 
@@ -474,7 +507,9 @@ EOF;
       $order = new WC_Order($order_id);
     }
     if (!$order) {
-      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      }
       return false;
     }
 
@@ -487,7 +522,9 @@ EOF;
       $order_token = $psn['order_token'];
     }
     if (!$order->key_is_valid($order_token)) {
-      $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
+      }
       return false;
     }
 
@@ -496,7 +533,9 @@ EOF;
       $pre_fee_total = $psn['pre_fee_total'];
     }
     if ($pre_fee_total != $order->order_total) {
-      $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
+      }
       return false;
     }
 
@@ -515,6 +554,10 @@ EOF;
       $this->log->add('paystand', 'paystand_callback');
     }
 
+    if (isset($_GET['status'])) {
+      wp_die("PayStand Callback Status: " . print_r($this, true), "PayStand", array('response' => 200));
+    }
+
     $psn = $_POST;
     if (empty($psn)) {
       $psn = json_decode(file_get_contents("php://input"), true);
@@ -525,7 +568,7 @@ EOF;
 
     if ($this->check_callback_data($psn)) {
       header('HTTP/1.1 200 OK');
-      do_action("valid-paystand-callback", $psn);
+      do_action("valid_paystand_callback", $psn);
     } else {
       wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
     }
@@ -566,7 +609,9 @@ EOF;
       $order = new WC_Order($order_id);
     }
     if (!$order) {
-      $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      if ('yes' == $this->debug) {
+        $this->log->add('paystand', 'Order not found for order id: ' . $order_id);
+      }
       return;
     }
 
