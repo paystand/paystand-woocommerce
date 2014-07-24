@@ -1,9 +1,12 @@
 #!/bin/bash
 
+NAME=woocommerce-paystand
+DIR="${NAME}"
 DIST=../../dist/woocommerce
 VERSION=`cat version.txt`
-echo Deleting ${DIST}/woocommerce-paystand-${VERSION}.zip
-rm -f ${DIST}/woocommerce-paystand-${VERSION}.zip
-echo Deleting ${DIST}/woocommerce-paystand-${VERSION}.tgz
-rm -f ${DIST}/woocommerce-paystand-${VERSION}.tgz
+
+echo Deleting ${DIST}/${NAME}-${VERSION}.zip
+rm -f ${DIST}/${NAME}-${VERSION}.zip
+echo Deleting ${DIST}/${NAME}-${VERSION}.tgz
+rm -f ${DIST}/${NAME}-${VERSION}.tgz
 

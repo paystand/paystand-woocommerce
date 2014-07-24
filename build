@@ -1,10 +1,13 @@
 #!/bin/bash
 
+NAME=woocommerce-paystand
+DIR="${NAME}"
 DIST=../../dist/woocommerce
 VERSION=`cat version.txt`
 
-echo Creating ${DIST}/woocommerce-paystand-${VERSION}.zip
-zip -r ${DIST}/woocommerce-paystand-${VERSION}.zip woocommerce-paystand
-echo Creating ${DIST}/woocommerce-paystand-${VERSION}.tgz
-tar cvfz ${DIST}/woocommerce-paystand-${VERSION}.tgz woocommerce-paystand
+echo Creating ${DIST}/${NAME}-${VERSION}.zip
+zip -r ${DIST}/${NAME}-${VERSION}.zip ${DIR}
+echo
+echo Creating ${DIST}/${NAME}-${VERSION}.tgz
+tar cvfz ${DIST}/${NAME}-${VERSION}.tgz ${DIR}
 
