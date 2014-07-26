@@ -35,6 +35,23 @@ It adds payment processing to your WooCommerce site using PayStand.
 
 This plugin works with WooCommerce version 2.1.0 and above.
 
+== Troubleshooting ==
+
+If you are having trouble with the checkout process or your orders are not marked as paid and updated from pending to processing, turn on logging.
+To turn on logging, under WooCommerce > Settings > Checkout > PayStand, select the checkbox labeled "Enable logging" and save.
+The location of the log file is displayed below the checkbox.
+After checkout you should see something like the following in the log file:
+...
+07-21-2014 @ 21:20:55 - Generating payment form for order #94. Notify URL: https://www.example.com/wp/?wc-api=WC_Gateway_PayStand
+07-21-2014 @ 21:21:37 - WC_Gateway_PayStand __construct
+07-21-2014 @ 21:21:37 - paystand_callback
+07-21-2014 @ 21:21:37 - psn: Array
+...
+07-21-2014 @ 21:21:38 - Payment success: 1
+...
+If you see the "Generating" line but not the "paystand_callback" line then the PSN (PayStand Notification) webhook is not reaching the WooCommerce PayStand plugin.
+You should check that the webhook url is entered properly in your PayStand account dashboard under Settings > Checkout Features > Webhook Url.
+
 == Changelog ==
 
 = 1.0 =
