@@ -116,7 +116,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
             'default' => 'no',
             'description' => 'Setting this will cause all orders to be automatically moved from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
-        )
+        ),
         'testing' => array(
             'title' => __('Gateway Testing', 'woocommerce-paystand'),
             'type' => 'title',
