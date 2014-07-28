@@ -18,6 +18,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $notify_url;
   var $org_id;
   var $api_key;
+  var $auto_complete;
 
   /**
    * Constructor for the gateway.
@@ -49,6 +50,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->api_key = $this->get_option('api_key');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
+    $this->auto_complete = $this->get_option('auto_complete');
 
     // Logs
     if ('yes' == $this->debug) {
@@ -103,6 +105,18 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'title',
             'description' => 'Set your webhook url to ' . $this->notify_url . ' in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
         ),
+        'orders' => array(
+            'title' => __('Order Processing', 'woocommerce-paystand'),
+            'type' => 'title',
+            'description' => '',
+        ),
+        'auto_complete' => array(
+            'title' => __('Order auto-completion', 'woocommerce-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
+            'default' => 'no',
+            'description' => 'Setting this will cause all orders to be automatically moved from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
+        )
         'testing' => array(
             'title' => __('Gateway Testing', 'woocommerce-paystand'),
             'type' => 'title',
@@ -636,6 +650,9 @@ EOF;
       }
       $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
+      if ('yes' == $this->auto_complete) {
+        $order->update_status('completed', 'Order auto-completed.');
+      }
     } else {
       $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $payment_status));
     }
