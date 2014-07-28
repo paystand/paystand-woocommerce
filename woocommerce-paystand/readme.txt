@@ -43,7 +43,6 @@ The location of the log file is displayed below the checkbox.
 After checkout you should see something like the following in the log file:
 ...
 07-21-2014 @ 21:20:55 - Generating payment form for order #94. Notify URL: https://www.example.com/wp/?wc-api=WC_Gateway_PayStand
-07-21-2014 @ 21:21:37 - WC_Gateway_PayStand __construct
 07-21-2014 @ 21:21:37 - paystand_callback
 07-21-2014 @ 21:21:37 - psn: Array
 ...
