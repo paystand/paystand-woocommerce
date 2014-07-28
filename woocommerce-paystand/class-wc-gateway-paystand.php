@@ -55,7 +55,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     // Logs
     if ('yes' == $this->debug) {
       $this->log = new WC_Logger();
-      $this->log->add('paystand', 'WC_Gateway_PayStand __construct');
     }
 
     // Actions
@@ -115,7 +114,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'checkbox',
             'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => 'Setting this will cause all orders to be automatically moved from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
+            'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
         ),
         'testing' => array(
             'title' => __('Gateway Testing', 'woocommerce-paystand'),
@@ -652,6 +651,9 @@ EOF;
       $order->payment_complete();
       if ('yes' == $this->auto_complete) {
         $order->update_status('completed', 'Order auto-completed.');
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'Order auto-cmopleted: ' . $order_id);
+        }
       }
     } else {
       $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $payment_status));
