@@ -51,6 +51,10 @@ After checkout you should see something like the following in the log file:
 If you see the "Generating" line but not the "paystand_callback" line then the PSN (PayStand Notification) webhook is not reaching the WooCommerce PayStand plugin.
 You should check that the webhook url is entered properly in your PayStand account dashboard under Settings > Checkout Features > Webhook Url.
 
+== Feedback ==
+
+If you have any questions or feedback, please email us at support@paystand.com.
+
 == Changelog ==
 
 = 1.0 =
