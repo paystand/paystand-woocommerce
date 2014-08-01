@@ -1,15 +1,15 @@
 === WooCommerce-PayStand ===
 Contributors: paystand
-Tags: woocommerce, paystand, payment
+Tags: woocommerce, paystand, payment, credit card, echeck, ach, bitcoin
 Requires at least: 3.5
 Tested up to: 3.9.1
 Stable tag: 1.0.0
 
-The WooCommerce-Paystand plugin adds a WooCommerce payment gateway for PayStand.
+The WooCommerce-PayStand plugin adds a WooCommerce payment gateway for PayStand.
 
 == Description ==
 
-[PayStand](http://www.paystand.com) is a modern payment processing service for your website. [Sign up for PayStand](http://www.paystand.com/signup) and you can use this plugin to process payments for your WooCommerce site.
+[PayStand](http://www.paystand.com) is a modern payment processing service for your website. [Sign up for PayStand](http://www.paystand.com/signup) and you can use this plugin to process payments for your WooCommerce site.  You can choose to accept multiple payment methods, such as credit card, echeck, and bitcoin.
 
 == Installation ==
 
@@ -60,6 +60,6 @@ If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
 
-= 1.0 =
-* First version. Please provide feedback.
+= 1.0.0 =
+* First version.  Please provide feedback.  You can email us at support@paystand.com.
 
