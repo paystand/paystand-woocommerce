@@ -118,7 +118,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
         'webhook' => array(
             'title' => __('Webhook', 'woocommerce-paystand'),
             'type' => 'title',
-            'description' => 'Set your webhook url to ' . $this->notify_url . ' in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
+            'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
         ),
         'orders' => array(
             'title' => __('Order Processing', 'woocommerce-paystand'),

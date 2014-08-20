@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WooCommerce-PayStand
+Plugin Name: PayStand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds PayStand payment gateway to WooCommerce.
 Version: 1.0.0
@@ -31,8 +31,11 @@ if (!function_exists('add_action')) {
 
 
 function init_paystand_gateway_class() {
-  include_once('class-wc-gateway-paystand.php');
+  if (!class_exists('WC_Payment_Gateway')) {
+    return;
+  }
   load_plugin_textdomain('woocommerce-paystand', false, dirname(plugin_basename(__FILE__)) . '/languages');
+  include_once('class-wc-gateway-paystand.php');
 }
 add_action('plugins_loaded', 'init_paystand_gateway_class');
 

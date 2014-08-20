@@ -1,11 +1,11 @@
-=== WooCommerce-PayStand ===
+=== PayStand for WooCommerce ===
 Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, echeck, ach, bitcoin
 Requires at least: 3.5
 Tested up to: 3.9.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 
-The WooCommerce-PayStand plugin adds a WooCommerce payment gateway for PayStand.
+The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PayStand.
 
 == Description ==
 
@@ -50,7 +50,7 @@ After checkout you should see something like the following in the log file:
 ...
 07-21-2014 @ 21:21:38 - Payment success: 1
 ...
-If you see the "Generating" line but not the "paystand_callback" line then the PSN (PayStand Notification) webhook is not reaching the WooCommerce PayStand plugin.
+If you see the "Generating" line but not the "paystand_callback" line then the PSN (PayStand Notification) webhook is not reaching the PayStand for WooCommerce plugin.
 You should check that the webhook url is entered properly in your PayStand account dashboard under Settings > Checkout Features > Webhook Url.
 Also, make sure the Enable PayStand checkbox is selected in your WordPress admin under WooCommerce > Settings > Checkout > PayStand.
 
