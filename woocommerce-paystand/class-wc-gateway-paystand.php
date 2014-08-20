@@ -21,11 +21,11 @@ limitations under the License.
 /**
  * PayStand Payment Gateway
  *
- * Provides a PayStand Payment Gateway.
+ * Provides a PayStand Payment Gateway for WooCommerce.
  *
  * @class      WC_Gateway_PayStand
  * @extends    WC_Payment_Gateway
- * @version    1.0.0
+ * @version    1.0.1
  * @package    WooCommerce/Classes/Payment
  * @author     PayStand
  */
@@ -34,6 +34,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $notify_url;
   var $org_id;
   var $api_key;
+  var $allow_auto_complete = false;
   var $auto_complete;
 
   /**
@@ -66,7 +67,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->api_key = $this->get_option('api_key');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
-    $this->auto_complete = $this->get_option('auto_complete');
+    if ($this->allow_auto_complete) {
+      $this->auto_complete = $this->get_option('auto_complete');
+    }
 
     // Logs
     if ('yes' == $this->debug) {
@@ -94,7 +97,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    */
   function init_form_fields() {
 
-    $this->form_fields = array(
+    if ($this->allow_auto_complete) {
+      $this->form_fields = array(
         'enabled' => array(
             'title' => __('Enable/Disable', 'woocommerce-paystand'),
             'type' => 'checkbox',
@@ -112,7 +116,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'title' => __('PayStand API Key', 'woocommerce-paystand'),
             'type' => 'text',
             'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
-            'default' => __('PayStand', 'woocommerce-paystand'),
+            'default' => '',
             'desc_tip' => true,
         ),
         'webhook' => array(
@@ -151,7 +155,55 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'default' => 'no',
             'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce-paystand'), sanitize_file_name(wp_hash('paystand'))),
         )
-    );
+      );
+    } else {
+      $this->form_fields = array(
+        'enabled' => array(
+            'title' => __('Enable/Disable', 'woocommerce-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable PayStand', 'woocommerce-paystand'),
+            'default' => 'yes'
+        ),
+        'org_id' => array(
+            'title' => __('PayStand Org ID', 'woocommerce-paystand'),
+            'type' => 'text',
+            'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
+            'default' => '',
+            'desc_tip' => true,
+        ),
+        'api_key' => array(
+            'title' => __('PayStand API Key', 'woocommerce-paystand'),
+            'type' => 'text',
+            'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
+            'default' => '';
+            'desc_tip' => true,
+        ),
+        'webhook' => array(
+            'title' => __('Webhook', 'woocommerce-paystand'),
+            'type' => 'title',
+            'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
+        ),
+        'testing' => array(
+            'title' => __('Gateway Testing', 'woocommerce-paystand'),
+            'type' => 'title',
+            'description' => '',
+        ),
+        'testmode' => array(
+            'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
+            'default' => 'no',
+            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
+        ),
+        'debug' => array(
+            'title' => __('Debug Log', 'woocommerce-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable logging', 'woocommerce-paystand'),
+            'default' => 'no',
+            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce-paystand'), sanitize_file_name(wp_hash('paystand'))),
+        )
+      );
+    }
   }
 
 
@@ -665,7 +717,7 @@ EOF;
       }
       $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
-      if ('yes' == $this->auto_complete) {
+      if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
         $order->update_status('completed', 'Order auto-completed.');
         if ('yes' == $this->debug) {
           $this->log->add('paystand', 'Order auto-cmopleted: ' . $order_id);
