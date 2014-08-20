@@ -36,6 +36,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $api_key;
   var $allow_auto_complete = false;
   var $auto_complete;
+  // Note that this parallels the code in WC_Logger since we can't easily get
+  // the file name from WC_Logger.
+  var $log_file_hash = sanitize_file_name(wp_hash('paystand'));
+  var $log_file_path = "woocommerce/logs/paystand-" . $log_file_hash . ".txt";
+  var $log_file_url = plugins_url() . "/" . $log_file_path;
 
   /**
    * Constructor for the gateway.
@@ -153,7 +158,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'checkbox',
             'label' => __('Enable logging', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce-paystand'), sanitize_file_name(wp_hash('paystand'))),
+            'description' => sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $log_file_path, $log_file_url),
         )
       );
     } else {
@@ -200,7 +205,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'checkbox',
             'label' => __('Enable logging', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as requests, inside <code>woocommerce/logs/paystand-%s.txt</code>', 'woocommerce-paystand'), sanitize_file_name(wp_hash('paystand'))),
+            'description' => sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $log_file_path, $log_file_url),
         )
       );
     }
