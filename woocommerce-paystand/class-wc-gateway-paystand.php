@@ -36,11 +36,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   var $api_key;
   var $allow_auto_complete = false;
   var $auto_complete;
-  // Note that this parallels the code in WC_Logger since we can't easily get
-  // the file name from WC_Logger.
-  var $log_file_hash = sanitize_file_name(wp_hash('paystand'));
-  var $log_file_path = "woocommerce/logs/paystand-" . $log_file_hash . ".txt";
-  var $log_file_url = plugins_url() . "/" . $log_file_path;
+  var $log_file_hash;
+  var $log_file_path;
+  var $log_file_url;
+  var $debug_description;
+  var $testmode_description;
 
   /**
    * Constructor for the gateway.
@@ -61,7 +61,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->order_button_text = __('PayStand Checkout', 'woocommerce-paystand');
     $this->liveurl = 'https://app.paystand.com';
     $this->testurl = 'https://sandbox.paystand.co';
-    $this->notify_url = WC()->api_request_url('WC_Gateway_PayStand');
+    $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
+
+    // Note that this parallels the code in WC_Logger since we can't easily
+    // get the file name from WC_Logger.
+    $this->log_file_hash = sanitize_file_name(wp_hash('paystand'));
+    $this->log_file_path = "woocommerce/logs/paystand-" . $this->log_file_hash
+        . ".txt";
+    $this->log_file_url = plugins_url() . "/" . $this->log_file_path;
+
+    $this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $this->log_file_path, $this->log_file_url);
+    $this->testmode_description = sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a sandbox account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/');
 
     // Init settings
     $this->init_form_fields();
@@ -104,62 +114,62 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     if ($this->allow_auto_complete) {
       $this->form_fields = array(
-        'enabled' => array(
-            'title' => __('Enable/Disable', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Enable PayStand', 'woocommerce-paystand'),
-            'default' => 'yes'
-        ),
-        'org_id' => array(
-            'title' => __('PayStand Org ID', 'woocommerce-paystand'),
-            'type' => 'text',
-            'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
-            'default' => '',
-            'desc_tip' => true,
-        ),
-        'api_key' => array(
-            'title' => __('PayStand API Key', 'woocommerce-paystand'),
-            'type' => 'text',
-            'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
-            'default' => '',
-            'desc_tip' => true,
-        ),
-        'webhook' => array(
-            'title' => __('Webhook', 'woocommerce-paystand'),
-            'type' => 'title',
-            'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
-        ),
-        'orders' => array(
-            'title' => __('Order Processing', 'woocommerce-paystand'),
-            'type' => 'title',
-            'description' => '',
-        ),
-        'auto_complete' => array(
-            'title' => __('Order auto-completion', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
-        ),
-        'testing' => array(
-            'title' => __('Gateway Testing', 'woocommerce-paystand'),
-            'type' => 'title',
-            'description' => '',
-        ),
-        'testmode' => array(
-            'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
-        ),
-        'debug' => array(
-            'title' => __('Debug Log', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Enable logging', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $log_file_path, $log_file_url),
-        )
+          'enabled' => array(
+              'title' => __('Enable/Disable', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Enable PayStand', 'woocommerce-paystand'),
+              'default' => 'yes'
+          ),
+          'org_id' => array(
+              'title' => __('PayStand Org ID', 'woocommerce-paystand'),
+              'type' => 'text',
+              'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
+              'default' => '',
+              'desc_tip' => true,
+          ),
+          'api_key' => array(
+              'title' => __('PayStand API Key', 'woocommerce-paystand'),
+              'type' => 'text',
+              'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
+              'default' => '',
+              'desc_tip' => true,
+          ),
+          'webhook' => array(
+              'title' => __('Webhook', 'woocommerce-paystand'),
+              'type' => 'title',
+              'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
+          ),
+          'orders' => array(
+              'title' => __('Order Processing', 'woocommerce-paystand'),
+              'type' => 'title',
+              'description' => '',
+          ),
+          'auto_complete' => array(
+              'title' => __('Order auto-completion', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
+              'default' => 'no',
+              'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
+          ),
+          'testing' => array(
+              'title' => __('Gateway Testing', 'woocommerce-paystand'),
+              'type' => 'title',
+              'description' => '',
+          ),
+          'testmode' => array(
+              'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
+              'default' => 'no',
+              'description' => $this->testmode_description,
+          ),
+          'debug' => array(
+              'title' => __('Debug Log', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Enable logging', 'woocommerce-paystand'),
+              'default' => 'no',
+              'description' => $this->debug_description,
+          )
       );
     } else {
       $this->form_fields = array(
@@ -180,7 +190,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'title' => __('PayStand API Key', 'woocommerce-paystand'),
             'type' => 'text',
             'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
-            'default' => '';
+            'default' => '',
             'desc_tip' => true,
         ),
         'webhook' => array(
@@ -198,14 +208,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
             'type' => 'checkbox',
             'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a developer account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/'),
+            'description' => $this->testmode_description,
         ),
         'debug' => array(
             'title' => __('Debug Log', 'woocommerce-paystand'),
             'type' => 'checkbox',
             'label' => __('Enable logging', 'woocommerce-paystand'),
             'default' => 'no',
-            'description' => sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $log_file_path, $log_file_url),
+            'description' => $this->debug_description,
         )
       );
     }

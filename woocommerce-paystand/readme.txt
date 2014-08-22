@@ -15,7 +15,7 @@ The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PaySt
 
 1. Upload woocommerce-paystand to the `/wp-content/plugins` folder in your WooCommerce WordPress site.
 2. Activate the plugin through the 'Plugins' menu on the WordPress admin page.
-3. Under WooCommerce > Settings > Checkout > PayStand, click the Enable PayStand checkbox and add your Org ID and Public API Key.  Be sure to click the Save Settings button at the bottom of the page.  Your Org ID can be found in your PayStand dashboard under Settings > Account Settings and your Public API Key can be found under Settings > API.
+3. Under WooCommerce > Settings > Checkout > PayStand, click the Enable PayStand checkbox and add your Org ID and Public API Key.  Be sure to click the Save Settings button at the bottom of the page.  Your Org ID can be found in your PayStand dashboard under Settings > Account Settings and your Public API Key can be found under Settings > API.  You do not need to use your Secret Key for this plugin.
 4. Copy the Webhook Url from the WooCommerce settings page and go to your [PayStand dashboard](https://www.paystand.com/login) and enter it under Settings > Checkout Features > Webhook Url.
 5. Go shopping on your WooCommerce site and pay with PayStand!
 
@@ -60,6 +60,8 @@ If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
 
+= 1.0.1 =
+* Minor update to incorporate feedback.
 = 1.0.0 =
 * First version.  Please provide feedback.  You can email us at support@paystand.com.
 
