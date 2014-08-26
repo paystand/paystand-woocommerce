@@ -529,7 +529,19 @@ EOF;
         )
     ));
 
-    $response = file_get_contents($endpoint, false, $context);
+    $response = false;
+    $retry = 0;
+    $max_retries = 3;
+    while (($response === false) && ($retry < $max_retries)) {
+      if ($retry > 0) {
+        sleep(1);
+        if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'verify_psn retry: ' . $retry);
+        }
+      }
+      $response = file_get_contents($endpoint, false, $context);
+      $retry++;
+    }
     if ($response === false) {
       if ('yes' == $this->debug) {
         $this->log->add('paystand', 'check_callback_data verify_psn returned false');
