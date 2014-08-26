@@ -53,6 +53,6 @@ function paystand_gateway_activate() {
     wc_add_notice($message, 'notice');
   }
 }
-register_activation_hook(__FILE__, 'paystand_gateway_activate');
+//register_activation_hook(__FILE__, 'paystand_gateway_activate');
 
 ?>

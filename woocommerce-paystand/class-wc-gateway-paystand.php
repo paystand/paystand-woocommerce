@@ -70,7 +70,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
         . ".txt";
     $this->log_file_url = plugins_url() . "/" . $this->log_file_path;
 
-    $this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $this->log_file_path, $this->log_file_url);
+    // Because WooCommerce denies access to the logs folder by default,
+    // the View Log File link gets a 403 Forbidden
+    //$this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $this->log_file_path, $this->log_file_url);
+    $this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.', 'woocommerce-paystand'), $this->log_file_path);
     $this->testmode_description = sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a sandbox account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/');
 
     // Init settings
