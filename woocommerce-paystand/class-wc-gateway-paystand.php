@@ -25,7 +25,7 @@ limitations under the License.
  *
  * @class      WC_Gateway_PayStand
  * @extends    WC_Payment_Gateway
- * @version    1.0.1
+ * @version    1.0.2
  * @package    WooCommerce/Classes/Payment
  * @author     PayStand
  */
@@ -574,10 +574,6 @@ EOF;
         'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
         'txn_id', 'org_id', 'consumer_id'
     );
-    $status =  array(
-        'failed','voided','pending','achpending','responded','paid',
-        'shipped','downloaded','donated','refunded','chargeback'
-    );
 
     foreach ($defined as $def) {
       if (!isset($psn[$def])) {
@@ -595,13 +591,6 @@ EOF;
         }
         return false;
       }
-    }
-
-    if (!in_array($psn['payment_status'], $status)) {
-      if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'PSN validation error: invalid payment status (' . $psn["payment_status"] . ')');
-      }
-      return false;
     }
 
     $order_id = false;
