@@ -739,7 +739,7 @@ EOF;
       if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
         $order->update_status('completed', 'Order auto-completed.');
         if ('yes' == $this->debug) {
-          $this->log->add('paystand', 'Order auto-cmopleted: ' . $order_id);
+          $this->log->add('paystand', 'Order auto-completed: ' . $order_id);
         }
       }
     } else {
