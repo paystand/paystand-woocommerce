@@ -53,10 +53,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('PayStand', 'woocommerce-paystand');
-    $this->method_title = __('PayStand', 'woocommerce-paystand');
-    $this->description = 'Process payments with the PayStand payment gateway.';
-    $this->method_description = 'Process payments with the PayStand payment gateway.';
+    $this->title = __('PayStand (Credit Card, eCheck, or Bitcoin)', 'woocommerce-paystand');
+    $this->method_title = $this->title;
+    $this->description = 'Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or eCash (Bitcoin).  No account required.';
+    $this->method_description = $this->description;
 
     $this->order_button_text = __('PayStand Checkout', 'woocommerce-paystand');
     $this->liveurl = 'https://app.paystand.com';
