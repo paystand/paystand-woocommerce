@@ -280,8 +280,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       <p class="main"><strong>Getting started</strong></p>
       <p>PayStand is your payment processor and gateway rolled into one. Set up PayStand as your WooCommerce checkout solution to get access to your money quickly, make your payments highly secure, and offer a full suite of payment methods for your customers.</p>
       <p>
-        <a href="http://www.paystand.com/woocommerce/signup" target="_blank" class="button button-primary">Sign up for PayStand</a>
-        <a href="http://www.paystand.com/woocommerce" target="_blank" class="button">Learn more</a>
+        <a href="http://www.paystand.com/signup" target="_blank" class="button button-primary">Sign up for PayStand</a>
+        <a href="http://go.paystand.com/lp/woocommerce.html" target="_blank" class="button">Learn more</a>
       </p>
     </div>
 
