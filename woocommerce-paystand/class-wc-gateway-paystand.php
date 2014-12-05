@@ -275,8 +275,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
 
     <h3>PayStand Checkout for WooCommerce</h3>
 
-    <div class="paystand-banner updated">
-      <img src="<?php echo plugins_url('images/paystand_logo_banner.png' , __FILE__); ?>" />
+    <div class="paystand-banner updated" style="overflow:hidden;">
+      <img style="float: right;height: 100px;margin: 10px 10px 10px 50px;" src="<?php echo plugins_url('images/paystand_logo_banner.png' , __FILE__); ?>" />
       <p class="main"><strong>Getting started</strong></p>
       <p>PayStand is your payment processor and gateway rolled into one. Set up PayStand as your WooCommerce checkout solution to get access to your money quickly, make your payments highly secure, and offer a full suite of payment methods for your customers.</p>
       <p>
