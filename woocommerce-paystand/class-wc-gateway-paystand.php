@@ -342,7 +342,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'receipt_page order_id: ' . $order_id);
     }
-    echo '<p>' . __('Thank you!  Your order has been received.', 'woocommerce-paystand') . '</p>';
 
     $order = new WC_Order($order_id);
     $paystand_url = $this->get_paystand_url();
