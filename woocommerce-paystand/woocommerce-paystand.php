@@ -29,25 +29,26 @@ if (!function_exists('add_action')) {
   exit;
 }
 
-
-function init_paystand_gateway_class() {
+function init_paystand_gateway_class()
+{
   if (!class_exists('WC_Payment_Gateway')) {
     return;
   }
-  load_plugin_textdomain('woocommerce-paystand', false, dirname(plugin_basename(__FILE__)) . '/languages');
+  load_plugin_textdomain('woocommerce-paystand', false,
+      dirname(plugin_basename(__FILE__)) . '/languages');
   include_once('class-wc-gateway-paystand.php');
 }
 add_action('plugins_loaded', 'init_paystand_gateway_class');
 
-
-function add_paystand_gateway_class($methods) {
+function add_paystand_gateway_class($methods)
+{
   $methods[] = 'WC_Gateway_PayStand'; 
   return $methods;
 }
 add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
 
-
-function paystand_gateway_activate() {
+function paystand_gateway_activate()
+{
   $message = '<b>PayStand for WooCommerce is almost ready.</b> Add your PayStand Org ID and Public API Key to get started.';
   if (function_exists('wc_add_notice')) {
     wc_add_notice($message, 'notice');
@@ -55,4 +56,3 @@ function paystand_gateway_activate() {
 }
 //register_activation_hook(__FILE__, 'paystand_gateway_activate');
 
-?>

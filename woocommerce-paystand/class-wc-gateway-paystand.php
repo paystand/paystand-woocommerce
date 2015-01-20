@@ -29,8 +29,8 @@ limitations under the License.
  * @package    WooCommerce/Classes/Payment
  * @author     PayStand
  */
-class WC_Gateway_PayStand extends WC_Payment_Gateway {
-
+class WC_Gateway_PayStand extends WC_Payment_Gateway
+{
   var $notify_url;
   var $org_id;
   var $api_key;
@@ -48,8 +48,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    * @access public
    * @return void
    */
-  public function __construct() {
-
+  public function __construct()
+  {
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
@@ -106,15 +106,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     }
   }
 
-
   /**
    * Initialize Gateway Settings Form Fields
    *
    * @access public
    * @return void
    */
-  function init_form_fields() {
-
+  function init_form_fields()
+  {
     if ($this->allow_auto_complete) {
       $this->form_fields = array(
           'enabled' => array(
@@ -224,7 +223,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     }
   }
 
-
   /**
    * Process the payment and return the result
    *
@@ -232,8 +230,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    * @param int $order_id
    * @return array
    */
-  function process_payment($order_id) {
-
+  function process_payment($order_id)
+  {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'process_payment order_id: ' . $order_id);
     }
@@ -245,14 +243,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     );
   }
 
-
   /**
    * Check if this gateway is enabled and available in the user's country
    *
    * @access public
    * @return bool
    */
-  function is_valid_for_use() {
+  function is_valid_for_use()
+  {
     /* Add other currencies soon
     if (!in_array(get_woocommerce_currency(), apply_filters('woocommerce_paystand_supported_currencies', array('AUD', 'BRL', 'CAD', 'MXN', 'NZD', 'HKD', 'SGD', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'CZK', 'DKK', 'HUF', 'ILS', 'MYR', 'PHP', 'PLN', 'SEK', 'CHF', 'TWD', 'THB', 'GBP', 'RMB', 'RUB')))) {
       return false;
@@ -265,12 +263,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
     return true;
   }
 
-
   /**
    * Admin Panel Options
    */
-  public function admin_options() {
-
+  public function admin_options()
+  {
     ?>
 
     <h3>PayStand Checkout for WooCommerce</h3>
@@ -298,13 +295,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
       endif;
   }
 
-
   /**
    * Limit the length of item names
    * @param  string $item_name
    * @return string
    */
-  public function paystand_item_name($item_name) {
+  public function paystand_item_name($item_name)
+  {
     if (strlen($item_name) > 127) {
       $item_name = substr($item_name, 0, 124) . '...';
     }
@@ -314,23 +311,23 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
   /**
    * Get the server url
    */
-  public function get_paystand_url() {
+  public function get_paystand_url()
+  {
     if ('yes' == $this->testmode) {
       return $this->testurl;
     }
     return $this->liveurl;
   }
 
-
   /**
    * Output for the thank you page.
    */
-  public function thankyou_page($order_id) {
+  public function thankyou_page($order_id)
+  {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'thankyou_page order_id: ' . $order_id);
     }
   }
-
 
   /**
    * Output for the order received page.
@@ -338,7 +335,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway {
    * @access public
    * @return void
    */
-  function receipt_page($order_id) {
+  function receipt_page($order_id)
+  {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'receipt_page order_id: ' . $order_id);
     }
@@ -506,8 +504,8 @@ EOF;
     echo $markup;
   }
 
-
-  function check_callback_data($psn) {
+  function check_callback_data($psn)
+  {
     if (empty($psn) || !is_array($psn)) {
       if ('yes' == $this->debug) {
         $this->log->add('paystand', 'check_callback_data psn is empty');
@@ -651,14 +649,14 @@ EOF;
     return true;
   }
 
-
   /**
    * Handle callback from PayStand.
    *
    * @access public
    * @return void
    */
-  function paystand_callback() {
+  function paystand_callback()
+  {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'paystand_callback');
     }
@@ -679,10 +677,10 @@ EOF;
       header('HTTP/1.1 200 OK');
       do_action("valid_paystand_callback", $psn);
     } else {
+      http_response_code(400);
       wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
     }
   }
-
 
   /**
    * Valid PayStand callback
@@ -691,7 +689,8 @@ EOF;
    * @param array $data
    * @return void
    */
-  function valid_paystand_callback($data) {
+  function valid_paystand_callback($data)
+  {
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'valid_paystand_callback' . print_r($data, true));
     }
