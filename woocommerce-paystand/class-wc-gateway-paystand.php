@@ -418,6 +418,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
+    st_platform: "woocommerce-1.0.4",
     checkout_type: "button",
     redirect_url: {$return_url_json},
     currency: "{$currency}",
@@ -452,6 +453,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     org_id: {$org_id_json},
     element_ids: ["paystand_element_id"],
     data_source: "org_defined",
+    st_platform: "woocommerce-1.0.4",
     checkout_type: "button",
     redirect_url: {$return_url_json},
     button_options: {
