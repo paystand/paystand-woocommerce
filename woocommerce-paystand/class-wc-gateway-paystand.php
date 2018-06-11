@@ -58,9 +58,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or eCash (Bitcoin).";
     $this->method_description = $this->description;
 
-    $this->order_button_text = __('PayStand Checkout', 'woocommerce-paystand');
-    $this->liveurl = 'https://app.paystand.com';
-    $this->testurl = 'https://sandbox.paystand.co';
+    $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
+    $this->liveurl = 'https://checkout.paystand.co/v4/';
+    $this->testurl = 'https://checkout.paystand.co/v4/';
     $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
 
     // Note that this parallels the code in WC_Logger since we can't easily
@@ -95,6 +95,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
     // Actions
+    add_action( 'woocommerce_checkout_order_processed', 'show_paystand_checkout' );
     add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
@@ -105,7 +106,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $this->enabled = false;
     }
   }
-
+  
   /**
    * Initialize Gateway Settings Form Fields
    *
@@ -364,11 +365,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
 
     // Convert to pennies
-    $total = $order->order_total * 100;
-    $shipping_handling = $order->get_total_shipping() * 100;
-    $tax = $order->get_total_tax() * 100;
-    $subtotal = $total - $shipping_handling - $tax;
-
+    $total = $order->order_total;
+   
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
     $billing_street = trim($order->billing_address_1 . ' ' . $order->billing_address_2);
@@ -397,113 +395,43 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $billing_state_json = json_encode($billing_state);
     $billing_country_json = json_encode($billing_country);
 
-    $markup = <<<EOF
-<div id="paystand_element_id"></div>
-<script type="text/javascript">
+ ?>
+    <div id="ps_container_id"></div>
+  <script type="text/javascript">
+   // Move PayStand Div to the top of the page
+   var psContainer = document.getElementById("ps_container_id");
+   psContainer.parentNode.prepend(psContainer);
+  </script>
 
-  var PayStand = PayStand || {};
-  PayStand.checkouts = PayStand.checkouts || [];
-  PayStand.load = PayStand.load || function(){};
+  <div id="ps_checkout_load" ></div>
 
-  PayStand.checkoutUpdated = function() {
-    console.log('checkoutUpdated called.');
-  }
-
-  PayStand.checkoutComplete = function() {
-    console.log('checkoutComplete called.');
-  }
-
-  var autoCheckout = {
-    api_key: {$api_key_json},
-    org_id: {$org_id_json},
-    element_ids: ["paystand_element_id"],
-    data_source: "org_defined",
-    st_platform: "woocommerce-1.0.4",
-    checkout_type: "button",
-    redirect_url: {$return_url_json},
-    currency: "{$currency}",
-    amount: "{$subtotal}",
-    shipping_handling: "{$shipping_handling}",
-    tax: "{$tax}",
-    items: [
-      {
-        title: {$final_item_name_json},
-        quantity: "1",
-        item_price: "{$subtotal}"
-      }
-    ],
-    billing: {
-      full_name: {$billing_full_name_json},
-      email_address: {$billing_email_address_json},
-      street: {$billing_street_json},
-      city: {$billing_city_json},
-      postalcode: {$billing_postalcode_json},
-      state: {$billing_state_json},
-      country: {$billing_country_json},
-      shipping_same: true
-    },
-    meta: {
-      order_id: "{$order->id}",
-      order_token: "{$order->order_key}"
-    }
-  }
-
-  var buttonCheckout = {
-    api_key: {$api_key_json},
-    org_id: {$org_id_json},
-    element_ids: ["paystand_element_id"],
-    data_source: "org_defined",
-    st_platform: "woocommerce-1.0.4",
-    checkout_type: "button",
-    redirect_url: {$return_url_json},
-    button_options: {
-      button_name: 'Pay with PayStand',
-      input: false,
-      variants: false
-    },
-    currency: "{$currency}",
-    amount: "{$subtotal}",
-    shipping_handling: "{$shipping_handling}",
-    tax: "{$tax}",
-    items: [
-      {
-        title: {$final_item_name_json},
-        quantity: "1",
-        item_price: "{$subtotal}"
-      }
-    ],
-    billing: {
-      full_name: {$billing_full_name_json},
-      email_address: {$billing_email_address_json},
-      street: {$billing_street_json},
-      city: {$billing_city_json},
-      postalcode: {$billing_postalcode_json},
-      state: {$billing_state_json},
-      country: {$billing_country_json},
-      shipping_same: true
-    },
-    meta: {
-      order_id: "{$order->id}",
-      order_token: "{$order->order_key}"
-    }
-  }
-
-  PayStand.checkouts.push(buttonCheckout);
-
-  PayStand.onLoad = function() {
-    PayStand.execute(autoCheckout);
-  };
-
-  PayStand.script = document.createElement('script');
-  PayStand.script.type = 'text/javascript';
-  PayStand.script.async = true;
-  PayStand.script.src = '{$paystand_url}/js/checkout.js';
-  var s = document.getElementsByTagName('script')[0];
-  s.parentNode.insertBefore(PayStand.script, s);
-</script>
-EOF;
-
-    echo $markup;
+  <script
+    type="text/javascript"
+    id="ps_checkout"
+    src="https://checkout.paystand.co/v4/js/paystand.checkout.js"
+    ps-viewLogo="hide"
+    ps-env="sandbox"
+    ps-publishableKey="ksdhihlkyjv0plofsjmu1csk"
+    ps-containerId="ps_container_id"
+    ps-mode="embed"
+    ps-show="true"
+    ps-paymentAmount="<?echo $total?>"
+    ps-paymentCurrency="USD"
+    ps-viewClose="false"
+    ps-fixedAmount="true"
+    ps-payerEmail="email@paystand.com"    
+    ps-spInterval="month"  
+    ps-cardAddressStreet: "Av Santa Margarita" 
+    ps-cardAddressCity: "Zapopan"    
+    ps-cardAddressPostal: "90210"
+     
+    
+    >   
+  </script>
+    
+   <?php
+  
+    
   }
 
   function check_callback_data($psn)
