@@ -417,7 +417,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-show="true"
     ps-paymentAmount="<?echo $total?>"
     ps-paymentCurrency="USD"
-    ps-viewClose="false"
+    ps-viewClose="hide"
     ps-fixedAmount="true"
     ps-payerEmail="email@paystand.com"    
     ps-spInterval="month"  
