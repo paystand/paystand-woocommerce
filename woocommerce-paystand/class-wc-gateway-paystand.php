@@ -369,7 +369,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
-    $billing_street = trim($order->billing_address_1 . ' ' . $order->billing_address_2);
+    $billing_street = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
     $billing_city = $order->billing_city;
     $billing_postalcode = $order->billing_postcode;
     $billing_state = $order->billing_state;
@@ -419,14 +419,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-paymentCurrency="USD"
     ps-viewClose="hide"
     ps-fixedAmount="true"
-    ps-payerEmail="email@paystand.com"    
-    ps-spInterval="month"  
-    ps-cardAddressStreet: "Av Santa Margarita" 
-    ps-cardAddressCity: "Zapopan"    
-    ps-cardAddressPostal: "90210"
-     
-    
-    >   
+    ps-payerName="<?=$billing_full_name?>"
+    ps-payerEmail="<?=$billing_email_address?>"
+    ps-spInterval="month"
+    ps-payerAddressStreet = "<?=$billing_street?>"
+    ps-payerAddressCity = "<?=$billing_city?>"
+    ps-payerAddressCountry = "<?=$billing_country?>"
+    ps-payerAddressState = "<?=$billing_state?>"
+    ps-payerAddressPostal = "<?=$billing_postalcode?>"
+    >
   </script>
     
    <?php
