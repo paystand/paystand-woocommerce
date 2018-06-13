@@ -129,12 +129,33 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           'label' => __('Enable PayStand', 'woocommerce-paystand'),
           'default' => 'yes'
       ),       
-      'api_key' => array(
-          'title' => __('PayStand Publisable Key', 'woocommerce-paystand'),
+      'publishable_key' => array(
+          'title' => __('PayStand Publishable Key', 'woocommerce-paystand'),
           'type' => 'text',
-          'description' => __('Your PayStand publishable key (from API configuration values in your Paystand Integration dashboard).', 'woocommerce-paystand'),
+          'description' => __('Your PayStand publishable key from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
           'default' => '',
           'desc_tip' => true,
+      ),
+      'customer_id' => array(
+        'title' => __('PayStand Customer Id ', 'woocommerce-paystand'),
+        'type' => 'text',
+        'description' => __('Your PayStand customer_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+        'default' => '',
+        'desc_tip' => true,
+      ),
+      'client_id' => array(
+        'title' => __('PayStand Client Id ', 'woocommerce-paystand'),
+        'type' => 'text',
+        'description' => __('Your PayStand client_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+        'default' => '',
+        'desc_tip' => true,
+      ),
+      'client_secret' => array(
+        'title' => __('PayStand Client Secret', 'woocommerce-paystand'),
+        'type' => 'text',
+        'description' => __('Your PayStand client_secret from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+        'default' => '',
+        'desc_tip' => true,
       ),
       'webhook' => array(
           'title' => __('Webhook', 'woocommerce-paystand'),
