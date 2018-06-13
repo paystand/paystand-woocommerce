@@ -32,8 +32,10 @@ limitations under the License.
 class WC_Gateway_PayStand extends WC_Payment_Gateway
 {
   var $notify_url;
-  var $org_id;
-  var $api_key;
+  var $publishable_key;
+  var $customer_id;
+  var $client_id;
+  var $client_secret;
   var $allow_auto_complete = false;
   var $auto_complete;
   var $log_file_hash;
@@ -53,7 +55,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('PayStand (Credit Card, eCheck, Bitcoin)', 'woocommerce-paystand');
+    $this->title = __('PayStand (Credit Card, eCheck, ACH)', 'woocommerce-paystand');
     $this->method_title = $this->title;
     $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or eCash (Bitcoin).";
     $this->method_description = $this->description;
@@ -84,8 +86,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->init_settings();
 
     // User defined
-    $this->org_id = $this->get_option('org_id');
-    $this->api_key = $this->get_option('api_key');
+    $this->publishable_key = $this->get_option('publishable_key');
+    $this->customer_id = $this->get_option('customer_id');
+    $this->client_id = $this->get_option('client_id');
+    $this->client_secret = $this->get_option('client_secret');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
     if ($this->allow_auto_complete) {
@@ -118,111 +122,53 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function init_form_fields()
   {
-    if ($this->allow_auto_complete) {
-      $this->form_fields = array(
-          'enabled' => array(
-              'title' => __('Enable/Disable', 'woocommerce-paystand'),
-              'type' => 'checkbox',
-              'label' => __('Enable PayStand', 'woocommerce-paystand'),
-              'default' => 'yes'
-          ),
-          'org_id' => array(
-              'title' => __('PayStand Org ID', 'woocommerce-paystand'),
-              'type' => 'text',
-              'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
-              'default' => '',
-              'desc_tip' => true,
-          ),
-          'api_key' => array(
-              'title' => __('PayStand API Key', 'woocommerce-paystand'),
-              'type' => 'text',
-              'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
-              'default' => '',
-              'desc_tip' => true,
-          ),
-          'webhook' => array(
-              'title' => __('Webhook', 'woocommerce-paystand'),
-              'type' => 'title',
-              'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
-          ),
-          'orders' => array(
-              'title' => __('Order Processing', 'woocommerce-paystand'),
-              'type' => 'title',
-              'description' => '',
-          ),
-          'auto_complete' => array(
-              'title' => __('Order auto-completion', 'woocommerce-paystand'),
-              'type' => 'checkbox',
-              'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
-              'default' => 'no',
-              'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
-          ),
-          'testing' => array(
-              'title' => __('Gateway Testing', 'woocommerce-paystand'),
-              'type' => 'title',
-              'description' => '',
-          ),
-          'testmode' => array(
-              'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
-              'type' => 'checkbox',
-              'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
-              'default' => 'no',
-              'description' => $this->testmode_description,
-          ),
-          'debug' => array(
-              'title' => __('Debug Log', 'woocommerce-paystand'),
-              'type' => 'checkbox',
-              'label' => __('Enable logging', 'woocommerce-paystand'),
-              'default' => 'no',
-              'description' => $this->debug_description,
-          )
-      );
-    } else {
-      $this->form_fields = array(
-        'enabled' => array(
-            'title' => __('Enable/Disable', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Enable PayStand', 'woocommerce-paystand'),
-            'default' => 'yes'
-        ),
-        'org_id' => array(
-            'title' => __('PayStand Org ID', 'woocommerce-paystand'),
-            'type' => 'text',
-            'description' => __('Your PayStand organization id.', 'woocommerce-paystand'),
-            'default' => '',
-            'desc_tip' => true,
-        ),
-        'api_key' => array(
-            'title' => __('PayStand API Key', 'woocommerce-paystand'),
-            'type' => 'text',
-            'description' => __('Your PayStand public api key used for checkout.', 'woocommerce-paystand'),
-            'default' => '',
-            'desc_tip' => true,
-        ),
-        'webhook' => array(
-            'title' => __('Webhook', 'woocommerce-paystand'),
-            'type' => 'title',
-            'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
-        ),
-        'testing' => array(
-            'title' => __('Gateway Testing', 'woocommerce-paystand'),
-            'type' => 'title',
-            'description' => '',
-        ),
-        'testmode' => array(
-            'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => $this->testmode_description,
-        ),
-        'debug' => array(
-            'title' => __('Debug Log', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Enable logging', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => $this->debug_description,
-        )
+    $this->form_fields = array(
+      'enabled' => array(
+          'title' => __('Enable/Disable', 'woocommerce-paystand'),
+          'type' => 'checkbox',
+          'label' => __('Enable PayStand', 'woocommerce-paystand'),
+          'default' => 'yes'
+      ),       
+      'api_key' => array(
+          'title' => __('PayStand Publisable Key', 'woocommerce-paystand'),
+          'type' => 'text',
+          'description' => __('Your PayStand publishable key (from API configuration values in your Paystand Integration dashboard).', 'woocommerce-paystand'),
+          'default' => '',
+          'desc_tip' => true,
+      ),
+      'webhook' => array(
+          'title' => __('Webhook', 'woocommerce-paystand'),
+          'type' => 'title',
+          'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
+      ),
+      'orders' => array(
+          'title' => __('Order Processing', 'woocommerce-paystand'),
+          'type' => 'title',
+          'description' => '',
+      ),    
+      'testmode' => array(
+          'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
+          'type' => 'checkbox',
+          'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
+          'default' => 'no',
+          'description' => $this->testmode_description,
+      ),
+      'debug' => array(
+          'title' => __('Debug Log', 'woocommerce-paystand'),
+          'type' => 'checkbox',
+          'label' => __('Enable logging', 'woocommerce-paystand'),
+          'default' => 'no',
+          'description' => $this->debug_description,
+      )         
+    );     
+
+    if ($this->allow_auto_complete) { 
+      $this->form_fields['auto_complete'] =  array(
+        'title' => __('Order auto-completion', 'woocommerce-paystand'),
+        'type' => 'checkbox',
+        'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
+        'default' => 'no',
+        'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
       );
     }
   }
@@ -375,10 +321,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       }
     }
 
-    $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));
-
-    // Convert to pennies
-    $total = $order->order_total;
+    $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));    
    
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
@@ -416,19 +359,18 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    psContainer.parentNode.prepend(psContainer);
   </script>
 
-  <div id="ps_checkout_load" ></div>
-
+  <div id="ps_checkout_load" ></div>  
   <script
     type="text/javascript"
     id="ps_checkout"
     src="<?=$paystand_url?>js/paystand.checkout.js"
     ps-viewLogo="hide"
     ps-env="sandbox"
-    ps-publishableKey="ksdhihlkyjv0plofsjmu1csk"
+    ps-publishableKey="<?= $this->api_key ?>"
     ps-containerId="ps_container_id"
     ps-mode="embed"
     ps-show="true"
-    ps-paymentAmount="<?echo $total?>"
+    ps-paymentAmount="<?= $order->order_total ?>"
     ps-paymentCurrency="USD"
     ps-viewClose="hide"
     ps-fixedAmount="true"
