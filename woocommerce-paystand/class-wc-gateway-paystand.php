@@ -59,9 +59,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->method_description = $this->description;
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
-    $this->liveurl = 'https://checkout.paystand.co/v4/';
+    $this->liveurl = 'https://checkout.paystand.com/v4/';
     $this->testurl = 'https://checkout.paystand.co/v4/';
-    $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
+    $this->live_api_url = 'https://api.paystand.com/v3/';
+    $this->test_api_url = 'https://api.paystand.co/v3/';
+
+      $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
 
     // Note that this parallels the code in WC_Logger since we can't easily
     // get the file name from WC_Logger.
@@ -320,6 +323,16 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     return $this->liveurl;
   }
 
+    /**
+     * Get the server url
+     */
+    public function get_paystand_api_url()
+    {
+        if ('yes' == $this->testmode) {
+            return $this->test_api_url;
+        }
+        return $this->live_api_url;
+    }
   /**
    * Output for the thank you page.
    */
@@ -408,7 +421,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   <script
     type="text/javascript"
     id="ps_checkout"
-    src="https://checkout.paystand.co/v4/js/paystand.checkout.js"
+    src="<?=$paystand_url?>js/paystand.checkout.js"
     ps-viewLogo="hide"
     ps-env="sandbox"
     ps-publishableKey="ksdhihlkyjv0plofsjmu1csk"
@@ -435,113 +448,124 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     
   }
 
-  function check_callback_data($psn)
+  function check_callback_data($post_data)
   {
-    if (empty($psn) || !is_array($psn)) {
-      if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'check_callback_data psn is empty');
+      if (empty($post_data) || !is_array($post_data)) {
+        if ('yes' == $this->debug) {
+         $this->log->add('paystand', 'check_callback_data POST data is empty');
+        }
+       return false;
       }
-      return false;
-    }
 
-    $paystand_url = $this->get_paystand_url();
-    $endpoint = $paystand_url . '/api/v2/orders';
+      // get Authorization token
+      $paystand_api_url = $this->get_paystand_api_url();
+      $endpoint = $paystand_api_url . 'oauth/token';
 
-    $request = array(
-        'action' => 'verify_psn',
-        'api_key' => $this->api_key,
-        'order_id' => $psn['txn_id'],
-        'psn' => $psn
-    );
+      $request = array(
+        'grant_type' => $this->grant_type,
+        'client_id' => $this->client_id,
+        'client_secret' => $this->client_secret,
+        'scope' => 'auth'
+      );
 
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'check_callback_data verify_psn endpoint: ' . $endpoint);
-      $this->log->add('paystand', 'check_callback_data verify_psn request: ' . print_r($request, true));
-    }
+      if ('yes' == $this->debug) {
+       $this->log->add('paystand', 'check_callback_data Access_Tokens endpoint: ' . $endpoint);
+       $this->log->add('paystand', 'check_callback_data Access_Tokens request: ' . print_r($request, true));
+      }
 
-    $context = stream_context_create(array(
+      $context = stream_context_create(array(
         'http' => array(
             'method' => 'POST',
-            'header' => "Content-Type: application/json\r\n",
+            'header' => "Accept: application/json\r\n Content-Type: application/json\r\n ",
             'content' => json_encode($request)
         )
-    ));
+      ));
 
-    $response = false;
-    $retry = 0;
-    $max_retries = 3;
-    while (($response === false) && ($retry < $max_retries)) {
-      if ($retry > 0) {
-        sleep(1);
-        if ('yes' == $this->debug) {
-          $this->log->add('paystand', 'verify_psn retry: ' . $retry);
-        }
-      }
+      $access_token = null;
+      // calling Rest Access Token
       $response = file_get_contents($endpoint, false, $context);
-      $retry++;
-    }
-    if ($response === false) {
+
       if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'check_callback_data verify_psn returned false');
+          $this->log->add('paystand', 'check_callback_data Access_Tokens response: ' . print_r($response_data, true));
       }
-      return false;
-    }
 
-    $response_data = json_decode($response, true);
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'check_callback_data verify_psn response: ' . print_r($response_data, true));
-    }
+      if($response === false ){
+          $this->log->add('paystand', 'check_callback_data Access_Tokens error: Endpoint not Response', true);
+          return false;
+      }
+      else{
+          if('Unauthorized'===$response){
+              $this->log->add('paystand', 'check_callback_data Access_Tokens - Unauthorized');
+              return false;
+          }
+          else{
+              $response_data = json_decode($response, true);
 
-    if ($response_data['data'] === true) {
-      // continue
-    } else {
+              if(isset($response_data['error'])){
+                  $this->log->add('paystand', 'check_callback_data Access_Tokens error: ' . print_r($response, true));
+                  return false;
+              }
+              else{
+                  $access_token = $response_data['access_token'];
+              }
+          }
+      }
+
+      // call GET Payments
+      $endpoint = $paystand_api_url . 'payments/' . $post_data->id;
+
       if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'check_callback_data verify_psn response was not success');
+          $this->log->add('paystand', 'check_callback_data GET_payments endpoint: ' . $endpoint);
+          $this->log->add('paystand', 'check_callback_data GET_payments request: ' . print_r($request, true));
       }
-      return false;
-    }
 
-    $defined = array(
-        'txn_id', 'org_id', 'consumer_id', 'pre_fee_total',
-        'fee_merchant_owes', 'rate_merchant_owes',
-        'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
-        'payment_status', 'success'
-    );
-    $numerics = array(
-        'pre_fee_total', 'fee_merchant_owes', 'rate_merchant_owes',
-        'fee_consumer_owes', 'rate_consumer_owes', 'total_amount',
-        'txn_id', 'org_id', 'consumer_id'
-    );
+      $header = array('Authorization' => 'Bearer '. $access_token ,
+          'X-CUSTOMER-ID' => $this->customer_id,
+          'Accept' => 'application/json',
+          'Content-Type' => 'application/json'
+      );
 
-    foreach ($defined as $def) {
-      if (!isset($psn[$def])) {
-        if ('yes' == $this->debug) {
-          $this->log->add('paystand', 'PSN validation error: ' . $def . ' is not defined or is empty');
-        }
-        return false;
+      $context = stream_context_create(array(
+          'http' => array(
+              'method' => 'GET',
+              'header' => $header
+          )
+      ));
+
+      $order_id = null;
+      // calling Rest Get Payments
+      $response = file_get_contents($endpoint, false, $context);
+
+      if ('yes' == $this->debug) {
+          $this->log->add('paystand', 'check_callback_data GET_payments response: ' . print_r($response, true));
       }
-    }
 
-    foreach ($numerics as $numeric) {
-      if (!is_numeric($psn[$numeric])) {
-        if ('yes' == $this->debug) {
-          $this->log->add('paystand', 'PSN validation error: ' . $numeric . ' is not numeric');
-        }
-        return false;
+      if($response === false ){
+          $this->log->add('paystand', 'check_callback_data GET_payments error: Endpoint not Response', true);
+          return false;
       }
-    }
+      else{
+          $response_data = json_decode($response, true);
 
-    $order_id = false;
-    if (!empty($psn['order_id'])) {
-      $order_id = $psn['order_id'];
-    }
+          if(isset($response_data['error'])){
+              $this->log->add('paystand', 'check_callback_data GET_payments error: ' . print_r($response, true));
+              return false;
+          }
+          else{
+              $order_id = $response_data['id'];
+              $amount = $response_data['amount'];
 
-    if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'check_callback_data order_id: ' . $order_id);
-    }
+              if($order_id === $this->id && $amount === $this->total ){
+                  if ('yes' == $this->debug) {
+                      $this->log->add('paystand', 'check_callback_data GET_payments order_id: ' . $order_id);
+                  }
+              }
+          }
+
+      }
 
     $order = false;
-    if ($order_id) {
+    if (isset($order_id)) {
       $order = new WC_Order($order_id);
     }
     if (!$order) {
@@ -553,28 +577,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     if ('yes' == $this->debug) {
       $this->log->add('paystand', 'check_callback_data order: ' . print_r($order, true));
-    }
-
-    $order_token = false;
-    if (!empty($psn['order_token'])) {
-      $order_token = $psn['order_token'];
-    }
-    if (!$order->key_is_valid($order_token)) {
-      if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'PSN validation error: Order key not valid: ' . $order_token);
-      }
-      return false;
-    }
-
-    $pre_fee_total = false;
-    if (!empty($psn['pre_fee_total'])) {
-      $pre_fee_total = $psn['pre_fee_total'];
-    }
-    if ($pre_fee_total != $order->order_total) {
-      if ('yes' == $this->debug) {
-        $this->log->add('paystand', 'PSN validation error: psn pre_fee_total: ' . $psn['pre_fee_total'] . ' not equal to order_total: ' . $order->order_total);
-      }
-      return false;
     }
 
     return true;
@@ -596,17 +598,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       wp_die("PayStand Callback Status: " . print_r($this, true), "PayStand", array('response' => 200));
     }
 
-    $psn = $_POST;
-    if (empty($psn)) {
-      $psn = json_decode(file_get_contents("php://input"), true);
+    $response_webhook = $_POST;
+    if (empty($response_webhook)) {
+        $response_webhook = json_decode(file_get_contents("php://input"), true);
     }
     if ('yes' == $this->debug) {
-      $this->log->add('paystand', 'psn: ' . print_r($psn, true));
+      $this->log->add('paystand', 'psn: ' . print_r($response_webhook, true));
     }
 
-    if ($this->check_callback_data($psn)) {
+    if ($this->check_callback_data($response_webhook)) {
       header('HTTP/1.1 200 OK');
-      do_action("valid_paystand_callback", $psn);
+      do_action("valid_paystand_callback", $response_webhook);
     } else {
       http_response_code(400);
       wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
