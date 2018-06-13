@@ -32,8 +32,10 @@ limitations under the License.
 class WC_Gateway_PayStand extends WC_Payment_Gateway
 {
   var $notify_url;
-  var $org_id;
-  var $api_key;
+  var $publishable_key;
+  var $customer_id;
+  var $client_id;
+  var $client_secret;
   var $allow_auto_complete = false;
   var $auto_complete;
   var $log_file_hash;
@@ -81,8 +83,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->init_settings();
 
     // User defined
-    $this->org_id = $this->get_option('org_id');
-    $this->api_key = $this->get_option('api_key');
+    $this->publishable_key = $this->get_option('publishable_key');
+    $this->customer_id = $this->get_option('customer_id');
+    $this->client_id = $this->get_option('client_id');
+    $this->client_secret = $this->get_option('client_secret');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
     if ($this->allow_auto_complete) {
