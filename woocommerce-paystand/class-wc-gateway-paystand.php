@@ -428,7 +428,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $response = file_get_contents($endpoint, false, $context);
 
       if ('yes' == $this->debug) {
-          $this->log->add('paystand', 'check_callback_data Access_Tokens response: ' . print_r($response_data, true));
+          $this->log->add('paystand', 'check_callback_data Access_Tokens response: ' . print_r($response, true));
       }
 
       if($response === false ){
