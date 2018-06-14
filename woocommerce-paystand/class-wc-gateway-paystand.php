@@ -407,7 +407,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressState = "<?=$billing_state?>"
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
-    >
   </script>
     
    <?php
