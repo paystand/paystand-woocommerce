@@ -92,6 +92,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->client_secret = $this->get_option('client_secret');
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
+    $this->order_id = null;
+
     if ($this->allow_auto_complete) {
       $this->auto_complete = $this->get_option('auto_complete');
     }
@@ -210,7 +212,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function process_payment($order_id)
   {
-    $this->log_message('process_payment order_id: ' . $order_id);    
+    $this->log_message('process_payment order_id: ' . $order_id);
+    $this->order_id = $order_id;
     $order = new WC_Order($order_id);
     return array(
         'result' => 'success',
@@ -320,7 +323,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function receipt_page($order_id)
   {
-    $this->log_message('receipt_page order_id: ' . $order_id);    
+    $this->log_message('receipt_page order_id: ' . $order_id);
+
+    $this->order_id = $order_id;
 
     $order = new WC_Order($order_id);
     $paystand_url = $this->get_paystand_url();
@@ -401,6 +406,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressCountry = "<?=$billing_country?>"
     ps-payerAddressState = "<?=$billing_state?>"
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
+    ps-payerMeta = '{ "order_id" : "<?=$order_id?>" }'
     >
   </script>
     
@@ -486,6 +492,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           )
       ));
 
+      $transaction_id = null;
       $order_id = null;
       // calling Rest Get Payments
       $response = file_get_contents($endpoint, false, $context);
@@ -504,22 +511,22 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
               return false;
           }
           else{
-              $order_id = $response_data['id'];
-              $amount = $response_data['amount'];
+              $transaction_id = $response_data['id'];
+              $meta = json_decode($response_data['meta']);
 
-              if($order_id === $this->id && $amount === $this->total ){
-                  $this->log_message('check_callback_data GET_payments order_id: ' . $order_id);                  
+              if($transaction_id === $this->id && $this->order_id === $meta->order_id ){
+                  $this->log_message('check_callback_data GET_payments order_id: ' . $meta->order_id);
               }
           }
 
       }
 
     $order = false;
-    if (isset($order_id)) {
-      $order = new WC_Order($order_id);
+    if (isset($meta->order_id)) {
+      $order = new WC_Order($meta->order_id);
     }
-    if (!$order) {      
-      $this->log_message('Order not found for order id: ' . $order_id);      
+    if (!$order) {
+      $this->log_message('Order not found for order id: ' . $meta->order_id);
       return false;
     }
     $this->log_message('check_callback_data order: ' . print_r($order, true));
