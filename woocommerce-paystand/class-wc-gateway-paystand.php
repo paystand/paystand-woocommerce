@@ -354,10 +354,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $billing_postalcode = $order->billing_postcode;
     $billing_state = $order->billing_state;
     $billing_country = $order->billing_country;
-
-    // json_encode parameters that users can enter to protect against quotes
-    // and other troublesome characters
-    $api_key_json = json_encode($this->api_key);
+    
     if (is_numeric($this->org_id)) {
       // We want to pass it as a string
       $org_id_json = '"' . $this->org_id . '"';
@@ -376,24 +373,33 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $billing_country_json = json_encode($billing_country);
 
  ?>
-    <div id="ps_container_id"></div>
+ 
+  <div id="ps_container_id">
+
   <script type="text/javascript">
    // Move PayStand Div to the top of the page
    var psContainer = document.getElementById("ps_container_id");
-   psContainer.parentNode.prepend(psContainer);
+   psContainer.parentNode.prepend(psContainer);  
   </script>
 
-  <div id="ps_checkout_load" ></div>  
+  <div id="ps_checkout_load" style= " text-align: center" >
+  <label for="savePaymentMethod">
+  <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Payment Method"/>
+   Save This Payment Method 
+  </label>
+  
+  </div>  
   <script
     type="text/javascript"
     id="ps_checkout"
     src="<?=$paystand_url?>js/paystand.checkout.js"
     ps-viewLogo="hide"
     ps-env="sandbox"
-    ps-publishableKey="<?= $this->api_key ?>"
+    ps-publishableKey="<?= $this->publishable_key ?>"
     ps-containerId="ps_container_id"
     ps-mode="embed"
     ps-show="true"
+    ps-viewCheckout="mobile"
     ps-paymentAmount="<?= $order->order_total ?>"
     ps-paymentCurrency="USD"
     ps-viewClose="hide"
