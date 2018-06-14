@@ -419,9 +419,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       // get Authorization token
       $paystand_api_url = $this->get_paystand_api_url();
       $endpoint = $paystand_api_url . 'oauth/token';
-
+      $grant_type = "client_credentials";
       $request = array(
-        'grant_type' => $this->grant_type,
+        'grant_type' => $grant_type,
         'client_id' => $this->client_id,
         'client_secret' => $this->client_secret,
         'scope' => 'auth'
