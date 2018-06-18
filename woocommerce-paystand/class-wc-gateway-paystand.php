@@ -368,10 +368,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   </script>
 
   <div id="ps_checkout_load" style= " text-align: center" >
-  <label for="savePaymentMethod">
-  <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Payment Method"/>
-   Save This Payment Method 
-  </label>
   
   </div>  
   <script
