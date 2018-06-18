@@ -337,18 +337,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $return_url = $order->get_checkout_order_received_url();
     $currency = get_woocommerce_currency();
-
-    $item_names = array();
-    $items = $order->get_items();
-    if (sizeof($items) > 0) {
-      foreach ($items as $item) {
-        if ($item['qty']) {
-          $item_names[] = $item['name'] . ' x ' . $item['qty'];
-        }
-      }
-    }
-
-    $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));    
+    
    
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
@@ -382,7 +371,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-show="true"
     ps-viewCheckout="mobile"
     ps-paymentAmount="<?= $order->order_total ?>"
-    ps-paymentCurrency="USD"
     ps-viewClose="hide"
     ps-fixedAmount="true"
     ps-payerName="<?=$billing_full_name?>"
@@ -394,11 +382,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressState = "<?=$billing_state?>"
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
-  </script>
-    
-   <?php
-  
-    
+    ps-paymentCurrency =  "<?= $currency ?>"
+  </script>   
+   <?php      
   }
 
   function check_callback_data($post_data)
