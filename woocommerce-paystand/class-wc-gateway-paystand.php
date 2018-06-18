@@ -18,6 +18,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+include( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
+
 /**
  * PayStand Payment Gateway
  *
@@ -352,26 +355,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $billing_street = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
     $billing_city = $order->billing_city;
     $billing_postalcode = $order->billing_postcode;
-    $billing_state = $order->billing_state;
-    $billing_country = $order->billing_country;
-    
-    if (is_numeric($this->org_id)) {
-      // We want to pass it as a string
-      $org_id_json = '"' . $this->org_id . '"';
-    } else {
-      // Probably bogus but maybe valid in the future
-      $org_id_json = json_encode($this->org_id);
-    }
-    $return_url_json = json_encode($return_url);
-    $final_item_name_json = json_encode($final_item_name);
-    $billing_full_name_json = json_encode($billing_full_name);
-    $billing_email_address_json = json_encode($billing_email_address);
-    $billing_street_json = json_encode($billing_street);
-    $billing_city_json = json_encode($billing_city);
-    $billing_postalcode_json = json_encode($billing_postalcode);
-    $billing_state_json = json_encode($billing_state);
-    $billing_country_json = json_encode($billing_country);
-
+    $billing_state = $order->billing_state;    
+    $billing_country = getISO3166_3_code($order->billing_country);
  ?>
  
   <div id="ps_container_id">
