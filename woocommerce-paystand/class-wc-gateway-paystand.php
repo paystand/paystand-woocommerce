@@ -384,6 +384,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
     ps-paymentCurrency =  "<?= $currency ?>"
   </script>   
+
+   <script type="text/javascript">
+    psCheckout.onReady(function() {
+      psCheckout.onComplete( function() {
+        window.location.href = "<?= $return_url ?>" 
+      })
+    });     
+   </script> 
    <?php      
   }
 
