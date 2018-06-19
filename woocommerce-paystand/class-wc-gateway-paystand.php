@@ -138,7 +138,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
   private function isValidStatus($status){
       $allowed_status = array("PAID","FAILED");
-      return contains($status, $allowed_status);
+      return in_array(strtoupper($status), $allowed_status);
   }
   /**
    * Initialize Gateway Settings Form Fields
@@ -449,8 +449,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           $access_token = $response->body->access_token;
       }
 
-      $this->log_message('check_callback_data $this object: ' . print_r($this, true));
-
       // call GET Payments
       $endpoint = $paystand_api_url . 'payments/' . $post_data["sourceId"];
       $header = array('Authorization' => 'Bearer '. $access_token ,
@@ -527,7 +525,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     if (empty($response_webhook)) {
         $response_webhook = json_decode(file_get_contents("php://input"), true);
     }
-    $this->log_message('psn: ' . print_r($response_webhook, true));    
+    $this->log_message('WebHook call: ' . print_r($response_webhook->resource, true));
 
     if ($this->check_callback_data($response_webhook)) { // set status & order_id & fees
       header('HTTP/1.1 200 OK');
@@ -547,15 +545,16 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function valid_paystand_callback($data)
   {
-    $this->log_message('valid_paystand_callback' . print_r($data, true));    
+    $this->log_message('valid_paystand_callback');
 
     $payment_status = $this->payment_status;
-    // One of: "created", "processing", "posted", "paid", "failed"
-    $success = ("PAID"===strtoupper($this->payment_status));
+    $STATUS_SUCCESS = "PAID";
+
+    // One of: "paid", "failed"
+    $success = ($STATUS_SUCCESS===strtoupper($this->payment_status));
 
     $this->log_message('Payment success: ' . $success);
     $this->log_message('Payment status: ' . $payment_status);
-    
 
     $order_id = $this->order_id;
     $order = new WC_Order($order_id);
@@ -564,10 +563,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       return;
     }
 
+    if($order->get_status() === $STATUS_SUCCESS){ // only once time is allowed
+        $this->log_message('valid_paystand_callback Order already completed: ' . $order_id);
+        return;
+    }
+
     if ($success) {
-      //$fee_added = get_post_meta($order_id, '_ps_fee_added', true);
-      //if (empty($fee_added)) {
-        //update_post_meta($order_id, '_ps_fee_added', '1');
         $total = get_post_meta($order_id, '_order_total', true);
         $fee = $this->paystand_fee;
         $item = array('order_item_name' => 'Processing Fee',
@@ -580,15 +581,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
         $total += $fee;
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
-      //}
-      $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
-      $order->payment_complete();
-      //if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
-        $order->update_status('completed', 'Order auto-completed.');        
-        $this->log_message('Order auto-completed: ' . $order_id);        
-      //}
+        $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
+        $order->payment_complete();
+        if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
+          $order->update_status('completed', 'Order auto-completed.');
+          $this->log_message('Order auto-completed: ' . $order_id);
+        }
     } else {
-      $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $payment_status));
+      $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
     }
   }
 }
