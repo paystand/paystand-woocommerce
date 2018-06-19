@@ -76,8 +76,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->testurl = 'https://checkout.paystand.co/v4/';
     $this->live_api_url = 'https://api.paystand.com/v3/';
     $this->test_api_url = 'https://api.paystand.co/v3/';
+    $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
+    // Used to add fields directly in the checkout screen (for saved cards)    
+    $this->has_fields = true;
 
-      $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
+    // Add support for tokenization
+    $this->supports = array('tokenization');
 
     // Note that this parallels the code in WC_Logger since we can't easily
     // get the file name from WC_Logger.
@@ -222,9 +226,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
   /**
+   * WooCommerce Function to render saved payment methods
+   */
+  function payment_fields() {    
+    if (count($this->get_tokens()) > 0 ) {
+      $this->saved_payment_methods();
+    }
+  }
+  /**
    * Process the payment and return the result
    *
-   * @access public
+   * @access public 
    * @param int $order_id
    * @return array
    */
@@ -304,26 +316,20 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
   /**
-   * Get the server url
+   * Get the server checkout url
    */
   public function get_paystand_url()
   {
-    if ('yes' == $this->testmode) {
-      return $this->testurl;
-    }
-    return $this->liveurl;
+    return ('yes' == $this->testmode) ?  $this->testurl : $this->liveurl;          
   }
 
-    /**
-     * Get the server url
-     */
-    public function get_paystand_api_url()
-    {
-        if ('yes' == $this->testmode) {
-            return $this->test_api_url;
-        }
-        return $this->live_api_url;
-    }
+  /**
+   * Get the server api url
+   */
+  public function get_paystand_api_url()
+  {
+    return ('yes' == $this->testmode) ? $this->test_api_url : $this->live_api_url;      
+  }
   /**
    * Output for the thank you page.
    */
@@ -340,12 +346,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function receipt_page($order_id)
   {
-    $this->log_message('receipt_page order_id: ' . $order_id);
-
+    $this->log_message('receipt_page order_id: ' . $order_id);    
 
     $order = new WC_Order($order_id);
     $paystand_url = $this->get_paystand_url();
-
+    $user_id = get_current_user_id();
     $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);    
 
     $return_url = $order->get_checkout_order_received_url();
@@ -370,7 +375,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   </script>
 
   <div id="ps_checkout_load" style= " text-align: center" >
-  
+  <label for= "savePaymentMethod">
+    <input type="checkbox" id="savePaymentMethod", name="savePaymentMethod" value="Save Pament Method"/>
+    Save This Payment Method
+  </label>
   </div>  
   <script
     type="text/javascript"
@@ -394,14 +402,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressCountry = "<?=$billing_country?>"
     ps-payerAddressState = "<?=$billing_state?>"
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
-    ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
-    ps-paymentCurrency =  "<?= $currency ?>"
+    ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $user_id ?>" }'
     ps-paymentCurrency =  "<?= $currency ?>">
   </script>   
 
    <script type="text/javascript">
     psCheckout.onReady(function() {
       psCheckout.onComplete( function() {
+        // TODO:  Check that payment was completed succesfully (not failed)        
+        if (document.getElementById('savePaymentMethod').checked == true) {
+          // TODO:  If "remember me" option is selected, send request to WooCommerce to save card  
+        }
         window.location.href = "<?= $return_url ?>" 
       })
     });     
@@ -545,7 +556,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
   /**
    * Valid PayStand callback
-   *
+   * This is called when a valid transaction has been received as a callback from 
+   * Paystand Webhooks
    * @access public
    * @param array $data
    * @return void
@@ -593,6 +605,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     } else {
       $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
     }
+  }
+
+  /**
+   * Contains form and logic to add a payment method from the user's settings
+   */
+  function add_payment_method() {
+
   }
 }
 
