@@ -1,5 +1,10 @@
 <?php
 
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
+
+include('httpful.phar');
+
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 /*
@@ -43,6 +48,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $log_file_url;
   var $debug_description;
   var $testmode_description;
+  var $payment_status = null;
+  var $order_id = null;
+  var $paystand_fee = null;
 
   /**
    * Constructor for the gateway.
@@ -93,6 +101,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->testmode = $this->get_option('testmode');
     $this->debug = $this->get_option('debug');
     $this->order_id = null;
+    $this->paystand_fee = null;
+    $this->payment_status = null;
 
     if ($this->allow_auto_complete) {
       $this->auto_complete = $this->get_option('auto_complete');
@@ -122,7 +132,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $this->log->add('paystand', $text);
     }
   }
-  
+
+  private function isValidStatus($status){
+      $allowed_status = array("PAID","FAILED");
+      return contains($status, $allowed_status);
+  }
   /**
    * Initialize Gateway Settings Form Fields
    *
@@ -213,7 +227,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   function process_payment($order_id)
   {
     $this->log_message('process_payment order_id: ' . $order_id);
-    $this->order_id = $order_id;
     $order = new WC_Order($order_id);
     return array(
         'result' => 'success',
@@ -325,7 +338,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   {
     $this->log_message('receipt_page order_id: ' . $order_id);
 
-    $this->order_id = $order_id;
 
     $order = new WC_Order($order_id);
     $paystand_url = $this->get_paystand_url();
@@ -439,102 +451,85 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       );
 
       $this->log_message('check_callback_data Access_Tokens endpoint: ' . $endpoint);
-      $this->log_message('check_callback_data Access_Tokens request: ' . print_r($request, true));    
-
-      $context = stream_context_create(array(
-        'http' => array(
-            'method' => 'POST',
-            'header' => "Accept: application/json\r\n Content-Type: application/json\r\n ",
-            'content' => json_encode($request)
-        )
-      ));
+      $this->log_message('check_callback_data Access_Tokens request: ' . print_r(json_encode($request), true));
 
       $access_token = null;
       // calling Rest Access Token
-      $response = file_get_contents($endpoint, false, $context);
+      try{
+          $response = \Httpful\Request::post($endpoint)                  // Build a POST request...
+          ->sendsJson()                               // tell it we're sending (Content-Type) JSON...
+          ->body(json_encode($request))             // attach a body/payload...
+          ->send();
+      } catch (Exception $e) {
+          $this->log_message('check_callback_data Access_Tokens exception: ' . print_r($e, true));
+      }
 
-      $this->log_message('check_callback_data Access_Tokens response: ' . print_r($response, true));      
+      $this->log_message('check_callback_data Access_Tokens response: ' . print_r($response->raw_body, true));
 
-      if($response === false ){
-          $this->log_message('check_callback_data Access_Tokens error: Endpoint not Response');
+      if($response->code!==200){ // Unauthorized or another error
+          $this->log_message('check_callback_data Access_Tokens error: '.print_r($response->body, true));
           return false;
       }
-      else{
-          if('Unauthorized'===$response){
-              $this->log_message('check_callback_data Access_Tokens - Unauthorized');
-              return false;
-          }
-          else{
-              $response_data = json_decode($response, true);
-
-              if(isset($response_data['error'])){
-                  $this->log_message('check_callback_data Access_Tokens error: ' . print_r($response, true));
-                  return false;
-              }
-              else{
-                  $access_token = $response_data['access_token'];
-              }
-          }
+      else {
+          $access_token = $response->body->access_token;
       }
 
+      $this->log_message('check_callback_data $this object: ' . print_r($this, true));
+
       // call GET Payments
-      $endpoint = $paystand_api_url . 'payments/' . $post_data->id;
-
-      $this->log_message('check_callback_data GET_payments endpoint: ' . $endpoint);
-      $this->log_message('check_callback_data GET_payments request: ' . print_r($request, true));
-
-
+      $endpoint = $paystand_api_url . 'payments/' . $post_data["sourceId"];
       $header = array('Authorization' => 'Bearer '. $access_token ,
           'X-CUSTOMER-ID' => $this->customer_id,
           'Accept' => 'application/json',
           'Content-Type' => 'application/json'
       );
 
-      $context = stream_context_create(array(
-          'http' => array(
-              'method' => 'GET',
-              'header' => $header
-          )
-      ));
+      $this->log_message('check_callback_data GET_payments endpoint: ' . $endpoint);
+      $this->log_message('check_callback_data GET_payments request headers: ' . print_r( $header, true));
 
       $transaction_id = null;
       $order_id = null;
-      // calling Rest Get Payments
-      $response = file_get_contents($endpoint, false, $context);
+      try{
+        // calling Rest Get Payments
+          $response = \Httpful\Request::get($endpoint)   // Build a POST request...
+          ->addHeaders($header)                          // headers ...
+          ->send();
+      } catch (Exception $e) {
+        $this->log_message('check_callback_data GET_payments exception: ' . print_r($e, true));
+      }
 
-      $this->log_message('check_callback_data GET_payments response: ' . print_r($response, true));      
+      $this->log_message('check_callback_data GET_payments response: ' . print_r($response->raw_body, true));
 
-      if($response === false ){
-          $this->log_message('check_callback_data GET_payments error: Endpoint not Response');
+      if($response->code!==200){
+          $this->log_message('check_callback_data GET_payments error: ' . print_r($response->body, true));
           return false;
       }
       else{
-          $response_data = json_decode($response, true);
+          $transaction_id = $response->body->id;
+          $meta = $response->body->meta;
+          $this->order_id = $meta->order_id;
+          $this->payment_status = $response->body->status;
+          $this->paystand_fee = 0;
+          if(isset($response->body->feeSplit)){ // apply fees
+              $this->paystand_fee = $response->body->feeSplit->payerTotalFees;
+          }
+          $this->log_message('check_callback_data GET_payments meta: ' . print_r($meta, true));
+          $this->log_message('check_callback_data GET_payments order_id: ' . $meta->order_id);
 
-          if(isset($response_data['error'])){
-              $this->log_message('check_callback_data GET_payments error: ' . print_r($response, true));
+          if(!$this->isValidStatus($this->payment_status)){
+              $this->log_message('check_callback_data Invalid Order Status :' . $this->payment_status );
               return false;
           }
-          else{
-              $transaction_id = $response_data['id'];
-              $meta = json_decode($response_data['meta']);
-
-              if($transaction_id === $this->id && $this->order_id === $meta->order_id ){
-                  $this->log_message('check_callback_data GET_payments order_id: ' . $meta->order_id);
-              }
-          }
-
       }
 
     $order = false;
-    if (isset($meta->order_id)) {
-      $order = new WC_Order($meta->order_id);
+    if (isset($this->order_id)) {
+      $order = new WC_Order($this->order_id);
     }
     if (!$order) {
-      $this->log_message('Order not found for order id: ' . $meta->order_id);
+      $this->log_message('Order not found for order id: ' . $this->order_id);
       return false;
     }
-    $this->log_message('check_callback_data order: ' . print_r($order, true));
 
     return true;
   }
@@ -559,7 +554,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
     $this->log_message('psn: ' . print_r($response_webhook, true));    
 
-    if ($this->check_callback_data($response_webhook)) {
+    if ($this->check_callback_data($response_webhook)) { // set status & order_id & fees
       header('HTTP/1.1 200 OK');
       do_action("valid_paystand_callback", $response_webhook);
     } else {
@@ -579,39 +574,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   {
     $this->log_message('valid_paystand_callback' . print_r($data, true));    
 
-    $success = false;
-    if (!empty($data['success'])) {
-      $success = $data['success'];
-    }
-    $payment_status = false;
-    if (!empty($data['payment_status'])) {
-      $payment_status = $data['payment_status'];
-    }
+    $payment_status = $this->payment_status;
+    // One of: "created", "processing", "posted", "paid", "failed"
+    $success = ("PAID"===strtoupper($this->payment_status));
+
     $this->log_message('Payment success: ' . $success);
     $this->log_message('Payment status: ' . $payment_status);
     
 
-    $order_id = false;
-    if (!empty($data['order_id'])) {
-      $order_id = $data['order_id'];
-    }
-    $order = false;
-    if ($order_id) {
-      $order = new WC_Order($order_id);
-    }
+    $order_id = $this->order_id;
+    $order = new WC_Order($order_id);
     if (!$order) {
       $this->log_message('Order not found for order id: ' . $order_id);      
       return;
     }
 
     if ($success) {
-      $fee_added = get_post_meta($order_id, '_ps_fee_added', true);
-      if (empty($fee_added)) {
-        update_post_meta($order_id, '_ps_fee_added', '1');
+      //$fee_added = get_post_meta($order_id, '_ps_fee_added', true);
+      //if (empty($fee_added)) {
+        //update_post_meta($order_id, '_ps_fee_added', '1');
         $total = get_post_meta($order_id, '_order_total', true);
-        $flat = $data['fee_consumer_owes'];
-        $rate = $data['rate_consumer_owes'];
-        $fee = $flat + $rate;
+        $fee = $this->paystand_fee;
         $item = array('order_item_name' => 'Processing Fee',
             'order_item_type' => 'fee');
         $item_id = wc_add_order_item($order_id, $item);
@@ -622,13 +605,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
         $total += $fee;
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
-      }
+      //}
       $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
       $order->payment_complete();
-      if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
+      //if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
         $order->update_status('completed', 'Order auto-completed.');        
         $this->log_message('Order auto-completed: ' . $order_id);        
-      }
+      //}
     } else {
       $order->update_status('on-hold', sprintf(__('Payment pending: %s', 'woocommerce-paystand'), $payment_status));
     }
