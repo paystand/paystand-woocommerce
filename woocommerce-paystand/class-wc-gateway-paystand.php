@@ -563,7 +563,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       return;
     }
 
-    if($order->get_status() === $STATUS_SUCCESS){ // only once time is allowed
+    if( $this->isValidStatus($order->get_status())){ // only one time is allowed
         $this->log_message('valid_paystand_callback Order already completed: ' . $order_id);
         return;
     }
