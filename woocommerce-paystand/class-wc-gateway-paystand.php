@@ -3,7 +3,7 @@
 //error_reporting(E_ALL);
 //ini_set('display_errors', 1);
 
-include('httpful.phar');
+include( plugin_dir_path( __FILE__ ) . 'includes/httpful.phar');
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -395,6 +395,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
     ps-paymentCurrency =  "<?= $currency ?>"
+    ps-paymentCurrency =  "<?= $currency ?>">
   </script>   
 
    <script type="text/javascript">
