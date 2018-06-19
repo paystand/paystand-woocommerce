@@ -3,7 +3,7 @@
 //error_reporting(E_ALL);
 //ini_set('display_errors', 1);
 
-include('httpful.phar');
+include( plugin_dir_path( __FILE__ ) . 'includes/httpful.phar');
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
