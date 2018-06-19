@@ -136,11 +136,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
   }
 
-  private function isValidStatus($status){
-      $allowed_status = array("PAID","FAILED");
-      return in_array(strtoupper($status), $allowed_status);
-  }
-  /**
+    private function isValidStatus($status){
+        $allowed_status = array("PAID","FAILED");
+        return in_array(strtoupper($status), $allowed_status);
+    }
+
+    /**
    * Initialize Gateway Settings Form Fields
    *
    * @access public
@@ -499,6 +500,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $order = false;
     if (isset($this->order_id)) {
       $order = new WC_Order($this->order_id);
+        if($order->get_status()==="completed" ||
+            $order->get_status()==="failed"){ // already is a COMPLETE or FAILED
+            $this->log_message('check_callback_data already processed :' . $this->payment_status );
+            return false;
+        }
     }
     if (!$order) {
       $this->log_message('Order not found for order id: ' . $this->order_id);
@@ -564,11 +570,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       return;
     }
 
-    if( $this->isValidStatus($order->get_status())){ // only one time is allowed
-        $this->log_message('valid_paystand_callback Order already completed: ' . $order_id);
-        return;
-    }
-
     if ($success) {
         $total = get_post_meta($order_id, '_order_total', true);
         $fee = $this->paystand_fee;
@@ -584,10 +585,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
         $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
         $order->payment_complete();
-        if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
-          $order->update_status('completed', 'Order auto-completed.');
-          $this->log_message('Order auto-completed: ' . $order_id);
-        }
+        // pending to check where is set this configuration
+        //if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
+        $order->update_status('completed', 'Order auto-completed.');
+        $this->log_message('Order auto-completed: ' . $order_id);
+        //}
     } else {
       $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
     }
