@@ -395,6 +395,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
     ps-paymentCurrency =  "<?= $currency ?>"
+    ps-paymentCurrency =  "<?= $currency ?>">
   </script>   
 
    <script type="text/javascript">
