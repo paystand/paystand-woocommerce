@@ -23,6 +23,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+include( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
+
 /**
  * PayStand Payment Gateway
  *
@@ -346,44 +349,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $return_url = $order->get_checkout_order_received_url();
     $currency = get_woocommerce_currency();
-
-    $item_names = array();
-    $items = $order->get_items();
-    if (sizeof($items) > 0) {
-      foreach ($items as $item) {
-        if ($item['qty']) {
-          $item_names[] = $item['name'] . ' x ' . $item['qty'];
-        }
-      }
-    }
-
-    $final_item_name = $this->paystand_item_name(sprintf(__('Order %s' , 'woocommerce-paystand'), $order->get_order_number()) . " - " . implode(', ', $item_names));    
+    
    
     $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
     $billing_email_address = $order->billing_email;
     $billing_street = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
     $billing_city = $order->billing_city;
     $billing_postalcode = $order->billing_postcode;
-    $billing_state = $order->billing_state;
-    $billing_country = $order->billing_country;
-    
-    if (is_numeric($this->org_id)) {
-      // We want to pass it as a string
-      $org_id_json = '"' . $this->org_id . '"';
-    } else {
-      // Probably bogus but maybe valid in the future
-      $org_id_json = json_encode($this->org_id);
-    }
-    $return_url_json = json_encode($return_url);
-    $final_item_name_json = json_encode($final_item_name);
-    $billing_full_name_json = json_encode($billing_full_name);
-    $billing_email_address_json = json_encode($billing_email_address);
-    $billing_street_json = json_encode($billing_street);
-    $billing_city_json = json_encode($billing_city);
-    $billing_postalcode_json = json_encode($billing_postalcode);
-    $billing_state_json = json_encode($billing_state);
-    $billing_country_json = json_encode($billing_country);
-
+    $billing_state = $order->billing_state;    
+    $billing_country = getISO3166_3_code($order->billing_country);
  ?>
  
   <div id="ps_container_id">
@@ -395,10 +369,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   </script>
 
   <div id="ps_checkout_load" style= " text-align: center" >
-  <label for="savePaymentMethod">
-  <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Payment Method"/>
-   Save This Payment Method 
-  </label>
   
   </div>  
   <script
@@ -413,7 +383,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-show="true"
     ps-viewCheckout="mobile"
     ps-paymentAmount="<?= $order->order_total ?>"
-    ps-paymentCurrency="USD"
     ps-viewClose="hide"
     ps-fixedAmount="true"
     ps-payerName="<?=$billing_full_name?>"
@@ -425,11 +394,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ps-payerAddressState = "<?=$billing_state?>"
     ps-payerAddressPostal = "<?=$billing_postalcode?>"
     ps-paymentMeta = '{ "order_id" : "<?=$order_id?>" }'
-  </script>
-    
-   <?php
-  
-    
+    ps-paymentCurrency =  "<?= $currency ?>"
+  </script>   
+
+   <script type="text/javascript">
+    psCheckout.onReady(function() {
+      psCheckout.onComplete( function() {
+        window.location.href = "<?= $return_url ?>" 
+      })
+    });     
+   </script> 
+   <?php      
   }
 
   function check_callback_data($post_data)
