@@ -559,20 +559,29 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $token->set_token($payment_source['id'] ); 
         $token->set_gateway_id( 'Paystand' );
         $token->set_last4( $payment_source['last4'] );
+        $token->set_user_id( $response['data']['meta']['user_id'] );
+        
         $token->set_expiry_year( $payment_source['expirationYear'] );
         $token->set_expiry_month( $payment_source['expirationMonth'] );
-        $token->set_card_type( $payment_source['brand'] );
-        $token->set_user_id( $response['data']['meta']['user_id'] );
+        $token->set_card_type( $payment_source['brand'] );        
         // Save the new token to the database
-        $this->log_message("Saving token...");        
+        $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
         $token->save();
         break;
-      case '':
+      case 'bank':  // Valid for ACH or ECheck
+        $token = new WC_Payment_Token_eCheck();     
+        $token->set_token($payment_source['id'] ); 
+        $token->set_gateway_id( 'Paystand' );
+        $token->set_user_id( $response['data']['meta']['user_id'] );
+        
+        $token->set_last4( $payment_source['last4'] );        
+        $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
+        $token->save();
+        break;
       default:
         $this->log_message("Unknown payment source cannot be handled: " . $payment_source['object']);
         break;
     }    
-    //TODO:  Add code to save the payment method depending depending on Card, ECheck, etc
   }
 
 
