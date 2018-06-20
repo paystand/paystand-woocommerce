@@ -427,6 +427,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         return false;
       }
 
+      $COMPLETED = "completed";
+      $FAILED = "failed";
       // get Authorization token
       $paystand_api_url = $this->get_paystand_api_url();
       $endpoint = $paystand_api_url . 'oauth/token';
@@ -502,7 +504,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           $this->log_message('check_callback_data GET_payments meta: ' . print_r($meta, true));
           $this->log_message('check_callback_data GET_payments order_id: ' . $meta->order_id);
 
-          if(!$this->isValidStatus($this->payment_status)){
+          if(!$this->isValidStatus($this->payment_status)){ // filter only COMPLETE and FAILED status
               $this->log_message('check_callback_data Invalid Order Status :' . $this->payment_status );
               return false;
           }
@@ -511,10 +513,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $order = false;
     if (isset($this->order_id)) {
       $order = new WC_Order($this->order_id);
-        if($order->get_status()==="completed" ||
-            $order->get_status()==="failed"){ // already is a COMPLETE or FAILED
+        if($order->get_status()===$COMPLETED){ // already is a COMPLETE
             $this->log_message('check_callback_data already processed :' . $this->payment_status );
             return false;
+        }
+        else if($order->get_status()===$FAILED){
+            if($this->payment_status===$FAILED){ // if already is FAILED but retry payment becomes COMPLETE
+                $this->log_message('check_callback_data already processed :' . $this->payment_status );
+                return false;
+            }
         }
     }
     if (!$order) {
