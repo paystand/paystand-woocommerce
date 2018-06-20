@@ -407,14 +407,33 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   </script>   
 
    <script type="text/javascript">
-    psCheckout.onReady(function() {
-      psCheckout.onComplete( function() {
+    psCheckout.onceLoaded(function() {
+      var prevent_multiple_calls = false;
+      psCheckout.onceComplete( function(result) {        
+        if(prevent_multiple_calls) {  return;  }
+        
+        prevent_multiple_calls = true;
         // TODO:  Check that payment was completed succesfully (not failed)        
         if (document.getElementById('savePaymentMethod').checked == true) {
-          // TODO:  If "remember me" option is selected, send request to WooCommerce to save card  
-        }
-        window.location.href = "<?= $return_url ?>" 
-      })
+          // If "remember me" option is selected, send request to WooCommerce to save card  
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+          xhr.setRequestHeader('Content-type', 'application/json');
+          xhr.onload = function () {                            
+            // We move to the "complete" screen once we get the response
+            window.location.href = "<?= $return_url ?>" ;
+          };
+
+          var data = {
+            object: "WC_Paystand_Event",
+            type:"save_payment",            
+            data: result.response.data
+          };
+          xhr.send(JSON.stringify(data));
+        } else {
+          window.location.href = "<?= $return_url ?>" ;
+        }    
+      });
     });     
    </script> 
    <?php      
@@ -526,6 +545,38 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
   /**
+   * Processes a callback from the frontend asking to save a payment method
+   */
+  function process_payment_save_callback($response){
+    if ($response["object"] != "WC_Paystand_Event" || $response["type"] != "save_payment") {
+      return;
+    }
+    $payment_source = $response['data']['source'];
+
+    switch($payment_source['object']) {
+      case 'card':
+        $token = new WC_Payment_Token_CC();      
+        $token->set_token($payment_source['id'] ); 
+        $token->set_gateway_id( 'Paystand' );
+        $token->set_last4( $payment_source['last4'] );
+        $token->set_expiry_year( $payment_source['expirationYear'] );
+        $token->set_expiry_month( $payment_source['expirationMonth'] );
+        $token->set_card_type( $payment_source['brand'] );
+        $token->set_user_id( $response['data']['meta']['user_id'] );
+        // Save the new token to the database
+        $this->log_message("Saving token...");        
+        $token->save();
+        break;
+      case '':
+      default:
+        $this->log_message("Unknown payment source cannot be handled: " . $payment_source['object']);
+        break;
+    }    
+    //TODO:  Add code to save the payment method depending depending on Card, ECheck, etc
+  }
+
+
+  /**
    * Handle callback from PayStand.
    *
    * @access public
@@ -543,6 +594,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     if (empty($response_webhook)) {
         $response_webhook = json_decode(file_get_contents("php://input"), true);
     }
+    
+    // If we got a WC_Paystand event, we process it separatedly from the standard callback objects
+    if($response_webhook['object'] == 'WC_Paystand_Event') {
+      $this->process_payment_save_callback($response_webhook);
+      return; 
+    }
+
     $this->log_message('WebHook call: ' . print_r($response_webhook->resource, true));
 
     if ($this->check_callback_data($response_webhook)) { // set status & order_id & fees
