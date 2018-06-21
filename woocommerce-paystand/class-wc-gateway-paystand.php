@@ -228,9 +228,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   /**
    * WooCommerce Function to render saved payment methods
    */
-  function payment_fields() {    
-    if (count($this->get_tokens()) > 0 ) {
-      $this->saved_payment_methods();
+  function payment_fields() {   
+    $this->log_message(print_r($_POST,true));  
+    if(isset($_POST['woocommerce_add_payment_method'])) {
+      ?> This Functionality is Not Supported <?php
+    } 
+    else {  
+      if (count($this->get_tokens()) > 0 ) {
+        $this->saved_payment_methods();
+      }
     }
   }
   /**
@@ -275,7 +281,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         'amount' => $order->order_total,        
         $id_key => $wc_payment_token->get_token(),
         'currency' => $currency = get_woocommerce_currency(),
-        'payerId' => ''
+        'payerId' => $wc_payment_token->get_meta('payerId')
       );
       
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
@@ -399,7 +405,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   function receipt_page($order_id)
   {
     $this->log_message('receipt_page order_id: ' . $order_id);    
-
     $order = new WC_Order($order_id);
     $paystand_url = $this->get_paystand_url();
     $user_id = get_current_user_id();
@@ -415,11 +420,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $billing_city = $order->billing_city;
     $billing_postalcode = $order->billing_postcode;
     $billing_state = $order->billing_state;    
-    $billing_country = getISO3166_3_code($order->billing_country);
- ?>
+    $billing_country = getISO3166_3_code($order->billing_country); ?>
  
   <div id="ps_container_id">
-
   <script type="text/javascript">
    // Move PayStand Div to the top of the page
    var psContainer = document.getElementById("ps_container_id");
@@ -471,8 +474,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           xhr.onload = function () {                            
             // We move to the "complete" screen once we get the response
             window.location.href = "<?= $return_url ?>" ;
-          };
-
+          };          
           var data = {
             object: "WC_Paystand_Event",
             type:"save_payment",            
@@ -587,6 +589,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $token->set_expiry_year( $payment_source['expirationYear'] );
         $token->set_expiry_month( $payment_source['expirationMonth'] );
         $token->set_card_type( $payment_source['brand'] );        
+        $token->add_meta_data('payerId', $response['data']['payerId']);
         // Save the new token to the database
         $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
         $token->save();
@@ -596,7 +599,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $token->set_token($payment_source['id'] ); 
         $token->set_gateway_id( 'Paystand' );
         $token->set_user_id( $response['data']['meta']['user_id'] );
-        
+        $token->add_meta_data('payerId', $response['data']['payerId']);
+
         $token->set_last4( $payment_source['last4'] );        
         $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
         $token->save();
