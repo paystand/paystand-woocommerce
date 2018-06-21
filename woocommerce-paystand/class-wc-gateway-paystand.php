@@ -81,7 +81,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->has_fields = true;
 
     // Add support for tokenization
-    $this->supports = array('tokenization');
+    $this->supports = array('tokenization','add_payment_method');
 
     // Note that this parallels the code in WC_Logger since we can't easily
     // get the file name from WC_Logger.
@@ -244,10 +244,62 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   {
     $this->log_message('process_payment order_id: ' . $order_id);
     $order = new WC_Order($order_id);
-    return array(
+    // If we do not have a selected token or the selected payment method is "new" 
+    if (!isset( $_POST['wc-paystand-payment-token']) || 'new' == $_POST['wc-paystand-payment-token']) {      
+      return array(
         'result' => 'success',
         'redirect' => $order->get_checkout_payment_url(true)
-    );
+      );  
+    }
+    else {
+      $this->log_message("Processing payment with saved payment method");
+      $wc_payment_token = WC_Payment_Tokens::get(wc_clean($_POST['wc-paystand-payment-token']));
+      
+      if ( $wc_payment_token->get_user_id() !== get_current_user_id() ) {
+        wc_add_notice(__("The Selected Payment Method is Invalid",'woocommerce-paystand'),'error');
+        return array(
+          'result' => 'failure',
+          'redirect' => $order->get_checkout_payment_url(true)
+        );  
+      }
+
+      $ps_access_token = $this->get_ps_api_token();
+    
+      // call POST Payments      
+      $header = array('Authorization' => 'Bearer '. $ps_access_token ,
+          'X-CUSTOMER-ID' => $this->customer_id,            
+          'Content-Type' => 'application/json'
+      );
+      $id_key = $wc_payment_token->get_type() == 'CC' ? 'cardId' : 'bankId';  
+      $body = array(
+        'amount' => $order->order_total,        
+        $id_key => $wc_payment_token->get_token(),
+        'currency' => $currency = get_woocommerce_currency(),
+        'payerId' => ''
+      );
+      
+      $endpoint = $this->get_paystand_api_url() . 'payments/secure';
+      try{          
+          $response = \Httpful\Request::post($endpoint)
+          ->addHeaders($header)
+          ->body(json_encode($body))
+          ->send();
+      } catch (Exception $e) {
+        $this->log_message('process_payment POST exception: ' . print_r($e, true));
+      }            
+      if($response->code!==200){
+          $this->log_message('process_payment POST error: ' . print_r($response->body, true));
+          return false;
+      }
+      else{          
+        return array(
+          'result' => 'success',
+          'redirect' => $order->get_checkout_order_received_url()
+        );  
+      }      
+    }
+
+    
   }
 
   /**
@@ -407,12 +459,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   </script>   
 
    <script type="text/javascript">
-    psCheckout.onceLoaded(function() {
-      var prevent_multiple_calls = false;
-      psCheckout.onceComplete( function(result) {        
-        if(prevent_multiple_calls) {  return;  }
-        
-        prevent_multiple_calls = true;
+    psCheckout.onceLoaded(function() {      
+      psCheckout.onceComplete( function(result) {                
+        //TODO:  It could be the case that the payment  is not successful... check response and do not send xhr
         // TODO:  Check that payment was completed succesfully (not failed)        
         if (document.getElementById('savePaymentMethod').checked == true) {
           // If "remember me" option is selected, send request to WooCommerce to save card  
@@ -448,41 +497,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
       $COMPLETED = "completed";
       $FAILED = "failed";
-      // get Authorization token
       $paystand_api_url = $this->get_paystand_api_url();
-      $endpoint = $paystand_api_url . 'oauth/token';
-      $grant_type = "client_credentials";
-      $request = array(
-        'grant_type' => $grant_type,
-        'client_id' => $this->client_id,
-        'client_secret' => $this->client_secret,
-        'scope' => 'auth'
-      );
-
-      $this->log_message('check_callback_data Access_Tokens endpoint: ' . $endpoint);
-      $this->log_message('check_callback_data Access_Tokens request: ' . print_r(json_encode($request), true));
-
-      $access_token = null;
-      // calling Rest Access Token
-      try{
-          $response = \Httpful\Request::post($endpoint)                  // Build a POST request...
-          ->sendsJson()                               // tell it we're sending (Content-Type) JSON...
-          ->body(json_encode($request))             // attach a body/payload...
-          ->send();
-      } catch (Exception $e) {
-          $this->log_message('check_callback_data Access_Tokens exception: ' . print_r($e, true));
-      }
-
-      $this->log_message('check_callback_data Access_Tokens response: ' . print_r($response->raw_body, true));
-
-      if($response->code!==200){ // Unauthorized or another error
-          $this->log_message('check_callback_data Access_Tokens error: '.print_r($response->body, true));
-          return false;
-      }
-      else {
-          $access_token = $response->body->access_token;
-      }
-
+      $access_token = $this->get_ps_api_token();
       // call GET Payments
       $endpoint = $paystand_api_url . 'payments/' . $post_data["sourceId"];
       $header = array('Authorization' => 'Bearer '. $access_token ,
@@ -559,7 +575,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       return;
     }
     $payment_source = $response['data']['source'];
-
+        
     switch($payment_source['object']) {
       case 'card':
         $token = new WC_Payment_Token_CC();      
@@ -685,7 +701,44 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    * Contains form and logic to add a payment method from the user's settings
    */
   function add_payment_method() {
+   //TODO: Add payment method from  $_POST request
+  }
 
+
+  /**
+   * Calls Paystand's API to retrieve an access token to execute authenticated API calls.
+   */
+  function get_ps_api_token() {
+    $paystand_api_url = $this->get_paystand_api_url();
+    $endpoint = $paystand_api_url . 'oauth/token';
+    $grant_type = "client_credentials";
+    $request = array(
+      'grant_type' => $grant_type,
+      'client_id' => $this->client_id,
+      'client_secret' => $this->client_secret,
+      'scope' => 'auth'
+    );
+
+    $access_token = null;
+    // calling Rest Access Token
+    try{
+        $response = \Httpful\Request::post($endpoint)                  // Build a POST request...
+        ->sendsJson()                               // tell it we're sending (Content-Type) JSON...
+        ->body(json_encode($request))             // attach a body/payload...
+        ->send();
+    } catch (Exception $e) {
+        $this->log_message('get_ps_api_token Access_Tokens exception: ' . print_r($e, true));
+    }
+
+    $this->log_message('get_ps_api_token Access_Tokens response: ' . print_r($response->raw_body, true));
+
+    if($response->code!==200){ // Unauthorized or another error
+        $this->log_message('get_ps_api_token Access_Tokens error: '.print_r($response->body, true));
+        return null;
+    }
+    else {      
+        return $response->body->access_token;
+    }
   }
 }
 
