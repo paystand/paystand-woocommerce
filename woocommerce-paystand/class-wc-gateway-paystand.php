@@ -281,7 +281,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         'amount' => $order->order_total,        
         $id_key => $wc_payment_token->get_token(),
         'currency' => $currency = get_woocommerce_currency(),
-        'payerId' => $wc_payment_token->get_meta('payerId')
+        'payerId' => $wc_payment_token->get_meta('payerId'),
+        'meta' => array(
+          'order_id' => $order_id ,
+          'user_id'  => get_current_user_id())
       );
       
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
