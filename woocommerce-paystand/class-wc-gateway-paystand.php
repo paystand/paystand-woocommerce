@@ -44,7 +44,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $customer_id;
   var $client_id;
   var $client_secret;
-  var $allow_auto_complete = false;
+  var $allow_auto_complete = true;
   var $auto_complete;
   var $log_file_hash;
   var $log_file_path;
@@ -672,10 +672,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
         $order->payment_complete();
         // pending to check where is set this configuration
-        //if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
-        $order->update_status('completed', 'Order auto-completed.');
-        $this->log_message('Order auto-completed: ' . $order_id);
-        //}
+        if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
+            $order->update_status('completed', 'Order auto-completed.');
+            $this->log_message('Order auto-completed: ' . $order_id);
+        }
     } else {
       $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
     }
