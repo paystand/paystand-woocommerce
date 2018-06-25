@@ -4,6 +4,7 @@
 //ini_set('display_errors', 1);
 
 include( plugin_dir_path( __FILE__ ) . 'includes/httpful.phar');
+include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutFactory.php');
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -24,7 +25,6 @@ limitations under the License.
 */
 
 
-include( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
 
 /**
  * PayStand Payment Gateway
@@ -231,7 +231,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   function payment_fields() {   
     $this->log_message(print_r($_POST,true));  
     if(isset($_POST['woocommerce_add_payment_method'])  ) {
-      $this->render_ps_checkout(null,'checkout_token');
+      $this->render_ps_checkout('checkout_token');
     }     
     else {
       
@@ -398,66 +398,29 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
 
-  function render_ps_checkout($order_id, $checkout_type) {
-    $paystand_url = $this->get_paystand_url();
-    $order = $order_id == null ? null : new WC_Order($order_id);
-    if ($order) {
-      $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
-      $billing_email_address = $order->billing_email;
-      $billing_street = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
-      $billing_city = $order->billing_city;
-      $billing_postalcode = $order->billing_postcode;
-      $billing_state =  $order->billing_state;    
-      $billing_country = getISO3166_3_code($order->billing_country); 
-      $return_url = $order->get_checkout_order_received_url();
-    }    
-  
-    $user_id = get_current_user_id();
-    $currency = get_woocommerce_currency();
-    ?>
- 
-    <div id="ps_container_id">
-    <label for= "savePaymentMethod">
-      <input type="checkbox" id="savePaymentMethod", name="savePaymentMethod" value="Save Pament Method"/>
-      Save This Payment Method
-    </label>
-    <script type="text/javascript">
-     // Move PayStand Div to the top of the page
-     var psContainer = document.getElementById("ps_container_id");
-     psContainer.parentNode.prepend(psContainer);  
-    </script>
-  
-    <div id="ps_checkout_load" style= " text-align: center" >
-    
-    </div>  
-    <script
-      type="text/javascript"
-      id="ps_checkout"
-      src="<?=$paystand_url?>js/paystand.checkout.js"
-      ps-viewLogo="hide"
-      ps-env="sandbox"
-      ps-publishableKey="<?= $this->publishable_key ?>"
-      ps-containerId="ps_container_id"
-      ps-mode="embed"
-      ps-show="true"
-      ps-checkoutType="<?=$checkout_type?>"
-      ps-viewCheckout="mobile"
-      ps-paymentAmount="<?= $order->order_total ?>"
-      ps-viewClose="hide"
-      ps-fixedAmount="true"
-      ps-payerName="<?=$billing_full_name?>"
-      ps-payerEmail="<?=$billing_email_address?>"
-      ps-spInterval="month"
-      ps-payerAddressStreet = "<?=$billing_street?>"
-      ps-payerAddressCity = "<?=$billing_city?>"
-      ps-payerAddressCountry = "<?=$billing_country?>"
-      ps-payerAddressState = "<?=$billing_state?>"
-      ps-payerAddressPostal = "<?=$billing_postalcode?>"
-      ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $user_id ?>" }'
-      ps-paymentCurrency =  "<?= $currency ?>">
-    </script>   
-    <?php
+  /*
+   *  $checkout_type - values can be checkout_payment|checkout_token|
+checkout_scheduled_payment|checkout_token2col
+   **/
+  function render_ps_checkout($checkout_type, $order_id = null,  $return_url = null) {
+
+      $order = $order_id == null ? null : new WC_Order($order_id);
+      $user_id = get_current_user_id();
+      $currency = get_woocommerce_currency();
+
+      $data['paystand_url']=$this->get_paystand_url();
+      $data['publishable_key']=$this->publishable_key;
+      $data['checkout_type']=$checkout_type;
+      $data['order']=$order;
+      $data['user_id']=$user_id;
+      $data['currency']=$currency;
+      $data['return_url']=$return_url;
+      $data['order_id']=$order_id;
+
+      $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
+      $ps_checkout->render();
   }
+
   /**
    * Output for the order received page.
    *
@@ -468,38 +431,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   {
     $this->log_message('receipt_page order_id: ' . $order_id);    
     $order = new WC_Order($order_id);
-    $paystand_url = $this->get_paystand_url();
     $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);    
-       
-    $this->render_ps_checkout($order_id,'checkout_payment');
- ?>
-   <script type="text/javascript">
-    psCheckout.onceLoaded(function() {      
-      psCheckout.onceComplete( function(result) {                
-        //TODO:  It could be the case that the payment  is not successful... check response and do not send xhr
-        // TODO:  Check that payment was completed succesfully (not failed)        
-        if (document.getElementById('savePaymentMethod').checked == true) {
-          // If "remember me" option is selected, send request to WooCommerce to save card  
-          var xhr = new XMLHttpRequest();
-          xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-          xhr.setRequestHeader('Content-type', 'application/json');
-          xhr.onload = function () {                            
-            // We move to the "complete" screen once we get the response
-            window.location.href = "<?= $return_url ?>" ;
-          };          
-          var data = {
-            object: "WC_Paystand_Event",
-            type:"save_payment",            
-            data: result.response.data
-          };
-          xhr.send(JSON.stringify(data));
-        } else {
-          window.location.href = "<?= $return_url ?>" ;
-        }    
-      });
-    });     
-   </script> 
-   <?php      
+
+    // build Paystand
+    $return_url = $order->get_checkout_order_received_url();
+
+    $this->render_ps_checkout('checkout_payment', $order_id, $return_url);
+
   }
 
   function check_callback_data($post_data)
