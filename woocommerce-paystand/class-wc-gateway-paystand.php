@@ -228,14 +228,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   /**
    * WooCommerce Function to render saved payment methods
    */
-  function payment_fields() {   
-    $this->log_message("Payment fields - ".  print_r($_POST,true));
-    if(isset($_POST['woocommerce_add_payment_method'])  ) {
-      $this->render_ps_checkout('checkout_token');
-    }     
-    else {
-        // must show during checkout
+  function payment_fields() {
+    $this->log_message(print_r($_POST,true));
+
+    // We only show the available payment methods during Checkout.
+    if (is_checkout()) {
       $this->saved_payment_methods();
+    } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
+      // During "add payment method" option, we render Paystand Checkout in Token Saving mode      
+      $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
     }
   }
   /**
@@ -415,7 +416,6 @@ checkout_scheduled_payment|checkout_token2col
       $data['order']=$order;
       $data['user_id']=$user_id;
       $data['currency']=$currency;
-      $data['return_url']=$return_url;
       $data['order_id']=$order_id;
 
       $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
