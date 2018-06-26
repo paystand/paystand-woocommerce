@@ -68,7 +68,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->has_fields = false;
     $this->title = __('PayStand (Credit Card, eCheck, ACH)', 'woocommerce-paystand');
     $this->method_title = $this->title;
-    $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or eCash (Bitcoin).";
+    $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or ACH.";
     $this->method_description = $this->description;
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
@@ -237,6 +237,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
       // During "add payment method" option, we render Paystand Checkout in Token Saving mode      
       $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
+    } else {
+      echo $this->description;
     }
   }
   /**
