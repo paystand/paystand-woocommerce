@@ -102,6 +102,7 @@ abstract class PaystandCheckout
                         var data = {
                             object: "WC_Paystand_Event",
                             type:"save_payment",
+                            user_id : "<?=$data['user_id'] ?>",
                             data: result.response.data
                         };
                         xhr.send(JSON.stringify(data));

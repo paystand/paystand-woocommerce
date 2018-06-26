@@ -526,52 +526,58 @@ checkout_scheduled_payment|checkout_token2col
    * Processes a callback from the frontend asking to save a payment method
    */
   function process_payment_save_callback($response){
-
-
+      
       $this->log_message('process_payment_save_callback -'. print_r($response, true));
-
-    if ($response["object"] != "WC_Paystand_Event" || $response["type"] != "save_payment") {
-      return;
-    }
-
-    $payment_source = $response['data']['source'];
-        
-    switch($payment_source['object']) {
-      case 'card':
-        $token = new WC_Payment_Token_CC();      
-        $token->set_token($payment_source['id'] ); 
-        $token->set_gateway_id( 'Paystand' );
-        $token->set_last4( $payment_source['last4'] );
-        $token->set_user_id( $response['data']['meta']['user_id'] );
-        
-        $token->set_expiry_year( $payment_source['expirationYear'] );
-        $token->set_expiry_month( $payment_source['expirationMonth'] );
-        $token->set_card_type( $payment_source['brand'] );        
-        $token->add_meta_data('payerId', $response['data']['payerId']);
-        // Save the new token to the database
-        $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
-        $token->save();
-        break;
-        case 'bank':  // Valid for ACH or ECheck
-            $token = new WC_Payment_Token_eCheck();
-            $token->set_token($payment_source['id'] );
-            $token->set_gateway_id( 'Paystand' );
-            $token->set_user_id( $response['data']['meta']['user_id'] );
-            $token->add_meta_data('payerId', $response['data']['payerId']);
-
-            $token->set_last4( $payment_source['last4'] );
-            $this->log_message("Saving token... with last four: " . $payment_source['last4']);
-            $token->save();
-        break;
-        case 'token':
-
-        break;
-        default:
-        $this->log_message("Unknown payment source cannot be handled: " . $payment_source['object']);
-        break;
-    }    
+      
+      if ($response["object"] != "WC_Paystand_Event" || $response["type"] != "save_payment") {
+          return;
+      }
+      
+      // token
+      if($response['data']['object'] === 'token' ){
+        $payment_source = $response['data'][empty($response['data']['card']) ? 'bank' : 'card'];
+      }
+      else{ // bank, echeck
+          $payment_source = $response['data']['source'];
+      }
+      
+      $token_type = $payment_source['object'];
+      $this->saveToken($token_type, $payment_source, $response);
   }
-
+  
+  /**
+   * save token for add payment methods
+   **/
+  private function saveToken($token_type, $payment_source, $response){
+      
+      $token = null;
+      
+      switch($token_type){
+          case 'card':
+              $token = new WC_Payment_Token_CC();
+              $token->set_expiry_year( $payment_source['expirationYear'] );
+              $token->set_expiry_month( $payment_source['expirationMonth'] );
+              $token->set_card_type( $payment_source['brand'] );
+              break;
+          case 'bank':
+              $token = new WC_Payment_Token_eCheck();
+              break;
+          default: 
+              $this->log_message("Unknown payment source cannot be handled: " . $token_type);
+              return;
+              break;
+      }
+      
+      $token->set_token($payment_source['id'] );
+      $token->set_gateway_id( 'Paystand' );
+      $token->set_user_id( $response['user_id'] );
+      $token->add_meta_data('payerId', $response['data']['payerId']);
+      
+      $token->set_last4( $payment_source['last4'] );
+      $this->log_message("Saving token... with last four: " . $payment_source['last4']);
+      $token->save();
+  }
+  
 
   /**
    * Handle callback from PayStand.
