@@ -14,4 +14,14 @@ class PaystandCheckoutToken extends PaystandCheckout
         parent::__construct($type , $data, $return_url);
     }
 
+    public function render_header(){
+        ?>
+        <label for= "savePaymentMethod" style ="text-align: center; visibility: hidden;">
+            <input type="checkbox" checked id="savePaymentMethod" name="savePaymentMethod" value="Save Pament Method"/>
+            Save This Payment Method
+        </label>
+        <?php
+        parent::render_header();
+
+    }
 }

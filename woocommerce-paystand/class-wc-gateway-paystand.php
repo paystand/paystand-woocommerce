@@ -229,12 +229,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    * WooCommerce Function to render saved payment methods
    */
   function payment_fields() {   
-    $this->log_message(print_r($_POST,true));  
+    $this->log_message("Payment fields - ".  print_r($_POST,true));
     if(isset($_POST['woocommerce_add_payment_method'])  ) {
       $this->render_ps_checkout('checkout_token');
     }     
     else {
-      
+        // must show during checkout
+      $this->saved_payment_methods();
     }
   }
   /**
@@ -523,9 +524,14 @@ checkout_scheduled_payment|checkout_token2col
    * Processes a callback from the frontend asking to save a payment method
    */
   function process_payment_save_callback($response){
+
+
+      $this->log_message('process_payment_save_callback -'. print_r($response, true));
+
     if ($response["object"] != "WC_Paystand_Event" || $response["type"] != "save_payment") {
       return;
     }
+
     $payment_source = $response['data']['source'];
         
     switch($payment_source['object']) {
@@ -544,18 +550,21 @@ checkout_scheduled_payment|checkout_token2col
         $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
         $token->save();
         break;
-      case 'bank':  // Valid for ACH or ECheck
-        $token = new WC_Payment_Token_eCheck();     
-        $token->set_token($payment_source['id'] ); 
-        $token->set_gateway_id( 'Paystand' );
-        $token->set_user_id( $response['data']['meta']['user_id'] );
-        $token->add_meta_data('payerId', $response['data']['payerId']);
+        case 'bank':  // Valid for ACH or ECheck
+            $token = new WC_Payment_Token_eCheck();
+            $token->set_token($payment_source['id'] );
+            $token->set_gateway_id( 'Paystand' );
+            $token->set_user_id( $response['data']['meta']['user_id'] );
+            $token->add_meta_data('payerId', $response['data']['payerId']);
 
-        $token->set_last4( $payment_source['last4'] );        
-        $this->log_message("Saving token... with last four: " . $payment_source['last4']);        
-        $token->save();
+            $token->set_last4( $payment_source['last4'] );
+            $this->log_message("Saving token... with last four: " . $payment_source['last4']);
+            $token->save();
         break;
-      default:
+        case 'token':
+
+        break;
+        default:
         $this->log_message("Unknown payment source cannot be handled: " . $payment_source['object']);
         break;
     }    

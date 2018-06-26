@@ -38,6 +38,7 @@ abstract class PaystandCheckout
 
         $data = $this->data;
         $order = $data['order'];
+        $return_url = $this->return_url;
 
         if ($order) {
             $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
