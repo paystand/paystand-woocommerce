@@ -668,5 +668,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
     return $response->body->access_token;
   }
+  /**
+   * This function is required by WooCommerce to be here even if it is empty
+   * otherwise user gets a "unable to add a payment method" message when trying
+   * to add a payment method
+   */
+  function add_payment_method() {
+     $this->log_message("Added new payment Method");
+   }
 }
 
