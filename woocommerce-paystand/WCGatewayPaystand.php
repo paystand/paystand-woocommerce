@@ -51,6 +51,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $payment_status = null;
   var $order_id = null;
   var $paystand_fee = null;
+  var $transaction_id = null;
 
   /**
    * Constructor for the gateway.
@@ -444,7 +445,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $this->log_message('check_callback_data GET_payments endpoint: ' . $endpoint);
       $this->log_message('check_callback_data GET_payments request headers: ' . print_r( $header, true));
 
-      $transaction_id = null;
       $order_id = null;
       try{
           $response = \Httpful\Request::get($endpoint)->addHeaders($header)->send();
@@ -458,7 +458,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           return false;
       }
 
-      $transaction_id = $response->body->id;
+      $this->transaction_id = $response->body->id;
       $meta = $response->body->meta;
       $this->order_id = $meta->order_id;
       $this->payment_status = $response->body->status;
@@ -477,7 +477,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $order = false;
     if (isset($this->order_id)) {
       $order = new WC_Order($this->order_id);
-      if($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING){ // already is a COMPLETE
+      if($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING){ // already is a COMPLETE or PROCESSING
           $this->log_message('check_callback_data already processed :' . $this->payment_status );
           return false;
       }
@@ -628,7 +628,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $total += $fee;
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
         $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
-        $order->payment_complete();
+        $order->payment_complete($this->transaction_id);
         // pending to check where is set this configuration
         if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
             $order->update_status('completed', 'Order auto-completed.');
