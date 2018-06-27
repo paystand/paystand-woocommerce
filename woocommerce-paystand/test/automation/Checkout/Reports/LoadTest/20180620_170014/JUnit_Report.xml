@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="LoadTest" time="123" tests="2" failures="0" errors="0">
+   <testsuite name="LoadTest" tests="2" failures="0" errors="0" time="123" timestamp="2018-06-20 17:00:16" hostname="aldo - 10.2.20.110" id="Test Suites/LoadTest">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_170014"/>
+         <property name="logFiles" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_170014/execution0.log"/>
+         <property name="attachments" value=""/>
+         <property name="hostName" value="aldo - 10.2.20.110"/>
+         <property name="os" value="Mac OS X 64bit"/>
+         <property name="katalonVersion" value="5.4.2.1"/>
+         <property name="browser" value="Chrome 67.0.3396.87"/>
+         <property name="hostAddress" value="10.2.20.110"/>
+         <property name="sessionId" value="b0e37526763161f44f6b2cd3d312fe3b"/>
+         <property name="seleniumVersion" value="3.7.1"/>
+         <property name="proxyInformation" value="ProxyInformation{proxyOption=NO_PROXY, proxyServerType=HTTP, password=, proxyServerAddress=, proxyServerPort=0}"/>
+         <property name="platform" value="Mac OS X"/>
+      </properties>
+      <testcase name="Test Cases/Create Order" classname="Test Cases/Create Order" status="PASSED">
+         <system-out><![CDATA[2018-06-20 17:00:16 - [TEST_CASE][PASSED] - Test Cases/Create Order: Test Cases/Create Order
+
+2018-06-20 17:00:16 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-20 17:00:18 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-20 17:00:18 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 17:00:19 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 17:00:19 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 17:00:19 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 17:00:19 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 17:00:24 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 17:00:24 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 17:00:25 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 17:00:25 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 17:00:25 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 17:00:25 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 17:00:30 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 17:00:30 - [TEST_STEP][PASSED] - setText: Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - setText: Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - setText: Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - setText: Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - setText: Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' is clicked on
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' is clicked on
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - sendKeys: Keys 'JALISCO' sent to object: 'tempBody'
+
+2018-06-20 17:00:31 - [MESSAGE][WARNING] - Test object id is null
+
+2018-06-20 17:00:31 - [MESSAGE][WARNING] - Test object with id 'Object Repository/' does not exist
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Keys 'JALISCO' sent to object: 'tempBody'
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/li_Jalisco' is clicked on
+
+2018-06-20 17:00:31 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/li_Jalisco' is clicked on
+
+2018-06-20 17:00:31 - [TEST_STEP][PASSED] - setText: Text '42000' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_postcode'
+
+2018-06-20 17:00:32 - [MESSAGE][PASSED] - Text '42000' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_postcode'
+
+2018-06-20 17:00:32 - [TEST_STEP][PASSED] - setText: Text '332445155' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_phone'
+
+2018-06-20 17:00:32 - [MESSAGE][PASSED] - Text '332445155' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_phone'
+
+2018-06-20 17:00:32 - [TEST_STEP][PASSED] - setText: Text 'avaldez@paystand.com' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_email'
+
+2018-06-20 17:00:32 - [MESSAGE][PASSED] - Text 'avaldez@paystand.com' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_email'
+
+2018-06-20 17:00:32 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/label_PayStand (Credit Card eC' is clicked on
+
+2018-06-20 17:00:32 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/label_PayStand (Credit Card eC' is clicked on
+
+2018-06-20 17:00:32 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay With Paystand' is clicked on
+
+2018-06-20 17:00:32 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay With Paystand' is clicked on
+
+2018-06-20 17:00:32 - [TEST_STEP][PASSED] - delay: Delayed 15 second(s)
+
+2018-06-20 17:00:47 - [MESSAGE][PASSED] - Delayed 15 second(s)
+
+2018-06-20 17:00:47 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Card' is clicked on
+
+2018-06-20 17:00:47 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Card' is clicked on
+
+2018-06-20 17:00:47 - [TEST_STEP][PASSED] - setText: Text '4242 4242 4242 4242' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_number'
+
+2018-06-20 17:00:48 - [MESSAGE][PASSED] - Text '4242 4242 4242 4242' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_number'
+
+2018-06-20 17:00:48 - [TEST_STEP][PASSED] - setText: Text '12 / 21' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_expiry'
+
+2018-06-20 17:00:48 - [MESSAGE][PASSED] - Text '12 / 21' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_expiry'
+
+2018-06-20 17:00:48 - [TEST_STEP][PASSED] - setText: Text '123' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_security_code'
+
+2018-06-20 17:00:48 - [MESSAGE][PASSED] - Text '123' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_security_code'
+
+2018-06-20 17:00:48 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Enter Billing Informati' is clicked on
+
+2018-06-20 17:00:49 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Enter Billing Informati' is clicked on
+
+2018-06-20 17:00:49 - [TEST_STEP][PASSED] - setText: Text 'jalisco' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_address_state'
+
+2018-06-20 17:00:49 - [MESSAGE][PASSED] - Text 'jalisco' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_address_state'
+
+2018-06-20 17:00:49 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/span_Jalisco' is clicked on
+
+2018-06-20 17:00:50 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/span_Jalisco' is clicked on
+
+2018-06-20 17:00:50 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay 30.99 USD' is clicked on
+
+2018-06-20 17:00:50 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay 30.99 USD' is clicked on
+
+2018-06-20 17:00:50 - [TEST_STEP][PASSED] - delay: Delayed 15 second(s)
+
+2018-06-20 17:01:05 - [MESSAGE][PASSED] - Delayed 15 second(s)
+
+2018-06-20 17:01:05 - [TEST_STEP][PASSED] - verifyElementPresent: Object 'Object Repository/Page_Checkout  Casa Bonita/p_Thank you. Your order has be' is present
+
+2018-06-20 17:01:05 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+2018-06-20 17:01:06 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Checkout  Casa Bonita/p_Thank you. Your order has be' is present
+
+2018-06-20 17:01:06 - [TEST_STEP][PASSED] - delay: Delayed 10 second(s)
+
+2018-06-20 17:01:16 - [MESSAGE][PASSED] - Delayed 10 second(s)
+
+2018-06-20 17:01:16 - [TEST_STEP][PASSED] - closeBrowser: Browser is closed
+
+2018-06-20 17:01:16 - [MESSAGE][PASSED] - Browser is closed]]></system-out>
+         <system-err><![CDATA[]]></system-err>
+      </testcase>
+      <testcase name="Test Cases/Create OrderTwo" classname="Test Cases/Create OrderTwo" status="PASSED">
+         <system-out><![CDATA[2018-06-20 17:01:16 - [TEST_CASE][PASSED] - Test Cases/Create OrderTwo: Test Cases/Create OrderTwo
+
+2018-06-20 17:01:16 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-20 17:01:17 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-20 17:01:17 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 17:01:18 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 17:01:18 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 17:01:18 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 17:01:18 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 17:01:23 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 17:01:23 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 17:01:24 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 17:01:24 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 17:01:24 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 17:01:24 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 17:01:29 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 17:01:29 - [TEST_STEP][PASSED] - setText: Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - setText: Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - setText: Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - setText: Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - setText: Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' is clicked on
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' is clicked on
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - sendKeys: Keys 'JALISCO' sent to object: 'tempBody'
+
+2018-06-20 17:01:30 - [MESSAGE][WARNING] - Test object id is null
+
+2018-06-20 17:01:30 - [MESSAGE][WARNING] - Test object with id 'Object Repository/' does not exist
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Keys 'JALISCO' sent to object: 'tempBody'
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/li_Jalisco' is clicked on
+
+2018-06-20 17:01:30 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/li_Jalisco' is clicked on
+
+2018-06-20 17:01:30 - [TEST_STEP][PASSED] - setText: Text '42000' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_postcode'
+
+2018-06-20 17:01:31 - [MESSAGE][PASSED] - Text '42000' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_postcode'
+
+2018-06-20 17:01:31 - [TEST_STEP][PASSED] - setText: Text '332445155' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_phone'
+
+2018-06-20 17:01:31 - [MESSAGE][PASSED] - Text '332445155' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_phone'
+
+2018-06-20 17:01:31 - [TEST_STEP][PASSED] - setText: Text 'avaldez@paystand.com' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_email'
+
+2018-06-20 17:01:31 - [MESSAGE][PASSED] - Text 'avaldez@paystand.com' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_email'
+
+2018-06-20 17:01:31 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/label_PayStand (Credit Card eC' is clicked on
+
+2018-06-20 17:01:31 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/label_PayStand (Credit Card eC' is clicked on
+
+2018-06-20 17:01:31 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay With Paystand' is clicked on
+
+2018-06-20 17:01:31 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay With Paystand' is clicked on
+
+2018-06-20 17:01:31 - [TEST_STEP][PASSED] - delay: Delayed 15 second(s)
+
+2018-06-20 17:01:46 - [MESSAGE][PASSED] - Delayed 15 second(s)
+
+2018-06-20 17:01:46 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Card' is clicked on
+
+2018-06-20 17:01:46 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Card' is clicked on
+
+2018-06-20 17:01:46 - [TEST_STEP][PASSED] - setText: Text '4242 4242 4242 4242' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_number'
+
+2018-06-20 17:01:47 - [MESSAGE][PASSED] - Text '4242 4242 4242 4242' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_number'
+
+2018-06-20 17:01:47 - [TEST_STEP][PASSED] - setText: Text '12 / 21' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_expiry'
+
+2018-06-20 17:01:47 - [MESSAGE][PASSED] - Text '12 / 21' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_expiry'
+
+2018-06-20 17:01:47 - [TEST_STEP][PASSED] - setText: Text '123' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_security_code'
+
+2018-06-20 17:01:47 - [MESSAGE][PASSED] - Text '123' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_card_security_code'
+
+2018-06-20 17:01:47 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Enter Billing Informati' is clicked on
+
+2018-06-20 17:01:48 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Enter Billing Informati' is clicked on
+
+2018-06-20 17:01:48 - [TEST_STEP][PASSED] - setText: Text 'jalisco' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_address_state'
+
+2018-06-20 17:01:48 - [MESSAGE][PASSED] - Text 'jalisco' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_address_state'
+
+2018-06-20 17:01:48 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/span_Jalisco' is clicked on
+
+2018-06-20 17:01:49 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/span_Jalisco' is clicked on
+
+2018-06-20 17:01:49 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay 30.99 USD' is clicked on
+
+2018-06-20 17:01:49 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Checkout  Casa Bonita/button_Pay 30.99 USD' is clicked on
+
+2018-06-20 17:01:49 - [TEST_STEP][PASSED] - delay: Delayed 15 second(s)
+
+2018-06-20 17:02:04 - [MESSAGE][PASSED] - Delayed 15 second(s)
+
+2018-06-20 17:02:04 - [TEST_STEP][PASSED] - verifyElementPresent: Object 'Object Repository/Page_Checkout  Casa Bonita/p_Thank you. Your order has be' is present
+
+2018-06-20 17:02:04 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+2018-06-20 17:02:09 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Checkout  Casa Bonita/p_Thank you. Your order has be' is present
+
+2018-06-20 17:02:09 - [TEST_STEP][PASSED] - delay: Delayed 10 second(s)
+
+2018-06-20 17:02:19 - [MESSAGE][PASSED] - Delayed 10 second(s)
+
+2018-06-20 17:02:19 - [TEST_STEP][PASSED] - closeBrowser: Browser is closed
+
+2018-06-20 17:02:19 - [MESSAGE][PASSED] - Browser is closed]]></system-out>
+         <system-err><![CDATA[]]></system-err>
+      </testcase>
+      <system-out><![CDATA[2018-06-20 17:00:16 - [TEST_SUITE][PASSED] - LoadTest: Test Cases/Create OrderTwo]]></system-out>
+      <system-err><![CDATA[]]></system-err>
+   </testsuite>
+</testsuites>

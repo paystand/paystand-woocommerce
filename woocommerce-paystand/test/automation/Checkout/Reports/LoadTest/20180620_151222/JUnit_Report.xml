@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="LoadTest" time="2" tests="0" failures="1" errors="0">
+   <testsuite name="LoadTest" tests="0" failures="1" errors="0" time="2" timestamp="2018-06-20 15:12:23" hostname="aldo - 10.2.20.110" id="Test Suites/LoadTest">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_151222"/>
+         <property name="logFiles" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_151222/execution0.log"/>
+         <property name="attachments" value=""/>
+         <property name="hostName" value="aldo - 10.2.20.110"/>
+         <property name="hostAddress" value="10.2.20.110"/>
+         <property name="os" value="Mac OS X 64bit"/>
+         <property name="katalonVersion" value="5.4.2.1"/>
+      </properties>
+      <testcase name="Test Cases/Create Order" classname="Test Cases/Create Order" status="FAILED">
+         <failure type="FAILED" message="Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)"/>
+         <system-out><![CDATA[2018-06-20 15:12:23 - [TEST_CASE][FAILED] - Test Cases/Create Order: Test Cases/Create Order FAILED because (of) Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)
+
+2018-06-20 15:12:23 - [TEST_STEP][FAILED] - openBrowser: Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)
+
+2018-06-20 15:12:25 - [MESSAGE][FAILED] - Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)]]></system-out>
+         <system-err><![CDATA[2018-06-20 15:12:23 - [TEST_CASE][FAILED] - Test Cases/Create Order: Test Cases/Create Order FAILED because (of) Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)]]></system-err>
+      </testcase>
+      <system-out><![CDATA[2018-06-20 15:12:23 - [TEST_SUITE][FAILED] - LoadTest: Test Cases/Create Order FAILED because (of) Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)]]></system-out>
+      <system-err><![CDATA[2018-06-20 15:12:23 - [TEST_SUITE][FAILED] - LoadTest: Test Cases/Create Order FAILED because (of) Unable to open browser with url: '' (Root cause: org.openqa.selenium.SessionNotCreatedException: Could not create a session: You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver. (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 225 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: driver.version: CSafariDriver)]]></system-err>
+   </testsuite>
+</testsuites>

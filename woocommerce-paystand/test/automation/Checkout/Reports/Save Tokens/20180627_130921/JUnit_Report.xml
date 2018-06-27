@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Save Tokens" time="101" tests="0" failures="3" errors="0">
+   <testsuite name="Save Tokens" tests="0" failures="3" errors="0" time="101" timestamp="2018-06-27 13:09:23" hostname="aldo - 10.2.20.29" id="Test Suites/Save Tokens">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921"/>
+         <property name="logFiles" value="/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/execution0.log"/>
+         <property name="attachments" value="/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530122997295.png, /Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530123030252.png, /Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530123063582.png"/>
+         <property name="hostName" value="aldo - 10.2.20.29"/>
+         <property name="os" value="Mac OS X 64bit"/>
+         <property name="katalonVersion" value="5.4.2.1"/>
+         <property name="browser" value="Chrome 67.0.3396.99"/>
+         <property name="hostAddress" value="10.2.20.29"/>
+         <property name="sessionId" value="95304b333b3f39a4157f1c2a196bbb4a"/>
+         <property name="seleniumVersion" value="3.7.1"/>
+         <property name="proxyInformation" value="ProxyInformation{proxyOption=NO_PROXY, proxyServerType=HTTP, password=, proxyServerAddress=, proxyServerPort=0}"/>
+         <property name="platform" value="Mac OS X"/>
+      </properties>
+      <testcase name="Test Cases/Add CC" classname="Test Cases/Add CC" status="FAILED">
+         <failure type="FAILED" message="Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)"/>
+         <system-out><![CDATA[2018-06-27 13:09:23 - [TEST_CASE][FAILED] - Test Cases/Add CC: Test Cases/Add CC FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:09:23 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-27 13:09:25 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-27 13:09:25 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:09:26 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:09:26 - [TEST_STEP][FAILED] - setText: Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:09:57 - [MESSAGE][FAILED] - Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+[[ATTACHMENT|/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530122997295.png]]]]></system-out>
+         <system-err><![CDATA[2018-06-27 13:09:23 - [TEST_CASE][FAILED] - Test Cases/Add CC: Test Cases/Add CC FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)]]></system-err>
+      </testcase>
+      <testcase name="Test Cases/Add ACH" classname="Test Cases/Add ACH" status="FAILED">
+         <failure type="FAILED" message="Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (5)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (5)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)"/>
+         <system-out><![CDATA[2018-06-27 13:09:57 - [TEST_CASE][FAILED] - Test Cases/Add ACH: Test Cases/Add ACH FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (5)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (5)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:09:57 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-27 13:09:57 - [MESSAGE][WARNING] - A browser is already opened. Closing browser and opening a new one
+
+2018-06-27 13:09:58 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-27 13:09:58 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:09:59 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:09:59 - [TEST_STEP][FAILED] - setText: Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (5)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (5)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:10:30 - [MESSAGE][FAILED] - Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (5)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (5)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+[[ATTACHMENT|/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530123030252.png]]]]></system-out>
+         <system-err><![CDATA[2018-06-27 13:09:57 - [TEST_CASE][FAILED] - Test Cases/Add ACH: Test Cases/Add ACH FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (5)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (5)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)]]></system-err>
+      </testcase>
+      <testcase name="Test Cases/Add Bank Account" classname="Test Cases/Add Bank Account" status="FAILED">
+         <failure type="FAILED" message="Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (4)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (4)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)"/>
+         <system-out><![CDATA[2018-06-27 13:10:30 - [TEST_CASE][FAILED] - Test Cases/Add Bank Account: Test Cases/Add Bank Account FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (4)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (4)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:10:31 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-27 13:10:31 - [MESSAGE][WARNING] - A browser is already opened. Closing browser and opening a new one
+
+2018-06-27 13:10:31 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-27 13:10:31 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:10:32 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-27 13:10:32 - [TEST_STEP][FAILED] - setText: Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (4)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (4)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+
+2018-06-27 13:11:04 - [MESSAGE][FAILED] - Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (4)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (4)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)
+[[ATTACHMENT|/Users/aldo/Katalon Studio/Checkout/Reports/Save Tokens/20180627_130921/1530123063582.png]]]]></system-out>
+         <system-err><![CDATA[2018-06-27 13:10:30 - [TEST_CASE][FAILED] - Test Cases/Add Bank Account: Test Cases/Add Bank Account FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress (4)/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress (4)/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)]]></system-err>
+      </testcase>
+      <system-out><![CDATA[2018-06-27 13:09:23 - [TEST_SUITE][FAILED] - Save Tokens: Test Cases/Add CC FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)]]></system-out>
+      <system-err><![CDATA[2018-06-27 13:09:23 - [TEST_SUITE][FAILED] - Save Tokens: Test Cases/Add CC FAILED because (of) Unable to set text 'aldo' of object 'Object Repository/Page_My Account  MyWordpress/input_username' (Root cause: com.kms.katalon.core.webui.exception.WebElementNotFoundException: Web element with id: 'Object Repository/Page_My Account  MyWordpress/input_username' located by 'By.xpath: //input[@type = 'text' and @name = 'username' and @id = 'username']' not found)]]></system-err>
+   </testsuite>
+</testsuites>

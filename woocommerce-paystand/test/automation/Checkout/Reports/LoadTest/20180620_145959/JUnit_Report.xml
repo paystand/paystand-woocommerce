@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="LoadTest" time="15" tests="0" failures="1" errors="0">
+   <testsuite name="LoadTest" tests="0" failures="1" errors="0" time="15" timestamp="2018-06-20 15:00:00" hostname="aldo - 10.2.20.110" id="Test Suites/LoadTest">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_145959"/>
+         <property name="logFiles" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_145959/execution0.log"/>
+         <property name="attachments" value="/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_145959/1529524816315.png"/>
+         <property name="hostName" value="aldo - 10.2.20.110"/>
+         <property name="os" value="Mac OS X 64bit"/>
+         <property name="katalonVersion" value="5.4.2.1"/>
+         <property name="browser" value="Chrome 67.0.3396.87"/>
+         <property name="hostAddress" value="10.2.20.110"/>
+         <property name="sessionId" value="130fe7337d515b401c3985d84eae2c03"/>
+         <property name="seleniumVersion" value="3.7.1"/>
+         <property name="proxyInformation" value="ProxyInformation{proxyOption=NO_PROXY, proxyServerType=HTTP, password=, proxyServerAddress=, proxyServerPort=0}"/>
+         <property name="platform" value="Mac OS X"/>
+      </properties>
+      <testcase name="Test Cases/Create Order" classname="Test Cases/Create Order" status="FAILED">
+         <failure type="FAILED" message="Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)"/>
+         <system-out><![CDATA[2018-06-20 15:00:01 - [TEST_CASE][FAILED] - Test Cases/Create Order: Test Cases/Create Order FAILED because (of) Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)
+
+2018-06-20 15:00:01 - [TEST_STEP][PASSED] - openBrowser: Browser is opened with url: ''
+
+2018-06-20 15:00:03 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+2018-06-20 15:00:03 - [TEST_STEP][PASSED] - navigateToUrl: Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 15:00:04 - [MESSAGE][PASSED] - Navigate to 'http://wordpress.paystand.ml/shop/' successfully
+
+2018-06-20 15:00:04 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 15:00:04 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_Add to cart' is clicked on
+
+2018-06-20 15:00:04 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 15:00:09 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 15:00:09 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 15:00:09 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Products  Casa Bonita/a_View cart' is clicked on
+
+2018-06-20 15:00:09 - [TEST_STEP][PASSED] - click: Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 15:00:10 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Cart  Casa Bonita/a_Proceed to checkout' is clicked on
+
+2018-06-20 15:00:10 - [TEST_STEP][PASSED] - delay: Delayed 5 second(s)
+
+2018-06-20 15:00:15 - [MESSAGE][PASSED] - Delayed 5 second(s)
+
+2018-06-20 15:00:15 - [TEST_STEP][PASSED] - setText: Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 15:00:15 - [MESSAGE][PASSED] - Text 'ALDO' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_first_name'
+
+2018-06-20 15:00:15 - [TEST_STEP][PASSED] - setText: Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 15:00:15 - [MESSAGE][PASSED] - Text 'VALDEZ' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_last_name'
+
+2018-06-20 15:00:15 - [TEST_STEP][PASSED] - setText: Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 15:00:15 - [MESSAGE][PASSED] - Text 'PAYSTAND' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_company'
+
+2018-06-20 15:00:15 - [TEST_STEP][PASSED] - setText: Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 15:00:16 - [MESSAGE][PASSED] - Text 'STREET' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_address_1'
+
+2018-06-20 15:00:16 - [TEST_STEP][PASSED] - setText: Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 15:00:16 - [MESSAGE][PASSED] - Text 'GUADALAJARA' is set on object 'Object Repository/Page_Checkout  Casa Bonita/input_billing_city'
+
+2018-06-20 15:00:16 - [TEST_STEP][FAILED] - click: Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)
+
+2018-06-20 15:00:16 - [MESSAGE][FAILED] - Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)
+[[ATTACHMENT|/Users/aldo/Katalon Studio/Checkout/Reports/LoadTest/20180620_145959/1529524816315.png]]]]></system-out>
+         <system-err><![CDATA[2018-06-20 15:00:01 - [TEST_CASE][FAILED] - Test Cases/Create Order: Test Cases/Create Order FAILED because (of) Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)]]></system-err>
+      </testcase>
+      <system-out><![CDATA[2018-06-20 15:00:00 - [TEST_SUITE][FAILED] - LoadTest: Test Cases/Create Order FAILED because (of) Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)]]></system-out>
+      <system-err><![CDATA[2018-06-20 15:00:00 - [TEST_SUITE][FAILED] - LoadTest: Test Cases/Create Order FAILED because (of) Unable to click on object 'Object Repository/Page_Checkout  Casa Bonita/span_select2-selection select2' (Root cause: org.openqa.selenium.ElementNotVisibleException: element not visible
+  (Session info: chrome=67.0.3396.87)
+  (Driver info: chromedriver=2.35.528157 (4429ca2590d6988c0745c24c8858745aaaec01ef),platform=Mac OS X 10.13.2 x86_64) (WARNING: The server did not provide any stacktrace information)
+Command duration or timeout: 0 milliseconds
+Build info: version: '3.7.1', revision: '8a0099a', time: '2017-11-06T21:07:36.161Z'
+System info: host: 'MacBook-Pro-3.local', ip: 'fe80:0:0:0:1c31:dee2:b5d:31ae%en0', os.name: 'Mac OS X', os.arch: 'x86_64', os.version: '10.13.2', java.version: '1.8.0_102'
+Driver info: com.kms.katalon.selenium.driver.CChromeDriver
+Capabilities {acceptInsecureCerts: false, acceptSslCerts: false, applicationCacheEnabled: false, browserConnectionEnabled: false, browserName: chrome, chrome: {chromedriverVersion: 2.35.528157 (4429ca2590d698..., userDataDir: /var/folders/z1/_3h4ccq537n...}, cssSelectorsEnabled: true, databaseEnabled: false, handlesAlerts: true, hasTouchScreen: false, javascriptEnabled: true, locationContextEnabled: true, mobileEmulationEnabled: false, nativeEvents: true, networkConnectionEnabled: false, pageLoadStrategy: normal, platform: MAC, platformName: MAC, rotatable: false, setWindowRect: true, takesHeapSnapshot: true, takesScreenshot: true, unexpectedAlertBehaviour: , unhandledPromptBehavior: , version: 67.0.3396.87, webStorageEnabled: true}
+Session ID: 130fe7337d515b401c3985d84eae2c03)]]></system-err>
+   </testsuite>
+</testsuites>
