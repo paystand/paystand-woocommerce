@@ -125,7 +125,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
 
-    $this->enabled = $this->is_valid_for_use() ? true : false;
+    $this->enabled = $this->is_valid_for_use() ? 'yes' : 'no';
   }
 
   // Adds a text to the WordPress log object if it is defined
