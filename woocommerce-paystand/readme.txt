@@ -3,7 +3,7 @@ Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, echeck, ach, bitcoin
 Requires at least: 3.5
 Tested up to: 4.0.1
-Stable tag: 1.0.4
+Stable tag: 2.0.0
 
 The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PayStand.
 
@@ -15,7 +15,7 @@ The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PaySt
 
 1. Upload woocommerce-paystand to the `/wp-content/plugins` folder in your WooCommerce WordPress site.
 2. Activate the plugin through the 'Plugins' menu on the WordPress admin page.
-3. Under WooCommerce > Settings > Checkout > PayStand, click the Enable PayStand checkbox and add your Org ID and Public API Key.  Be sure to click the Save Settings button at the bottom of the page.  Your Org ID and Public API Key can be found in your PayStand dashboard under Settings > API.  You do not need to use your Secret Key for this plugin.
+3. Under WooCommerce > Settings > Checkout > PayStand, click the Enable PayStand checkbox and add your Paystand Credentials.  Be sure to click the Save Settings button at the bottom of the page.  Your Credentails  can be found in your PayStand dashboard under Integrations > API Configuration Values.
 4. Copy the Webhook Url from the WooCommerce settings page and go to your [PayStand dashboard](https://www.paystand.com/login) and enter it under Settings > Checkout Features > Webhook Url.
 5. Go shopping on your WooCommerce site and pay with PayStand!
 
@@ -35,7 +35,7 @@ It adds payment processing to your WooCommerce site using PayStand.
 
 = What version of WooCommerce does this plugin work with? =
 
-This plugin works with WooCommerce version 2.1.0 and above.
+This plugin works with WooCommerce version 3.0.0 and above.
 
 == Troubleshooting ==
 
@@ -60,6 +60,8 @@ If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
 
+= 2.0.0 = 
+* Migrate to new Paystand APIs
 = 1.0.4 =
 * Minor update to payment page and PSN handling.
 = 1.0.3 =

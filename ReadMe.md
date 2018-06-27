@@ -20,17 +20,16 @@ The following conventions should be followed in this repo:
  - `function_name` (meant for global functions)
  - `$variable_name`
 
-#Testing
+# Testing
 
 Unit tests are implemented with WordPress Plugin Unit Test Infrastructure. To run the tests you need to follow the following steps:
 
-1. Install WordPress (you can use Docker and Docker compose. See instructions [here](https://docs.docker.com/compose/wordpress/#define-the-project))
-2. Install WooCommerce
-3. Install the Plugin in your newly created WordPress instance.
-4. Download wp-cli (`curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar`) in your Wordpress plugins installation dir (within Docker if you are in docker).
-5. Copy tests  to the `woocommerce-paystand` plugin directory inside your wordpress Installation.
-6. Install subversion (`apt update && apt install subversion`)
-7. Install mariadb-client (`apt update && apt install mariadb-client`)
-8. Run test init script  `bin/install-wp-tests.sh wordpress_test root 'root_password' db latest`
-9. Install PHP Unit (version 6.5.8 is the best version to use. 7.0 or older do not work at this time)
-10. Run tests using phpUnit with  `phpunit`
+1. Install the this plugin in your working WordPress instance (it must also contain WooCommerce plugin).
+2. Download wp-cli (`curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar`) in your Wordpress plugins installation dir (within Docker if you are in docker). And `chmod +x` the downloaded file so that you can run it.
+3. Install subversion (`apt update && apt install subversion`)
+4. Install mariadb-client (`apt update && apt install mariadb-client`)
+5. run test scaffolding script `./wp-cli.phar  scaffold plugin-tests woocommerce-paystand`. You may need to use `--allow-root` if running as root.
+6. Copy tests  to the `woocommerce-paystand` plugin directory inside your wordpress Installation. The tests are in the tests directory.
+7. Run test init script  `bin/install-wp-tests.sh wordpress_test root 'root_password' db latest`
+8. Install PHP Unit (version [6.5.8](https://phar.phpunit.de/phpunit-6.5.8.phar) is the best version to use. 7.0 or older do not work at this time)
+9. Run tests using phpUnit with  `phpunit`
