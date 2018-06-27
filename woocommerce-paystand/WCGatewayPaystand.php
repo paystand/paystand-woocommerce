@@ -430,6 +430,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
       $COMPLETED = "completed";
       $FAILED = "failed";
+      $PROCESSING = "processing";
       $paystand_api_url = $this->get_paystand_api_url();
       $access_token = $this->get_ps_api_token();
       // call GET Payments
@@ -476,7 +477,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $order = false;
     if (isset($this->order_id)) {
       $order = new WC_Order($this->order_id);
-      if($order->get_status()===$COMPLETED){ // already is a COMPLETE
+      if($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING){ // already is a COMPLETE
           $this->log_message('check_callback_data already processed :' . $this->payment_status );
           return false;
       }
