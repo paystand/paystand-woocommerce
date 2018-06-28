@@ -1,0 +1,19 @@
+{
+    "name": "paystand/wc-gateway-paystand",
+    "description": "Paystand Payment Gateway for WooCommerce.",
+    "authors": [
+        {
+            "name": "Paystand",
+            "email": "support@paystand.com"
+        }
+    ],
+    "require-dev": {
+        "10up/wp_mock": "dev-master",
+        "phpunit/phpunit": "^6.5"
+    },
+  "autoload": {
+    "classmap": [
+      "woocommerce-paystand/"
+    ]
+  }
+}

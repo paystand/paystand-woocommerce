@@ -255,6 +255,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
     else {
       $this->log_message("Processing payment with saved payment method");
+
       $wc_payment_token = WC_Payment_Tokens::get(wc_clean($_POST['wc-paystand-payment-token']));
 
       if ($wc_payment_token->get_user_id() !== get_current_user_id()) {
@@ -285,10 +286,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
       try{
-          $response = \Httpful\Request::post($endpoint)
-          ->addHeaders($header)
-          ->body(json_encode($body))
-          ->send();
+       $response =  $this->do_http_post($endpoint, $header, $body);
       } catch (Exception $e) {
         $this->log_message('process_payment POST exception: ' . print_r($e, true));
       }
@@ -303,6 +301,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
   }
 
+   function do_http_post($endopoint, $header, $body) {
+    fwrite(STDERR,"BAQUEIRO".$response);
+   return \Httpful\Request::post($endpoint)
+    ->addHeaders($header)
+    ->body(json_encode($body))
+    ->send();
+  }
   /**
    * Check if this gateway is enabled and available in the user's country
    *
