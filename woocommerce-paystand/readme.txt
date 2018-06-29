@@ -37,6 +37,11 @@ It adds payment processing to your WooCommerce site using PayStand.
 
 This plugin works with WooCommerce version 3.0.0 and above.
 
+== Upgrade Notice ==
+
+To upgrade to v2.0.0 from Version 1.0.x  please uninstall the old plugin and install the new version. Version 2.0.0 has a lot of 
+changes and is not backwards compatible with previous versions.
+
 == Troubleshooting ==
 
 If you are having trouble with the checkout process or your orders are not marked as paid and updated from pending to processing, turn on logging.
