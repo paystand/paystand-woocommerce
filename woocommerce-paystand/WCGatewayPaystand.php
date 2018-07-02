@@ -1,7 +1,10 @@
 <?php
 
-include_once( plugin_dir_path( __FILE__ ) . 'includes/httpful.phar');
+// httpful 
+include_once (plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php');
+use \Httpful\Request;
 include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutFactory.php');
+
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
