@@ -304,8 +304,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
   }
 
-   function do_http_post($endopoint, $header, $body) {
-    fwrite(STDERR,"BAQUEIRO".$response);
+   function do_http_post($endpoint, $header, $body) {
    return \Httpful\Request::post($endpoint)
     ->addHeaders($header)
     ->body(json_encode($body))
