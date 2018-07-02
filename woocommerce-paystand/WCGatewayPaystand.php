@@ -316,7 +316,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function is_valid_for_use()
   {
-    return in_array(get_woocommerce_currency(), apply_filters('woocommerce_paystand_supported_currencies', array('USD')));
+    return in_array(get_woocommerce_currency(), apply_filters('woocommerce_paystand_supported_currencies', array('USD','MXN','CAD','EUR','GBP', 'AUD')));
   }
 
   /**

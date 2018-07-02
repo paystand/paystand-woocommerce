@@ -6,8 +6,9 @@
  * Time: 1:25 PM
  */
 
-
-include_once( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
+if (!function_exists('getISO3166_3_code')) {
+    include_once( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
+};
 
 abstract class PaystandCheckout
 {

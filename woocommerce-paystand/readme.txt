@@ -21,6 +21,11 @@ The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PaySt
 
 If you are interested in using the PayStand sandbox environment for testing, please contact us for additional details.
 
+=== Multiple Currencies ===
+
+Paystand Checkout Now Support Multiple currencies. Out of the box, this plugin supports USD, CAD, MXN, EUR, GBP and AUD. However if you need another currency which is
+unsupported, please contact us (support@paystand.com) and we might be able to support your currency on request.
+
 == Frequently Asked Questions ==
 
 = What is PayStand? =
