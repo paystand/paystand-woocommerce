@@ -1,5 +1,0 @@
-Suite/Test/Step Name,Browser,Description,Start time,End time,Duration,Status
-LoadTest,,,2018-06-20 15:11:49,2018-06-20 15:11:51,2.069s,FAILED
-,,,,,,
-Test Cases/Create Order,,,2018-06-20 15:11:49,2018-06-20 15:11:51,1.770s,FAILED
-openBrowser,,,2018-06-20 15:11:49,2018-06-20 15:11:51,1.470s,FAILED
