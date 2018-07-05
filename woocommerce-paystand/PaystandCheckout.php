@@ -57,14 +57,13 @@ abstract class PaystandCheckout
       type="text/javascript"
       id="ps_checkout"
       src="<?=$data['paystand_url']?>js/paystand.checkout.js"
-      ps-viewLogo="hide"
-      ps-env="sandbox"
+      ps-viewLogo="hide"      
       ps-publishableKey="<?= $data['publishable_key'] ?>"
       ps-containerId="ps_container_id"
-      ps-mode="embed"
+      ps-mode="<?=$data['render_mode']?>"
       ps-show="true"
       ps-checkoutType="<?=$data['checkout_type']?>"
-      ps-viewCheckout="mobile"
+      ps-viewCheckout="<?=$data['view_checkout']?>"
       ps-paymentAmount="<?= $order->order_total ?>"
       ps-viewClose="hide"
       ps-fixedAmount="true"
@@ -76,7 +75,10 @@ abstract class PaystandCheckout
       ps-payerAddressState = "<?=$billing_state?>"
       ps-payerAddressPostal = "<?=$billing_postalcode?>"
       ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $data['user_id'] ?>" }'
-      ps-paymentCurrency =  "<?= $data['currency'] ?>">
+      ps-paymentCurrency =  "<?= $data['currency'] ?>"
+      ps-width =  "<?= $data['render_width'] ?>%"      
+      >
+      
     </script>
 
         <script type="text/javascript">

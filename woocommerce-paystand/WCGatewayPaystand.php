@@ -107,7 +107,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->client_id = $this->get_option('client_id');
     $this->client_secret = $this->get_option('client_secret');
     $this->testmode = $this->get_option('testmode');
+    $this->view_checkout = $this->get_option('view_checkout');
+    $this->render_mode = $this->get_option('render_mode');
     $this->debug = $this->get_option('debug');
+    $this->render_width = $this->get_option('width');
     $this->order_id = null;
     $this->paystand_fee = null;
     $this->payment_status = null;
@@ -190,28 +193,60 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
           'type' => 'title',
           'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
       ),
-      'orders' => array(
-          'title' => __('Order Processing', 'woocommerce-paystand'),
-          'type' => 'title',
-          'description' => '',
+      
+      'style_title' => array( 'title' => __('Styling Settings', 'woocommerce-paystand'),'type' => 'title'),
+      'view_checkout' => array(
+        'title' => __('View Checkout Mode', 'woocommerce-paystand'),
+        'type' => 'select',
+        'label' => __('Select Checkout View Mode', 'woocommerce-paystand'),
+        'default' => 'mobile',
+        'description' => __('Defines the way how Checkout will be shown to the client'),
+        'options' => array('default' => 'default',
+          'portal-xlarge' => 'portal-xlarge','portal-large' => 'portal-large','portal-medium' => 'portal-medium',
+          'portal-small' => 'portal_small', 'portal' => 'portal', 'mobile' => 'mobile'
+        )
       ),
+      'render_mode' => array(
+        'title' => __('Checkout Rendering Mode', 'woocommerce-paystand'),
+        'type' => 'select',
+        'label' => __('Select Checkout Rendering Mode', 'woocommerce-paystand'),
+        'default' => 'embed',
+        'description' => __('Defines Whether checkout should render as a modal popup or an embedded checkout.'),
+        'options' => array('embed' => 'embed','modal' => 'modal')
+      ),
+      'width' => array(
+        'title' => __('Checkout Width Relative to Page (%)', 'woocommerce-paystand'),
+        'type' => 'number',
+        'min' => 1,
+        'max' => 100,        
+        'label' => __('The % of width that Checkout will take relative to the page where it is placed', 'woocommerce-paystand'),
+        'default' => 70,
+        'description' => __('The % of width that Checkout will take relative to the page where it is placed.', 'woocommerce-paystand'),
+      ),
+
+      'dev_title' => array('title' => __('Development Settings', 'woocommerce-paystand'),'type' => 'title'),
       'testmode' => array(
           'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
           'type' => 'checkbox',
           'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
           'default' => 'no',
           'description' => $this->testmode_description,
-      ),
-      'debug' => array(
-          'title' => __('Debug Log', 'woocommerce-paystand'),
-          'type' => 'checkbox',
-          'label' => __('Enable logging', 'woocommerce-paystand'),
-          'default' => 'no',
-          'description' => $this->debug_description,
-      )
+        ),
+        'debug' => array(
+            'title' => __('Debug Log', 'woocommerce-paystand'),
+            'type' => 'checkbox',
+            'label' => __('Enable logging', 'woocommerce-paystand'),
+            'default' => 'no',
+            'description' => $this->debug_description,
+        )
     );
 
     if ($this->allow_auto_complete) {
+      $this->form_fields['order'] = array(
+        'title' => __('Order Processing', 'woocommerce-paystand'),
+        'type' => 'title',
+        'description' => ''
+      );
       $this->form_fields['auto_complete'] =  array(
         'title' => __('Order auto-completion', 'woocommerce-paystand'),
         'type' => 'checkbox',
@@ -220,6 +255,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
       );
     }
+  }
+
+  /**
+  *  Validates width setting from init_form_fields(), if it is outside range it is overriden by correct value
+  */
+  function validate_width_field($key, $val) {            
+    return ($val > 100 )? 100  : (($val < 1) ? 1 : $val);    
   }
 
   /**
@@ -406,6 +448,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['user_id']=$user_id;
       $data['currency']=$currency;
       $data['order_id']=$order_id;
+      $data['view_checkout'] =  $this->view_checkout;
+      $data['render_mode'] =  $this->render_mode;
+      $data['render_width'] =  $this->render_width;
+
 
       $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
       $ps_checkout->render();
