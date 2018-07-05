@@ -9,7 +9,7 @@ The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PaySt
 
 == Description ==
 
-PayStand is the only B2B payment processing service right for your business.  Accept payments from your customers' Cards (credit and debit) and Bank Accounts (ACH and Verified Bank Transfers), re-engage those payment methods with tokens securely stored with your users' authenticated profiles, automate recurring payments with subscriptions and schedules, handle multiple currency presentment, and much more, all wrapped in a predictable, accountable SaaS subscription.  Come join the leader in digital B2B payments.  Contact PayStand at [sales@paystand.com](mailto:sales@paystand.com) or visit our website at [PayStand.com](https://http://paystand.com/).
+PayStand is the only B2B payment processing service right for your business.  Accept payments from your customers' Cards (credit and debit) and Bank Accounts (ACH and Verified Bank Transfers), re-engage those payment methods with tokens securely stored with your users' authenticated profiles, automate recurring payments with subscriptions and schedules, handle multiple currency presentment, and much more, all wrapped in a predictable, accountable SaaS subscription.  Come join the leader in digital B2B payments.  Contact PayStand at [sales@paystand.com](mailto:sales@paystand.com) or visit our website at [PayStand.com](https://paystand.com/).
 == Installation ==
 
 Note:  To access our v1.x plugins, please contact [support@paystand.com](mailto:support@paystand.com)
