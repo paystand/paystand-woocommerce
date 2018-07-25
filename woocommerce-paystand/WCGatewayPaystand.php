@@ -1,9 +1,9 @@
 <?php
 
-// httpful 
-include_once (plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php');    
 use \Httpful\Request;
+include_once (plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php');    
 include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutFactory.php');
+include_once( plugin_dir_path( __FILE__ ) . 'PaystandFormFields.php');
 
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
@@ -44,7 +44,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $customer_id;
   var $client_id;
   var $client_secret;
-  var $allow_auto_complete = true;
   var $auto_complete;
   var $log_file_hash;
   var $log_file_path;
@@ -114,10 +113,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->order_id = null;
     $this->paystand_fee = null;
     $this->payment_status = null;
-
-    if ($this->allow_auto_complete) {
-      $this->auto_complete = $this->get_option('auto_complete');
-    }
+    $this->auto_complete = $this->get_option('auto_complete');
+    $this->auto_processing = $this->get_option('auto_processing');
 
     // Logs
     if ('yes' == $this->debug) {
@@ -143,7 +140,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
     private function isValidStatus($status){
-        $allowed_status = array("PAID","FAILED");
+        $allowed_status = array("PAID","FAILED", "CREATED");
         return in_array(strtoupper($status), $allowed_status);
     }
 
@@ -153,108 +150,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    **/
   function init_form_fields()
   {
-    $this->form_fields = array(
-      'enabled' => array(
-          'title' => __('Enable/Disable', 'woocommerce-paystand'),
-          'type' => 'checkbox',
-          'label' => __('Enable PayStand', 'woocommerce-paystand'),
-          'default' => 'yes'
-      ),
-      'publishable_key' => array(
-          'title' => __('PayStand Publishable Key', 'woocommerce-paystand'),
-          'type' => 'text',
-          'description' => __('Your PayStand publishable key from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
-          'default' => '',
-          'desc_tip' => true,
-      ),
-      'customer_id' => array(
-        'title' => __('PayStand Customer Id ', 'woocommerce-paystand'),
-        'type' => 'text',
-        'description' => __('Your PayStand customer_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
-        'default' => '',
-        'desc_tip' => true,
-      ),
-      'client_id' => array(
-        'title' => __('PayStand Client Id ', 'woocommerce-paystand'),
-        'type' => 'text',
-        'description' => __('Your PayStand client_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
-        'default' => '',
-        'desc_tip' => true,
-      ),
-      'client_secret' => array(
-        'title' => __('PayStand Client Secret', 'woocommerce-paystand'),
-        'type' => 'text',
-        'description' => __('Your PayStand client_secret from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
-        'default' => '',
-        'desc_tip' => true,
-      ),
-      'webhook' => array(
-          'title' => __('Webhook', 'woocommerce-paystand'),
-          'type' => 'title',
-          'description' => 'Set your webhook url to <code>' . $this->notify_url . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
-      ),
-      
-      'style_title' => array( 'title' => __('Styling Settings', 'woocommerce-paystand'),'type' => 'title'),
-      'view_checkout' => array(
-        'title' => __('View Checkout Mode', 'woocommerce-paystand'),
-        'type' => 'select',
-        'label' => __('Select Checkout View Mode', 'woocommerce-paystand'),
-        'default' => 'mobile',
-        'description' => __('Defines the way how Checkout will be shown to the client'),
-        'options' => array('default' => 'default',
-          'portal-xlarge' => 'portal-xlarge','portal-large' => 'portal-large','portal-medium' => 'portal-medium',
-          'portal-small' => 'portal_small', 'portal' => 'portal', 'mobile' => 'mobile'
-        )
-      ),
-      'render_mode' => array(
-        'title' => __('Checkout Rendering Mode', 'woocommerce-paystand'),
-        'type' => 'select',
-        'label' => __('Select Checkout Rendering Mode', 'woocommerce-paystand'),
-        'default' => 'embed',
-        'description' => __('Defines Whether checkout should render as a modal popup or an embedded checkout.'),
-        'options' => array('embed' => 'embed','modal' => 'modal')
-      ),
-      'width' => array(
-        'title' => __('Checkout Width Relative to Page (%)', 'woocommerce-paystand'),
-        'type' => 'number',
-        'min' => 1,
-        'max' => 100,        
-        'label' => __('The % of width that Checkout will take relative to the page where it is placed', 'woocommerce-paystand'),
-        'default' => 70,
-        'description' => __('The % of width that Checkout will take relative to the page where it is placed.', 'woocommerce-paystand'),
-      ),
-
-      'dev_title' => array('title' => __('Development Settings', 'woocommerce-paystand'),'type' => 'title'),
-      'testmode' => array(
-          'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
-          'type' => 'checkbox',
-          'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
-          'default' => 'no',
-          'description' => $this->testmode_description,
-        ),
-        'debug' => array(
-            'title' => __('Debug Log', 'woocommerce-paystand'),
-            'type' => 'checkbox',
-            'label' => __('Enable logging', 'woocommerce-paystand'),
-            'default' => 'no',
-            'description' => $this->debug_description,
-        )
-    );
-
-    if ($this->allow_auto_complete) {
-      $this->form_fields['order'] = array(
-        'title' => __('Order Processing', 'woocommerce-paystand'),
-        'type' => 'title',
-        'description' => ''
-      );
-      $this->form_fields['auto_complete'] =  array(
-        'title' => __('Order auto-completion', 'woocommerce-paystand'),
-        'type' => 'checkbox',
-        'label' => __('Automatically complete paid orders', 'woocommerce-paystand'),
-        'default' => 'no',
-        'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
-      );
-    }
+    $this->form_fields = PaystandFormFields::get_init_form_fields(array('notify_url' => $this->notify_url) );        
   }
 
   /**
@@ -651,11 +547,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   {
     $this->log_message('valid_paystand_callback');
 
-    $payment_status = $this->payment_status;
-    $STATUS_SUCCESS = "PAID";
+    if ($data['resource']['object'] !='payment') {
+      $this->log_message('Received non-payment object. Refusing to process payment');  
+      return;
+    }
 
-    // One of: "paid", "failed"
-    $success = ($STATUS_SUCCESS===strtoupper($this->payment_status));
+    $payment_status = strtoupper($data['resource']['status']);
+
+    $this->log_message($payment_status);
+    $this->log_message($this->auto_processing);
+    $success = false;
+    if ('PAID' === $payment_status) { $success = true; }
+    if ('CREATED' === $payment_status) {
+      if('yes' === $this->auto_processing) {
+        $this->log_message('Payment CREATED status arrived and automatic_processing option is selected. Marking payment as success'); 
+        $success = true;        
+      }
+      else {
+        // ignore 'CREATED' payment status if the auto_processing flag is not set
+        return;
+      }
+    }
 
     $this->log_message('Payment success: ' . $success);
     $this->log_message('Payment status: ' . $payment_status);
@@ -682,8 +594,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
         $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
         $order->payment_complete($this->transaction_id);
-        // pending to check where is set this configuration
-        if ($this->allow_auto_complete && ('yes' == $this->auto_complete)) {
+        
+        if ('yes' == $this->auto_complete) {
             $order->update_status('completed', 'Order auto-completed.');
             $this->log_message('Order auto-completed: ' . $order_id);
         }
