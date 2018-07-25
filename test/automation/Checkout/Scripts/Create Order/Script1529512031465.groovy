@@ -22,7 +22,7 @@ import org.openqa.selenium.Keys as Keys
 
 WebUI.openBrowser('')
 
-WebUI.navigateToUrl('http://wordpress.paystand.ml/shop/')
+WebUI.navigateToUrl('http://localhost:8000')
 
 WebUI.click(findTestObject('Page_Products  Casa Bonita/a_Add to cart'))
 
@@ -43,6 +43,8 @@ WebUI.setText(findTestObject('Page_Checkout  Casa Bonita/input_billing_company')
 WebUI.setText(findTestObject('Page_Checkout  Casa Bonita/input_billing_address_1'), 'STREET')
 
 WebUI.setText(findTestObject('Page_Checkout  Casa Bonita/input_billing_city'), 'GUADALAJARA')
+
+WebUI.navigateToUrl(GlobalVariable.domain)
 
 WebUI.click(findTestObject('Page_Checkout  Casa Bonita/span_select2-selection select2'))
 

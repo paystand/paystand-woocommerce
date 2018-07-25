@@ -22,7 +22,7 @@ import org.openqa.selenium.Keys as Keys
 
 WebUI.openBrowser('')
 
-WebUI.navigateToUrl('http://wordpress.paystand.ml/shop/')
+WebUI.navigateToUrl(GlobalVariable.domain)
 
 WebUI.click(findTestObject('Page_Products  Casa Bonita/a_Add to cart'))
 

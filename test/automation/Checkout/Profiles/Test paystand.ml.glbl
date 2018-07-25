@@ -6,17 +6,17 @@
    <defaultProfile>false</defaultProfile>
    <GlobalVariableEntity>
       <description></description>
-      <initValue>'http://wordpress.paystand.ml/my-account/'</initValue>
+      <initValue>'http://localhost:8000/my-account/'</initValue>
       <name>domain</name>
    </GlobalVariableEntity>
    <GlobalVariableEntity>
       <description></description>
-      <initValue>'aldo'</initValue>
+      <initValue>'obaqueiro'</initValue>
       <name>user</name>
    </GlobalVariableEntity>
    <GlobalVariableEntity>
       <description></description>
-      <initValue>'123qaz'</initValue>
+      <initValue>'VdLB^T%#l$qs9RklY('</initValue>
       <name>password</name>
    </GlobalVariableEntity>
 </GlobalVariableEntities>
