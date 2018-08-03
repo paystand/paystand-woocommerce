@@ -140,7 +140,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
     private function isValidStatus($status){
-        $allowed_status = array("PAID","FAILED", "CREATED");
+        $allowed_status = array("PAID","FAILED", "CREATED", 'POSTED');
         return in_array(strtoupper($status), $allowed_status);
     }
 
@@ -347,7 +347,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['view_checkout'] =  $this->view_checkout;
       $data['render_mode'] =  $this->render_mode;
       $data['render_width'] =  $this->render_width;
-
+      $data['testmode'] = $this->testmode;
 
       $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
       $ps_checkout->render();
@@ -545,7 +545,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function valid_paystand_callback($data)
   {
-    $this->log_message('valid_paystand_callback');
+    $this->log_message('[valid_paystand_callback] Processing valid paystand callback');
 
     if ($data['resource']['object'] !='payment') {
       $this->log_message('Received non-payment object. Refusing to process payment');  
@@ -554,17 +554,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $payment_status = strtoupper($data['resource']['status']);
 
-    $this->log_message($payment_status);
-    $this->log_message($this->auto_processing);
+    $this->log_message("Payment status from request:" . $payment_status);
+    $this->log_message("Auto processing is set to: ". $this->auto_processing);
     $success = false;
     if ('PAID' === $payment_status) { $success = true; }
-    if ('CREATED' === $payment_status) {
+    if ('CREATED' === $payment_status || 'POSTED' === $payment_status ) {
       if('yes' === $this->auto_processing) {
-        $this->log_message('Payment CREATED status arrived and automatic_processing option is selected. Marking payment as success'); 
+        $this->log_message('Payment '.$payment_status.' status arrived and automatic_processing option is selected. Marking payment as success'); 
         $success = true;        
       }
       else {
-        // ignore 'CREATED' payment status if the auto_processing flag is not set
+        // ignore 'CREATED' / 'POSTED' payment status if the auto_processing flag is not set
         return;
       }
     }

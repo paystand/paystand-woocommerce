@@ -40,6 +40,7 @@ abstract class PaystandCheckout
         $data = $this->data;
         $order = $data['order'];
         $return_url = $this->return_url;
+        $environment = ($data['testmode'] == 'no') ? 'live' : 'sandbox';
 
         if ($order) {
             $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
@@ -57,6 +58,7 @@ abstract class PaystandCheckout
       type="text/javascript"
       id="ps_checkout"
       src="<?=$data['paystand_url']?>js/paystand.checkout.js"
+      ps-env="<?=$environment?>"
       ps-viewLogo="hide"      
       ps-publishableKey="<?= $data['publishable_key'] ?>"
       ps-containerId="ps_container_id"
