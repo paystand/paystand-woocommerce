@@ -18,13 +18,12 @@ class PaystandCheckoutPayment extends PaystandCheckout
     public function render_header(){
         ?>
         <div style="text-align: center; width: 100%;">  <label for= "savePaymentMethod">
-            <input type="checkbox" id="savePaymentMethod", name="savePaymentMethod" value="Save Pament Method"/>
+            <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Pament Method"/>
             Save This Payment Method
         </label>
         </div>
         <?php
         parent::render_header();
-
     }
 
 }

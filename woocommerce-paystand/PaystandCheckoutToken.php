@@ -22,6 +22,5 @@ class PaystandCheckoutToken extends PaystandCheckout
         </label>
         <?php
         parent::render_header();
-
     }
 }
