@@ -179,7 +179,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       } else {
         echo $this->description;
       }
+    } else {
+      echo "<b>*Saving PayStand Payment Method is not allowed.</b>";
     }
+
   }
   /**
    * Process the payment and return the result
