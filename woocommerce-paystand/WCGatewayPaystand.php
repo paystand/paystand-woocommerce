@@ -115,11 +115,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->payment_status = null;
     $this->auto_complete = $this->get_option('auto_complete');
     $this->auto_processing = $this->get_option('auto_processing');
-
+    $this->show_payment_method = $this->get_option('show_payment_method');
     // Logs
     if ('yes' == $this->debug) {
       $this->log = new WC_Logger();
     }
+
+
+    $this->log_message(' Payment method flag = '.$this->show_payment_method);
 
     // Actions
     add_action( 'woocommerce_checkout_order_processed', 'show_paystand_checkout' );
@@ -165,16 +168,21 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   function payment_fields() {
     $this->log_message(print_r($_POST,true));
-
-    // We only show the available payment methods during Checkout.
-    if (is_checkout() &&  count($this->get_tokens()) > 0)  {
-      $this->saved_payment_methods();
-    } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
-      // During "add payment method" option, we render Paystand Checkout in Token Saving mode
-      $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
+    
+    if($this->show_payment_method=='yes'){
+      // We only show the available payment methods during Checkout.
+      if (is_checkout() &&  count($this->get_tokens()) > 0)  {
+        $this->saved_payment_methods();
+      } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
+        // During "add payment method" option, we render Paystand Checkout in Token Saving mode
+        $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
+      } else {
+        echo $this->description;
+      }
     } else {
-      echo $this->description;
+      echo "<b>*Saving PayStand Payment Method is not allowed.</b>";
     }
+
   }
   /**
    * Process the payment and return the result
@@ -348,6 +356,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['render_mode'] =  $this->render_mode;
       $data['render_width'] =  $this->render_width;
       $data['testmode'] = $this->testmode;
+      $data['show_payment_method'] = $this->show_payment_method;
 
       $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
       $ps_checkout->render();

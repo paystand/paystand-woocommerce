@@ -22,16 +22,25 @@ abstract class PaystandCheckout
         $this->return_url = $return_url;
     }
 
-    public function render_header(){
+    public function render_container(){
         ?>
         <div id="ps_container_id"></div>
-
-
         <?php
     }
 
+    public function render_header(){
+        $this->render_container();
+    }
+
     public function render( ){
-        $this->render_header();
+        $data = $this->data;
+
+        if($data['show_payment_method']=='yes'){
+            $this->render_header();
+        }else{
+            $this->render_container();
+        }
+
         $this->render_body();
     }
 

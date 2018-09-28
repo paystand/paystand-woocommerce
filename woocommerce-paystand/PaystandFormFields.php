@@ -6,7 +6,7 @@
 class PaystandFormFields
 {
     public static function get_init_form_fields($data) {
-        return array(
+       return array(
             'enabled' => array(
                 'title' => __('Enable/Disable', 'woocommerce-paystand'),
                 'type' => 'checkbox',
@@ -48,6 +48,13 @@ class PaystandFormFields
             ),
             
             'behavior_title' => array('title' => __('Payment Processing Behavior', 'woocommerce-paystand'),'type' => 'title'),
+            'show_payment_method' => array(
+              'title' => __('Allow to Save Payment Method', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Enable saving payment methods', 'woocommerce-paystand'),
+              'default' => 'yes',
+              'description' => __('Selecting this will allow your customers to save their Paystand Payment Methods for future use')
+            ),
             'auto_processing' => array(
                 'title' => __('Auto ACH/eCheck Clearance', 'woocommerce-paystand'),
                 'type' => 'checkbox',
