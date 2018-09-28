@@ -2,9 +2,8 @@
 Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, echeck, ach, bitcoin
 Requires at least: 3.5
-Requires PHP: 5.2.4
 Tested up to: 4.9.6
-Stable tag: 2.2.0
+Stable tag: 2.1.1
 
 The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PayStand.
 
@@ -72,10 +71,8 @@ If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
 
-= 2.2.0 =
-* Add new Administration checkbox for control Save_Payment_Method's feature, by default flag is enable then will be required to uncheck to hide from users.
 = 2.1.1 =
-* Update version
+* Add new Administration checkbox for control Save_Payment_Method's feature, by default flag is enable then will be required to uncheck to hide from users.
 = 2.1.0 =
 * Add Functionality to automatically set orders as "processing" as soon as a Checkout payment is done by the client.
 = 2.0.1 = 
