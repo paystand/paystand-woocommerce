@@ -51,9 +51,9 @@ class PaystandFormFields
             'show_payment_method' => array(
               'title' => __('Allow to Save Payment Method', 'woocommerce-paystand'),
               'type' => 'checkbox',
-              'label' => __('Show Add Payment Method feature', 'woocommerce-paystand'),
+              'label' => __('Enable saving payment methods', 'woocommerce-paystand'),
               'default' => 'yes',
-              'description' => __('Selecting this will result in WooCommerce Add Payment Method feature shows')
+              'description' => __('Selecting this will allow your customers to save their Paystand Payment Methods for future use')
             ),
             'auto_processing' => array(
                 'title' => __('Auto ACH/eCheck Clearance', 'woocommerce-paystand'),
