@@ -74,7 +74,7 @@ class PaystandFormFields
               'view_funds' => array(
                 'title' => __('Type of funds to show ', 'woocommerce-paystand'),
                 'type' => 'text',
-                'description' => __('The type of funds to show during checkout. It can be ach,echeck or card; each one separated by a comma. Depending on your Paystand plan some might not be available.'),
+                'description' => __('The type of funds to show during checkout. It can be ach, echeck or card; each one separated by a comma. Depending on your Paystand plan some might not be available.'),
                 'default' => 'ach,echeck,card',
                 'desc_tip' => true,
               ),
