@@ -54,6 +54,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $order_id = null;
   var $paystand_fee = null;
   var $transaction_id = null;
+  var $view_funds = null;
 
   /**
    * Constructor for the gateway.
@@ -116,6 +117,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->auto_complete = $this->get_option('auto_complete');
     $this->auto_processing = $this->get_option('auto_processing');
     $this->show_payment_method = $this->get_option('show_payment_method');
+    $this->view_funds = $this->get_option('view_funds');
+
     // Logs
     if ('yes' == $this->debug) {
       $this->log = new WC_Logger();
@@ -357,6 +360,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['render_width'] =  $this->render_width;
       $data['testmode'] = $this->testmode;
       $data['show_payment_method'] = $this->show_payment_method;
+      $data['view_funds'] = $this->view_funds;
 
       $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
       $ps_checkout->render();
