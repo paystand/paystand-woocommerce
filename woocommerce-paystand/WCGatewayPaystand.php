@@ -647,6 +647,54 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
     return $response->body->access_token;
   }
+
+   /**
+   * Calls Paystand's API to retrieve fee for current amount
+   */
+  function get_split_fees($amount){
+    $paystand_api_url = $this->get_paystand_api_url();
+    $endpoint = $paystand_api_url . 'feeSplits/splitFees/public';
+    $header = array(
+      'Content-Type' => 'application/json',
+      'Accept' => 'application/json',
+      'x-publishable-key' => $this->publishable_key
+    );
+
+    $request_body = sprintf('
+    {
+      "subtotal": "%s",
+        "cardPayments": {
+          "feeSplitType": "recoup_all_fees"
+        },
+        "bankPayments": {
+          "feeSplitType": "recoup_all_fees"
+        }
+    }', $amount);
+
+    try{
+      $this->log_message("get_split_fees call with =>".$request_body."<br>".print_r($header, true));
+      $response =  $this->do_http_post($endpoint, $header, json_decode($request_body));
+      $this->cardPayment_fee = $response->body->cardPayments->payerTotalFees;
+      $this->bankPayment_fee = $response->body->bankPayments->payerTotalFees;
+    } catch (Exception $e) {
+        $this->log_message('get_split_fees exception: ' . print_r($e, true));
+        $this->cardPayment_fee = 0;
+        $this->bankPayment_fee = 0;
+    }
+
+    $this->log_message('get_split_fees response: ' . print_r($response->raw_body, true));
+
+    if($response->code!==200){ // Unauthorized or another error
+        $this->log_message('get_split_fees Access_Tokens error: '.print_r($response->body, true));
+        $this->cardPayment_fee = 0;
+        $this->bankPayment_fee = 0;
+    }
+
+    $this->log_message('get_split_fees Fees card: ' . $this->cardPayment_fee);
+    $this->log_message('get_split_fees Fees bank: ' . $this->bankPayment_fee);
+
+  }
+
   /**
    * This function is required by WooCommerce to be here even if it is empty
    * otherwise user gets a "unable to add a payment method" message when trying
