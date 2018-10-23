@@ -55,6 +55,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $paystand_fee = null;
   var $transaction_id = null;
   var $view_funds = null;
+  var $cardPayment_fee = null;
+  var $bankPayment_fee = null;
 
   /**
    * Constructor for the gateway.
