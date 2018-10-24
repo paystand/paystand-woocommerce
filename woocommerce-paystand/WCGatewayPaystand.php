@@ -181,12 +181,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    * WooCommerce Function to render saved payment methods
    */
   function payment_fields() {
-    $this->log_message(print_r($_POST,true));
-    
     if($this->show_payment_method=='yes'){
       // We only show the available payment methods during Checkout.
       if (is_checkout() &&  count($this->get_tokens()) > 0)  {
+
+        $this->get_split_fees(WC()->cart->cart_contents_total);
         $this->saved_payment_methods();
+
       } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
         // During "add payment method" option, we render Paystand Checkout in Token Saving mode
         $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
@@ -198,6 +199,41 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
   }
+ 
+  function convertFeeToText($value){
+    $fee_message = ' - (added processing fee $%s)';
+    $no_fee = ' - (no processing fee)';
+    return ($value==0)?$no_fee:sprintf($fee_message, $value);
+  }
+
+  /** 
+   * Payer pays fee calculation function 
+  */
+  public function payer_pays_fees_calculation($type){
+    return ($type==="CC")?floatval($this->cardPayment_fee):floatval($this->bankPayment_fee);
+  }
+
+  /** 
+   * Added custom field saved method rial with the hint of the fund to be added or not
+  */
+  public function get_saved_payment_method_option_html( $token ) {
+    $fee = $this->payer_pays_fees_calculation($token->get_type());
+    $html = sprintf(
+        '<li class="woocommerce-SavedPaymentMethods-token">
+            <input id="wc-%1$s-payment-token-%2$s" type="radio" fee="%5$s" name="wc-%1$s-payment-token" value="%2$s" style="width:auto;" class="woocommerce-SavedPaymentMethods-tokenInput" %4$s />
+            <label for="wc-%1$s-payment-token-%2$s">%3$s %6$s </label>
+        </li>',
+        esc_attr( $this->id ),
+        esc_attr( $token->get_id() ),
+        esc_html( $token->get_display_name() ),
+        false,
+        $fee,
+        $this->convertFeeToText($fee)
+      );
+
+    return apply_filters( 'woocommerce_payment_gateway_get_saved_payment_method_option_html', $html, $token, $this );
+  }
+
   /**
    * Process the payment and return the result
    *
