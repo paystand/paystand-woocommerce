@@ -126,18 +126,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $this->log = new WC_Logger();
     }
 
+    $this->cardPayment_fee = 0;
+    $this->bankPayment_fee = 0;
 
     $this->log_message(' Payment method flag = '.$this->show_payment_method);
 
     // Actions
-    add_action( 'woocommerce_checkout_order_processed', 'show_paystand_checkout' );
+    add_action('woocommerce_checkout_order_processed', array($this,'order_processed'));
     add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
-
+   
     $this->enabled = $this->is_valid_for_use() ? 'yes' : 'no';
+  }
+
+  /** 
+   * clean fee session 
+   **/
+  function order_processed($order_id){
+    WC()->session->__unset('fee_chosen');
   }
 
   // Adds a text to the WordPress log object if it is defined
