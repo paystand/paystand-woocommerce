@@ -156,10 +156,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
   }
 
-    private function isValidStatus($status){
-        $allowed_status = array("PAID","FAILED", "CREATED", 'POSTED');
+  private function isValidStatus($status){
+       $allowed_status = array("PAID","FAILED", "CREATED", 'POSTED');
         return in_array(strtoupper($status), $allowed_status);
-    }
+  }
 
   /**
    * Initialize Gateway Settings Form Fields
@@ -719,27 +719,20 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }', $amount);
 
     try{
-      $this->log_message("get_split_fees call with =>".$request_body."<br>".print_r($header, true));
+      $this->log_message("get_split_fees call");
       $response =  $this->do_http_post($endpoint, $header, json_decode($request_body));
       $this->cardPayment_fee = $response->body->cardPayments->payerTotalFees;
       $this->bankPayment_fee = $response->body->bankPayments->payerTotalFees;
     } catch (Exception $e) {
         $this->log_message('get_split_fees exception: ' . print_r($e, true));
-        $this->cardPayment_fee = 0;
-        $this->bankPayment_fee = 0;
     }
-
-    $this->log_message('get_split_fees response: ' . print_r($response->raw_body, true));
 
     if($response->code!==200){ // Unauthorized or another error
         $this->log_message('get_split_fees Access_Tokens error: '.print_r($response->body, true));
-        $this->cardPayment_fee = 0;
-        $this->bankPayment_fee = 0;
     }
 
     $this->log_message('get_split_fees Fees card: ' . $this->cardPayment_fee);
     $this->log_message('get_split_fees Fees bank: ' . $this->bankPayment_fee);
-
   }
 
   /**
