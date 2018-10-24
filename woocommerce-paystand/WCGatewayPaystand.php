@@ -55,6 +55,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $paystand_fee = null;
   var $transaction_id = null;
   var $view_funds = null;
+  var $cardPayment_fee = null;
+  var $bankPayment_fee = null;
 
   /**
    * Constructor for the gateway.
@@ -124,18 +126,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $this->log = new WC_Logger();
     }
 
+    $this->cardPayment_fee = 0;
+    $this->bankPayment_fee = 0;
 
     $this->log_message(' Payment method flag = '.$this->show_payment_method);
 
     // Actions
-    add_action( 'woocommerce_checkout_order_processed', 'show_paystand_checkout' );
+    add_action('woocommerce_checkout_order_processed', array($this,'order_processed'));
     add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
     add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
-
+   
     $this->enabled = $this->is_valid_for_use() ? 'yes' : 'no';
+  }
+
+  /** 
+   * clean fee session 
+   **/
+  function order_processed($order_id){
+    WC()->session->__unset('fee_chosen');
   }
 
   // Adds a text to the WordPress log object if it is defined
@@ -145,10 +156,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
   }
 
-    private function isValidStatus($status){
-        $allowed_status = array("PAID","FAILED", "CREATED", 'POSTED');
+  private function isValidStatus($status){
+       $allowed_status = array("PAID","FAILED", "CREATED", 'POSTED');
         return in_array(strtoupper($status), $allowed_status);
-    }
+  }
 
   /**
    * Initialize Gateway Settings Form Fields
@@ -170,12 +181,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    * WooCommerce Function to render saved payment methods
    */
   function payment_fields() {
-    $this->log_message(print_r($_POST,true));
-    
     if($this->show_payment_method=='yes'){
       // We only show the available payment methods during Checkout.
       if (is_checkout() &&  count($this->get_tokens()) > 0)  {
+
+        $this->get_split_fees(WC()->cart->cart_contents_total);
         $this->saved_payment_methods();
+
       } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
         // During "add payment method" option, we render Paystand Checkout in Token Saving mode
         $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
@@ -187,6 +199,41 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
   }
+ 
+  function convertFeeToText($value){
+    $fee_message = ' - (added processing fee $%s)';
+    $no_fee = ' - (no processing fee)';
+    return ($value==0)?$no_fee:sprintf($fee_message, $value);
+  }
+
+  /** 
+   * Payer pays fee calculation function 
+  */
+  public function payer_pays_fees_calculation($type){
+    return ($type==="CC")?floatval($this->cardPayment_fee):floatval($this->bankPayment_fee);
+  }
+
+  /** 
+   * Added custom field saved method rial with the hint of the fund to be added or not
+  */
+  public function get_saved_payment_method_option_html( $token ) {
+    $fee = $this->payer_pays_fees_calculation($token->get_type());
+    $html = sprintf(
+        '<li class="woocommerce-SavedPaymentMethods-token">
+            <input id="wc-%1$s-payment-token-%2$s" type="radio" fee="%5$s" name="wc-%1$s-payment-token" value="%2$s" style="width:auto;" class="woocommerce-SavedPaymentMethods-tokenInput" %4$s />
+            <label for="wc-%1$s-payment-token-%2$s">%3$s %6$s </label>
+        </li>',
+        esc_attr( $this->id ),
+        esc_attr( $token->get_id() ),
+        esc_html( $token->get_display_name() ),
+        false,
+        $fee,
+        $this->convertFeeToText($fee)
+      );
+
+    return apply_filters( 'woocommerce_payment_gateway_get_saved_payment_method_option_html', $html, $token, $this );
+  }
+
   /**
    * Process the payment and return the result
    *
@@ -647,6 +694,47 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
     return $response->body->access_token;
   }
+
+   /**
+   * Calls Paystand's API to retrieve fee for current amount
+   */
+  function get_split_fees($amount){
+    $paystand_api_url = $this->get_paystand_api_url();
+    $endpoint = $paystand_api_url . 'feeSplits/splitFees/public';
+    $header = array(
+      'Content-Type' => 'application/json',
+      'Accept' => 'application/json',
+      'x-publishable-key' => $this->publishable_key
+    );
+
+    $request_body = sprintf('
+    {
+      "subtotal": "%s",
+        "cardPayments": {
+          "feeSplitType": "recoup_all_fees"
+        },
+        "bankPayments": {
+          "feeSplitType": "recoup_all_fees"
+        }
+    }', $amount);
+
+    try{
+      $this->log_message("get_split_fees call");
+      $response =  $this->do_http_post($endpoint, $header, json_decode($request_body));
+      $this->cardPayment_fee = $response->body->cardPayments->payerTotalFees;
+      $this->bankPayment_fee = $response->body->bankPayments->payerTotalFees;
+    } catch (Exception $e) {
+        $this->log_message('get_split_fees exception: ' . print_r($e, true));
+    }
+
+    if($response->code!==200){ // Unauthorized or another error
+        $this->log_message('get_split_fees Access_Tokens error: '.print_r($response->body, true));
+    }
+
+    $this->log_message('get_split_fees Fees card: ' . $this->cardPayment_fee);
+    $this->log_message('get_split_fees Fees bank: ' . $this->bankPayment_fee);
+  }
+
   /**
    * This function is required by WooCommerce to be here even if it is empty
    * otherwise user gets a "unable to add a payment method" message when trying

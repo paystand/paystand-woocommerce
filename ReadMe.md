@@ -7,7 +7,7 @@ To install in WooCommerce create a zip from the `woocommerce-paystand` directory
 You can also use `zip -r woocommerce-paystand.zip woocommerce-paystand/`
 # Supported WooCommerce Version
 
-Currently the minimum version we support is WooCommerce 3.0
+Currently the minimum version we support is WooCommerce 3.2
 
 # Naming Conventions
 
