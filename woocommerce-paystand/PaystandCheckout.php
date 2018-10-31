@@ -88,8 +88,9 @@ abstract class PaystandCheckout
       ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $data['user_id'] ?>" }'
       ps-paymentCurrency =  "<?= $data['currency'] ?>"
       ps-width =  "<?= $data['render_width'] ?>%"      
+      ps-viewFunds = "<?= $data['view_funds'] ?>"
       >
-      
+
     </script>
 
         <script type="text/javascript">

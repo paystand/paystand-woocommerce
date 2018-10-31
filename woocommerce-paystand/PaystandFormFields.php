@@ -71,6 +71,13 @@ class PaystandFormFields
                 'default' => 'no',
                 'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
               ),
+              'view_funds' => array(
+                'title' => __('Type of funds to show ', 'woocommerce-paystand'),
+                'type' => 'text',
+                'description' => __('The type of funds to show during checkout. It can be ach, echeck or card; each one separated by a comma. Depending on your Paystand plan some might not be available.'),
+                'default' => 'ach,echeck,card',
+                'desc_tip' => true,
+              ),
 
             'style_title' => array( 'title' => __('Styling Settings', 'woocommerce-paystand'),'type' => 'title'),
             'view_checkout' => array(
@@ -96,7 +103,7 @@ class PaystandFormFields
               'title' => __('Checkout Width Relative to Page (%)', 'woocommerce-paystand'),
               'type' => 'number',
               'min' => 1,
-              'max' => 100,        
+              'max' => 100,
               'label' => __('The % of width that Checkout will take relative to the page where it is placed', 'woocommerce-paystand'),
               'default' => 70,
               'description' => __('The % of width that Checkout will take relative to the page where it is placed.', 'woocommerce-paystand'),
