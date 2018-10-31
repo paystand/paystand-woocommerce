@@ -1,26 +1,55 @@
 # Paystand WooCommerce Checkout Plugin
 
-This repo contains the implementation of a WooCommerce Plugin to add Pay with Paystand functionality.
+WooCommerce Plugin to add Payments with Paystand checkout, allowing to use ACH, Card, E-check
 
-# Instructions
-To install in WooCommerce create a zip from the `woocommerce-paystand` directory and use that to install as plugin in WordPress. 
-You can also use `zip -r woocommerce-paystand.zip woocommerce-paystand/`
-# Supported WooCommerce Version
+## Getting Started
 
-Currently the minimum version we support is WooCommerce 3.2
+* Download code from repository https://github.com/paystand/paystand-woocommerce
 
-# Naming Conventions
+### Prerequisites
 
-PHP varaible, classes and method naming conventions are all over the place (see [this stackoverflow post](https://softwareengineering.stackexchange.com/a/149321)).
-The following conventions should be followed in this repo:
+* Wordpress 4+
+* Wordpress developer account - used for deployment process
+* Woocommerce 3.2+
+* Paystand Customer Account
+* PHP code editor
+* SVN client - used for deployment process
+* ngrok installed - used on webhook configuration  
 
- - `ClassName`
- - `method_name`
- - `propertyName`
- - `function_name` (meant for global functions)
- - `$variable_name`
+### Installing
 
-# Testing
+Install the plugin
+
+* Go to wooCommerce code
+* Make a zip of the folder woocommerce-paystand/ - e.g woocommerce-paystand.zip
+* Then, from your WordPress administration panel, go to `Plugins > Add New`
+* Choose woocommerce-paystand.zip from your desktop location
+* Install and `Activate` pluging
+
+### Setup & configuration
+
+* In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `PayStand (CC, eCheck, ACH)`
+
+* Fill the next fields with information provided in you paystand dashboard account (in your Paystand Dashboard go to `Integrations > API Configuration Values`)
+    * PayStand Publishable Key
+    * PayStand Customer Id
+    * PayStand Client Id
+    * PayStand Client Secret
+* In Paystand Dashboard Account configure webhook
+    * go to `Integrations > Webhook Event URLs` and click on `Enabled`
+    * Click on `Add WebHook URL` and paste the value given `ngrok http 80` at mapping your local ports
+
+### How to use
+* Open Wordpress shop in your local env
+* Add products to your cart
+* Click on `Proceed to checkout`
+* Fill all required fields on `Billing details`
+* In your order summary choose `PayStand (CC, eCheck, ACH)`
+* Click on `Pay With Paystand`
+* Fill the Paystand checkout fields
+
+
+### Testing
 
 Unit tests are implemented with WordPress Plugin Unit Test Infrastructure. To run the tests you need to follow the following steps:
 
@@ -33,3 +62,18 @@ Unit tests are implemented with WordPress Plugin Unit Test Infrastructure. To ru
 7. Run test init script  `bin/install-wp-tests.sh wordpress_test root 'root_password' db latest`
 8. Install PHP Unit (version [6.5.8](https://phar.phpunit.de/phpunit-6.5.8.phar) is the best version to use. 7.0 or older do not work at this time)
 9. Run tests using phpUnit with  `phpunit`
+
+
+### Deployment
+
+* Publish to Wordpress market store - 
+    * Follow the instructions in https://developer.wordpress.org/plugins/wordpress-org/how-to-use-subversion/
+
+### Wordpress documentation and standards
+
+https://developer.wordpress.org/plugins/intro/
+
+## Author
+
+* **Omar Baqueiro** - *Initial work* -
+
