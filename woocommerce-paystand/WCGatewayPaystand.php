@@ -76,11 +76,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
     $this->liveurl = 'https://checkout.paystand.com/v4/';
-    //$this->testurl = 'https://checkout.paystand.co/v4/';
-    $this->testurl = 'https://localhost:3002/';
+    $this->testurl = 'https://checkout.paystand.co/v4/';
     $this->live_api_url = 'https://api.paystand.com/v3/';
-    //$this->test_api_url = 'https://api.paystand.co/v3/';
-    $this->test_api_url = 'https://0.tcp.ngrok.io:11504/api/v3/';
+    $this->test_api_url = 'https://api.paystand.co/v3/';
     $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
     // Used to add fields directly in the checkout screen (for saved cards)
     $this->has_fields = true;
@@ -613,6 +611,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->log_message("Payment status from request:" . $payment_status);
     $this->log_message("Auto processing is set to: ". $this->auto_processing);
     $success = false;
+
+    // ignore 'CREATED', 'PROCESSING', and 'FAILED' payment status
+    $ignore_array = array('CREATED','PROCESSING','FAILED');
+
     if ('PAID' === $payment_status) { $success = true; }
     if ('POSTED' === $payment_status) {
       if('yes' === $this->auto_processing) {
@@ -624,17 +626,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         return;
       }
     }
-    elseif ('CREATED' === $payment_status) {
-        // ignore 'CREATED' payment status
-        return;
-    }
-    elseif ('PROCESSING' === $payment_status) {
-        // ignore 'PROCESSING' payment status
-        return;
-    }
-    elseif ('FAILED' === $payment_status) {
-        // ignore 'FAILED' payment status
-        return;
+    elseif(in_array($payment_status, $ignore_array)) {
+      // just return for payment statuses we should ignore
+      return;
     }
 
     $this->log_message('Payment success: ' . $success);
