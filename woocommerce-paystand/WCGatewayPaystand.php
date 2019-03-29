@@ -1,7 +1,7 @@
 <?php
 
 use \Httpful\Request;
-include_once (plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php');    
+include_once (plugin_dir_path( __FILE__ ) . 'includes/bootstrap.php');
 include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutFactory.php');
 include_once( plugin_dir_path( __FILE__ ) . 'PaystandFormFields.php');
 
@@ -76,11 +76,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
     $this->liveurl = 'https://checkout.paystand.com/v4/';
-    $this->testurl = 'https://checkout.paystand.co/v4/';
+    //$this->testurl = 'https://checkout.paystand.co/v4/';
+    $this->testurl = 'https://localhost:3002/';
     $this->live_api_url = 'https://api.paystand.com/v3/';
-    $this->test_api_url = 'https://api.paystand.co/v3/';
+    //$this->test_api_url = 'https://api.paystand.co/v3/';
+    $this->test_api_url = 'https://0.tcp.ngrok.io:11504/api/v3/';
     $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
-    // Used to add fields directly in the checkout screen (for saved cards)    
+    // Used to add fields directly in the checkout screen (for saved cards)
     $this->has_fields = true;
 
     // Add support for tokenization
@@ -138,12 +140,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
     add_action('valid_paystand_callback', array($this, 'valid_paystand_callback'));
     add_action('woocommerce_thankyou_paystand', array($this, 'thankyou_page'));
-   
+
     $this->enabled = $this->is_valid_for_use() ? 'yes' : 'no';
   }
 
-  /** 
-   * clean fee session 
+  /**
+   * clean fee session
    **/
   function order_processed($order_id){
     WC()->session->__unset('fee_chosen');
@@ -167,14 +169,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    **/
   function init_form_fields()
   {
-    $this->form_fields = PaystandFormFields::get_init_form_fields(array('notify_url' => $this->notify_url) );        
+    $this->form_fields = PaystandFormFields::get_init_form_fields(array('notify_url' => $this->notify_url) );
   }
 
   /**
   *  Validates width setting from init_form_fields(), if it is outside range it is overriden by correct value
   */
-  function validate_width_field($key, $val) {            
-    return ($val > 100 )? 100  : (($val < 1) ? 1 : $val);    
+  function validate_width_field($key, $val) {
+    return ($val > 100 )? 100  : (($val < 1) ? 1 : $val);
   }
 
   /**
@@ -198,21 +200,21 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
   }
- 
+
   function convertFeeToText($value){
     $fee_message = ' - (added processing fee $%s)';
     $no_fee = ' - (no processing fee)';
     return ($value==0)?$no_fee:sprintf($fee_message, $value);
   }
 
-  /** 
-   * Payer pays fee calculation function 
+  /**
+   * Payer pays fee calculation function
   */
   public function payer_pays_fees_calculation($type){
     return ($type==="CC")?floatval($this->cardPayment_fee):floatval($this->bankPayment_fee);
   }
 
-  /** 
+  /**
    * Added custom field saved method rial with the hint of the fund to be added or not
   */
   public function get_saved_payment_method_option_html( $token ) {
@@ -380,9 +382,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
 
-  /** 
+  /**
    *  Renders the Paystand Checkout according to passed parameters.
-   * 
+   *
    *  @param PS checkout behaviour  values can be checkout_payment|checkout_token|
    *          checkout_scheduled_payment|checkout_token2col
    * @param $order_id WooCommerce order id
@@ -415,7 +417,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   /**
    * The receipt_page function is used to show Paystand checkout form.
    * This is where the user will enter their payment information.
-   * 
+   *
    * @param  order_id  WooCommerce id of the order to be paid
    * @access public
    * @return void
@@ -433,7 +435,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   function check_callback_data($post_data)
   {
       if (empty($post_data) || !is_array($post_data)) {
-        $this->log_message('check_callback_data POST data is empty');        
+        $this->log_message('check_callback_data POST data is empty');
         return false;
       }
 
@@ -480,20 +482,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       if(!$this->isValidStatus($this->payment_status)){ // filter only COMPLETE and FAILED status
           $this->log_message('check_callback_data Invalid Order Status :' . $this->payment_status );
           return false;
-      } 
+      }
 
     $order = false;
     if (isset($this->order_id)) {
       $order = new WC_Order($this->order_id);
-      if($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING){ // already is a COMPLETE or PROCESSING
+      $order_is_finalized = (($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING) || ($order->get_status()===$FAILED));
+      if($order_is_finalized){
           $this->log_message('check_callback_data already processed :' . $this->payment_status );
           return false;
-      }
-      else if($order->get_status()===$FAILED){
-          if($this->payment_status===$FAILED){ // if already is FAILED but retry payment becomes COMPLETE
-              $this->log_message('check_callback_data already processed :' . $this->payment_status );
-              return false;
-          }
       }
     }
     if (!$order) {
@@ -580,7 +577,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     // If we got a WC_Paystand event, we process it separatedly from the standard callback objects
     if($response_webhook['object'] == 'WC_Paystand_Event') {
       $this->process_payment_save_callback($response_webhook);
-      return; 
+      return;
     }
 
     $this->log_message('WebHook call: ' . print_r($response_webhook->resource, true));
@@ -596,7 +593,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
   /**
    * Valid PayStand callback
-   * This is called when a valid transaction has been received as a callback from 
+   * This is called when a valid transaction has been received as a callback from
    * Paystand Webhooks
    * @access public
    * @param array $data
@@ -607,7 +604,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->log_message('[valid_paystand_callback] Processing valid paystand callback');
 
     if ($data['resource']['object'] !='payment') {
-      $this->log_message('Received non-payment object. Refusing to process payment');  
+      $this->log_message('Received non-payment object. Refusing to process payment');
       return;
     }
 
@@ -617,15 +614,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->log_message("Auto processing is set to: ". $this->auto_processing);
     $success = false;
     if ('PAID' === $payment_status) { $success = true; }
-    if ('CREATED' === $payment_status || 'POSTED' === $payment_status ) {
+    if ('POSTED' === $payment_status) {
       if('yes' === $this->auto_processing) {
-        $this->log_message('Payment '.$payment_status.' status arrived and automatic_processing option is selected. Marking payment as success'); 
-        $success = true;        
+        $this->log_message('Payment '.$payment_status.' status arrived and automatic_processing option is selected. Marking payment as success');
+        $success = true;
       }
       else {
-        // ignore 'CREATED' / 'POSTED' payment status if the auto_processing flag is not set
+        // ignore 'POSTED' payment status if the auto_processing flag is not set
         return;
       }
+    }
+    elseif ('CREATED' === $payment_status) {
+        // ignore 'CREATED' payment status
+        return;
+    }
+    elseif ('PROCESSING' === $payment_status) {
+        // ignore 'PROCESSING' payment status
+        return;
+    }
+    elseif ('FAILED' === $payment_status) {
+        // ignore 'FAILED' payment status
+        return;
     }
 
     $this->log_message('Payment success: ' . $success);
@@ -653,7 +662,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
         $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
         $order->payment_complete($this->transaction_id);
-        
+
         if ('yes' == $this->auto_complete) {
             $order->update_status('completed', 'Order auto-completed.');
             $this->log_message('Order auto-completed: ' . $order_id);
