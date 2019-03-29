@@ -3,7 +3,7 @@
 Plugin Name: PayStand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds PayStand payment gateway to WooCommerce.
-Version: 2.3.1
+Version: 2.3.2
 Author: PayStand
 Author URI: http://www.paystand.com/
 */
@@ -41,20 +41,20 @@ function fundonfile_fee_ajax() {
 }
 
 /**
- * Ajax Hooks register fundonfile_fee_ajax 
+ * Ajax Hooks register fundonfile_fee_ajax
  */
 add_action( 'wp_ajax_fundonfile_fee_ajax', 'fundonfile_fee_ajax');
 add_action( 'wp_ajax_nopriv_fundonfile_fee_ajax', 'fundonfile_fee_ajax');
 
 function fundonfile_add_fee( $cart ) {
-  if ( is_admin() && ! defined( 'DOING_AJAX' ) ) return;   
+  if ( is_admin() && ! defined( 'DOING_AJAX' ) ) return;
   $fee = WC()->session->get('fee_chosen');
   if(isset($fee)){
     $cart->add_fee( __('Processing Fee', 'woocommerce'), $fee );
   }
 }
 
-/** 
+/**
  * Inject JS code in footer cart's page
 */
 function fundonfile_fee_js() {
@@ -89,8 +89,8 @@ END;
   }
 
 /**
- * Register hook for calculate fee & footer 
- */  
+ * Register hook for calculate fee & footer
+ */
 add_action( 'woocommerce_cart_calculate_fees', 'fundonfile_add_fee', 20, 1 );
 add_action( 'wp_footer', 'fundonfile_fee_js', 30);
 
@@ -107,7 +107,7 @@ add_action('plugins_loaded', 'init_paystand_gateway_class');
 
 function add_paystand_gateway_class($methods)
 {
-  $methods[] = 'WC_Gateway_PayStand'; 
+  $methods[] = 'WC_Gateway_PayStand';
   return $methods;
 }
 add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
