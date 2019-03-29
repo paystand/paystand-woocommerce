@@ -626,7 +626,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         return;
       }
     }
-    elseif(in_array($payment_status, $ignore_array)) {
+    elseif (in_array($payment_status, $ignore_array)) {
       // just return for payment statuses we should ignore
       return;
     }
