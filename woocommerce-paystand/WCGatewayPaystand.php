@@ -184,10 +184,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     if($this->show_payment_method=='yes'){
       // We only show the available payment methods during Checkout.
       if (is_checkout() &&  count($this->get_tokens()) > 0)  {
-
-        $this->get_split_fees(WC()->cart->cart_contents_total);
+        $total_payment =  WC()->cart->get_total($context = '') - WC()->cart->get_fee_total();
+        $this->get_split_fees($total_payment);
         $this->saved_payment_methods();
-
       } else if(isset($_POST['woocommerce_add_payment_method'])  ) {
         // During "add payment method" option, we render Paystand Checkout in Token Saving mode
         $this->render_ps_checkout('checkout_token',null, wc_get_endpoint_url( 'payment-methods' ));
@@ -707,16 +706,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       'x-publishable-key' => $this->publishable_key
     );
 
-    $request_body = sprintf('
-    {
-      "subtotal": "%s",
-        "cardPayments": {
-          "feeSplitType": "recoup_all_fees"
-        },
-        "bankPayments": {
-          "feeSplitType": "recoup_all_fees"
-        }
-    }', $amount);
+    $request_body = sprintf('{ "subtotal": "%s" }', $amount);
 
     try{
       $this->log_message("get_split_fees call");
