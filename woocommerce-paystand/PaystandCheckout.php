@@ -52,23 +52,55 @@ abstract class PaystandCheckout
         $environment = ($data['testmode'] == 'no') ? 'live' : 'sandbox';
 
         if ($order) {
-            $billing_full_name = trim($order->billing_first_name . ' ' . $order->billing_last_name);
-            $billing_email_address = $order->billing_email;
+            $billing_full_name = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+            $billing_email_address = $order->get_billing_email();
             $billing_street = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
-            $billing_city = $order->billing_city;
-            $billing_postalcode = $order->billing_postcode;
-            $billing_state =  $order->billing_state;
-            $billing_country = getISO3166_3_code($order->billing_country);
+            $billing_city = $order->get_billing_city();
+            $billing_postalcode = $order->get_billing_postcode();
+            $billing_state =  $order->get_billing_state();
+            $billing_country = getISO3166_3_code($order->get_billing_country());
             $order_id = $data['order_id'];
         }
-        ?>
+
+        if($_GET['processing'] == 'true'){
+          ?>
+            <div class="order-status" id="order_status">
+              Your order is processing, please be patient.
+            </div>
+
+            <script>
+              function fetchStatus()
+              {
+                jQuery.ajax({
+                  url : '<?php echo site_url(); ?>/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=<?php echo $order->get_order_number(); ?>',
+                  type : 'get',
+                  error : function(response){
+                    console.log(response);
+                  },
+                  success : function( response ){
+                    let success = (response == "posted" || response == "paid");
+                    if (success) {
+                      clearInterval(window.refreshIntervalId);
+                      window.location = '<?php echo $_GET['redirectUrl'] ?>';
+                    }
+                  }
+                });
+              }
+
+              window.refreshIntervalId = setInterval(fetchStatus, 1000);
+            </script>
+
+            <?
+        }
+        else {
+            ?>
 
     <script
       type="text/javascript"
       id="ps_checkout"
       src="<?=$data['paystand_url']?>js/paystand.checkout.js"
       ps-env="<?=$environment?>"
-      ps-viewLogo="hide"      
+      ps-viewLogo="hide"
       ps-publishableKey="<?= $data['publishable_key'] ?>"
       ps-containerId="ps_container_id"
       ps-mode="<?=$data['render_mode']?>"
@@ -87,7 +119,7 @@ abstract class PaystandCheckout
       ps-payerAddressPostal = "<?=$billing_postalcode?>"
       ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $data['user_id'] ?>" }'
       ps-paymentCurrency =  "<?= $data['currency'] ?>"
-      ps-width =  "<?= $data['render_width'] ?>%"      
+      ps-width =  "<?= $data['render_width'] ?>%"
       ps-viewFunds = "<?= $data['view_funds'] ?>"
       >
 
@@ -136,6 +168,9 @@ abstract class PaystandCheckout
 
         <div id="ps_checkout_load" style= " text-align: center" >
         </div>
+            <?
+        }
+        ?>
         <?php
     }
 }
