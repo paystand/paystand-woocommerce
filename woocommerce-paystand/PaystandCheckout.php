@@ -90,7 +90,7 @@ abstract class PaystandCheckout
               window.refreshIntervalId = setInterval(fetchStatus, 1000);
             </script>
 
-            <?
+            <?php
         }
         else {
             ?>
@@ -98,29 +98,29 @@ abstract class PaystandCheckout
     <script
       type="text/javascript"
       id="ps_checkout"
-      src="<?=$data['paystand_url']?>js/paystand.checkout.js"
-      ps-env="<?=$environment?>"
+      src="<?php echo $data['paystand_url']?>js/paystand.checkout.js"
+      ps-env="<?php echo $environment?>"
       ps-viewLogo="hide"
-      ps-publishableKey="<?= $data['publishable_key'] ?>"
+      ps-publishableKey="<?php echo  $data['publishable_key'] ?>"
       ps-containerId="ps_container_id"
-      ps-mode="<?=$data['render_mode']?>"
+      ps-mode="<?php echo $data['render_mode']?>"
       ps-show="true"
-      ps-checkoutType="<?=$data['checkout_type']?>"
-      ps-viewCheckout="<?=$data['view_checkout']?>"
-      ps-paymentAmount="<?= $order->order_total ?>"
+      ps-checkoutType="<?php echo $data['checkout_type']?>"
+      ps-viewCheckout="<?php echo $data['view_checkout']?>"
+      ps-paymentAmount="<?php echo  $order->order_total ?>"
       ps-viewClose="hide"
       ps-fixedAmount="true"
-      ps-payerName="<?=$billing_full_name?>"
-      ps-payerEmail="<?=$billing_email_address?>"
-      ps-payerAddressStreet = "<?=$billing_street?>"
-      ps-payerAddressCity = "<?=$billing_city?>"
-      ps-payerAddressCountry = "<?=$billing_country?>"
-      ps-payerAddressState = "<?=$billing_state?>"
-      ps-payerAddressPostal = "<?=$billing_postalcode?>"
-      ps-paymentMeta = '{ "order_id" : "<?=$order_id?>", "user_id":  "<?= $data['user_id'] ?>" }'
-      ps-paymentCurrency =  "<?= $data['currency'] ?>"
-      ps-width =  "<?= $data['render_width'] ?>%"
-      ps-viewFunds = "<?= $data['view_funds'] ?>"
+      ps-payerName="<?php echo $billing_full_name?>"
+      ps-payerEmail="<?php echo $billing_email_address?>"
+      ps-payerAddressStreet = "<?php echo $billing_street?>"
+      ps-payerAddressCity = "<?php echo $billing_city?>"
+      ps-payerAddressCountry = "<?php echo $billing_country?>"
+      ps-payerAddressState = "<?php echo $billing_state?>"
+      ps-payerAddressPostal = "<?php echo $billing_postalcode?>"
+      ps-paymentMeta = '{ "order_id" : "<?php echo $order_id?>", "user_id":  "<?php echo  $data['user_id'] ?>" }'
+      ps-paymentCurrency =  "<?php echo  $data['currency'] ?>"
+      ps-width =  "<?php echo  $data['render_width'] ?>%"
+      ps-viewFunds = "<?php echo  $data['view_funds'] ?>"
       >
 
     </script>
@@ -141,7 +141,7 @@ abstract class PaystandCheckout
                             <?php
                                 if(!empty($return_url)){
                             ?>
-                                    window.location.href = "<?= $return_url ?>" ;
+                                    window.location.href = "<?php echo  $return_url ?>" ;
                             <?php
                                 }
                             ?>
@@ -149,7 +149,7 @@ abstract class PaystandCheckout
                         var data = {
                             object: "WC_Paystand_Event",
                             type:"save_payment",
-                            user_id : "<?=$data['user_id'] ?>",
+                            user_id : "<?php echo $data['user_id'] ?>",
                             data: result.response.data
                         };
                         xhr.send(JSON.stringify(data));
@@ -157,7 +157,7 @@ abstract class PaystandCheckout
                         <?php
                         if(!empty($return_url)){
                         ?>
-                        window.location.href = "<?= $return_url ?>" ;
+                        window.location.href = "<?php echo  $return_url ?>" ;
                         <?php
                         }
                         ?>
@@ -168,7 +168,7 @@ abstract class PaystandCheckout
 
         <div id="ps_checkout_load" style= " text-align: center" >
         </div>
-            <?
+            <?php
         }
         ?>
         <?php
