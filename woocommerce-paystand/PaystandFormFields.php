@@ -46,7 +46,7 @@ class PaystandFormFields
                 'type' => 'title',
                 'description' => 'Set your webhook url to <code>' . $data['notify_url'] . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
             ),
-            
+
             'behavior_title' => array('title' => __('Payment Processing Behavior', 'woocommerce-paystand'),'type' => 'title'),
             'show_payment_method' => array(
               'title' => __('Allow to Save Payment Method', 'woocommerce-paystand'),
@@ -60,7 +60,7 @@ class PaystandFormFields
                 'type' => 'checkbox',
                 'label' => __('Automatic Order Set to "Processing"', 'woocommerce-paystand'),
                 'default' => 'no',
-                'description' => __('Selecting this will result in WooCommerce orders being given the status "Processing" any time your customer succeeds ' . 
+                'description' => __('Selecting this will result in WooCommerce orders being given the status "Processing" any time your customer succeeds ' .
                     'in checkout, regardless of the time it takes funds to be processed and transferred. This feature is useful when '.
                     'using WooCommerce order status for non-financial business decisions (e.g., shipping).  ')
               ),
@@ -108,6 +108,12 @@ class PaystandFormFields
               'default' => 70,
               'description' => __('The % of width that Checkout will take relative to the page where it is placed.', 'woocommerce-paystand'),
             ),
+           'custom_preset' => array(
+               'title' => __('Key for custom preset', 'woocommerce-paystand'),
+               'type' => 'text',
+               'description' => __('On the Paystand dashboard integrations > billing portal page you can create custom presets to customize checkout'),
+               'desc_tip' => true,
+           ),
             'dev_title' => array('title' => __('Development Settings', 'woocommerce-paystand'),'type' => 'title'),
             'testmode' => array(
                 'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
@@ -123,6 +129,6 @@ class PaystandFormFields
               )
 
             );
-           
+
     }
 }

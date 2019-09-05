@@ -113,6 +113,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->render_mode = $this->get_option('render_mode');
     $this->debug = $this->get_option('debug');
     $this->render_width = $this->get_option('width');
+    $this->custom_preset = $this->get_option('custom_preset');
     $this->order_id = null;
     $this->paystand_fee = null;
     $this->payment_status = null;
@@ -419,6 +420,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['view_checkout'] =  $this->view_checkout;
       $data['render_mode'] =  $this->render_mode;
       $data['render_width'] =  $this->render_width;
+      $data['custom_preset'] =  $this->custom_preset;
       $data['testmode'] = $this->testmode;
       $data['show_payment_method'] = $this->show_payment_method;
       $data['view_funds'] = $this->view_funds;
