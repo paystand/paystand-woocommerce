@@ -62,7 +62,7 @@ abstract class PaystandCheckout
             $order_id = $data['order_id'];
         }
 
-        if($_GET['processing'] == 'true'){
+        if(isset($_GET['processing']) && ($_GET['processing'] == 'true')){
           ?>
             <div class="order-status" id="order_status">
               Your order is processing, please be patient.
@@ -107,7 +107,7 @@ abstract class PaystandCheckout
       ps-show="true"
       ps-checkoutType="<?php echo $data['checkout_type']?>"
       ps-viewCheckout="<?php echo $data['view_checkout']?>"
-      ps-paymentAmount="<?php echo  $order->order_total ?>"
+      ps-paymentAmount="<?php echo  $order->getTotal() ?>"
       ps-viewClose="hide"
       ps-fixedAmount="true"
       ps-payerName="<?php echo $billing_full_name?>"
@@ -120,6 +120,7 @@ abstract class PaystandCheckout
       ps-paymentMeta = '{ "order_id" : "<?php echo $order_id?>", "user_id":  "<?php echo  $data['user_id'] ?>" }'
       ps-paymentCurrency =  "<?php echo  $data['currency'] ?>"
       ps-width =  "<?php echo  $data['render_width'] ?>%"
+      ps-customPreset = "<?php echo  $data['custom_preset'] ?>"
       ps-viewFunds = "<?php echo  $data['view_funds'] ?>"
       >
 

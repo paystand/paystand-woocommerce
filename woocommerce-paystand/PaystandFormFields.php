@@ -56,7 +56,7 @@ class PaystandFormFields
               'description' => __('Selecting this will allow your customers to save their Paystand Payment Methods for future use')
             ),
             'auto_processing' => array(
-                'title' => __('Auto ACH/eCheck Clearance', 'woocommerce-paystand'),
+                'title' => __('Auto ACH/Bank Clearance', 'woocommerce-paystand'),
                 'type' => 'checkbox',
                 'label' => __('Automatic Order Set to "Processing"', 'woocommerce-paystand'),
                 'default' => 'no',
