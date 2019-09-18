@@ -107,7 +107,7 @@ abstract class PaystandCheckout
       ps-show="true"
       ps-checkoutType="<?php echo $data['checkout_type']?>"
       ps-viewCheckout="<?php echo $data['view_checkout']?>"
-      ps-paymentAmount="<?php echo  $order->getTotal() ?>"
+      ps-paymentAmount="<?php echo  $order->get_total() ?>"
       ps-viewClose="hide"
       ps-fixedAmount="true"
       ps-payerName="<?php echo $billing_full_name?>"
