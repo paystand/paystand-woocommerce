@@ -67,11 +67,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   public function __construct()
   {
     $this->id = 'paystand';
-    $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small.png' , __FILE__));
+    $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small_new.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('PayStand (CC, eCheck, ACH)', 'woocommerce-paystand');
+    $this->title = __('PayStand (CC, Bank, ACH)', 'woocommerce-paystand');
     $this->method_title = $this->title;
-    $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, eCheck, or ACH.";
+    $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, bank, or ACH.";
     $this->method_description = $this->description;
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
@@ -113,6 +113,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->render_mode = $this->get_option('render_mode');
     $this->debug = $this->get_option('debug');
     $this->render_width = $this->get_option('width');
+    $this->custom_preset = $this->get_option('custom_preset');
     $this->order_id = null;
     $this->paystand_fee = null;
     $this->payment_status = null;
@@ -285,16 +286,21 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       );
 
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
+      $this->log_message("ready to send post payment");
       try{
        $response =  $this->do_http_post($endpoint, $header, $body);
       } catch (Exception $e) {
         $this->log_message('process_payment POST exception: ' . print_r($e, true));
       }
+      $this->log_message("post payment sent");
+      $this->log_message("post payment response code" . $response->code);
+      $this->log_message("post payment response status" . $response->body->status);
       if($response->code!==200){
           $this->log_message('process_payment POST error: ' . print_r($response->body, true));
           return false;
       }
 
+      $this->log_message('process_payment POST response: ' . print_r($response->body, true));
       if($response->body->status == 'processing') {
         $return_array = array(
           'result' => 'success',
@@ -339,7 +345,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     ?>
     <h3>PayStand Checkout for WooCommerce</h3>
     <div class="paystand-banner updated" style="overflow:hidden;">
-      <img style="float: right;height: 100px;margin: 10px 10px 10px 50px;" src="<?php echo plugins_url('images/paystand_logo_banner.png' , __FILE__); ?>" />
+      <img style="float: right;height: 100px;margin: 10px 10px 10px 50px;" src="<?php echo plugins_url('images/paystand_logo_banner_new.png' , __FILE__); ?>" />
       <p class="main"><strong>Getting started</strong></p>
       <p>PayStand is your payment processor and gateway rolled into one. Set up PayStand as your WooCommerce checkout solution to get access to your money quickly, make your payments highly secure, and offer a full suite of payment methods for your customers.</p>
       <p>
@@ -419,6 +425,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['view_checkout'] =  $this->view_checkout;
       $data['render_mode'] =  $this->render_mode;
       $data['render_width'] =  $this->render_width;
+      $data['custom_preset'] =  $this->custom_preset;
       $data['testmode'] = $this->testmode;
       $data['show_payment_method'] = $this->show_payment_method;
       $data['view_funds'] = $this->view_funds;
@@ -528,7 +535,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       if($response['data']['object'] === 'token' ){
         $payment_source = $response['data'][empty($response['data']['card']) ? 'bank' : 'card'];
       }
-      else{ // bank, echeck
+      else{ // bank, ach
           $payment_source = $response['data']['source'];
       }
 
@@ -744,6 +751,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     );
 
     $request_body = sprintf('{ "subtotal": "%s" }', $amount);
+    $response = new stdClass();
 
     try{
       $this->log_message("get_split_fees call");
@@ -754,7 +762,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->log_message('get_split_fees exception: ' . print_r($e, true));
     }
 
-    if($response->code!==200){ // Unauthorized or another error
+    if(isset($response->code) && isset($response->body) && $response->code!==200){ // Unauthorized or another error
         $this->log_message('get_split_fees Access_Tokens error: '.print_r($response->body, true));
     }
 
