@@ -17,7 +17,7 @@ class PaystandCheckoutToken extends PaystandCheckout
     public function render_header(){
         ?>
         <label for= "savePaymentMethod" style ="text-align: center; visibility: hidden;">
-            <input type="checkbox" checked id="savePaymentMethod" name="savePaymentMethod" value="Save Pament Method"/>
+            <input type="checkbox" checked id="savePaymentMethod" name="savePaymentMethod" value="Save Payment Method"/>
             Save This Payment Method
         </label>
         <?php
