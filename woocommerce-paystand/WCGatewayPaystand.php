@@ -301,7 +301,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $body['feeSplit'] = $this->feeSplitBank;
         $body['amount'] = $this->total_amount_bank;
       };
-      $this->log_message('Paystand payment object: ' . print_r($body, true));
 
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
       $this->log_message("ready to send post payment");
@@ -808,10 +807,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       );
       $this->total_amount_card = $splitFees->cardPayments->payerTotal;
       $this->total_amount_bank = $splitFees->achBankPayments->payerTotal;
-      $this->log_message('total_amount_card: ' . print_r($this->total_amount_card, true));
-      $this->log_message('total_amount_bank: ' . print_r($this->total_amount_card, true));
-      $this->log_message('feeSplitCard: ' . print_r($this->feeSplitCard, true));
-      $this->log_message('feeSplitBank: ' . print_r($this->feeSplitBank, true));
     } catch (Exception $e) {
       $this->log_message('get_split_fees exception: ' . print_r($e, true));
     }
