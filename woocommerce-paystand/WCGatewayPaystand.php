@@ -57,6 +57,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   var $view_funds = null;
   var $cardPayment_fee = null;
   var $bankPayment_fee = null;
+  var $feeSplitCard = null;
+  var $feeSplitBank = null;
+  var $total_amount_card = null;
+  var $total_amount_bank = null;
 
   /**
    * Constructor for the gateway.
@@ -284,6 +288,19 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         ),
         'checkBalance' => true
       );
+
+      $this->get_split_fees($order->get_subtotal());
+
+      // add feeSplit object for card if we have one available
+      if ($wc_payment_token->get_type() == 'CC' && is_array($this->feeSplitCard)){
+        $body['feeSplit'] = $this->feeSplitCard;
+        $body['amount'] = $this->total_amount_card;
+      };
+      // add feeSplit object for bank if we have one available
+      if ($wc_payment_token->get_type() != 'CC' && is_array($this->feeSplitBank)){
+        $body['feeSplit'] = $this->feeSplitBank;
+        $body['amount'] = $this->total_amount_bank;
+      };
 
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
       $this->log_message("ready to send post payment");
@@ -758,6 +775,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $response =  $this->do_http_post($endpoint, $header, json_decode($request_body));
       $this->cardPayment_fee = $response->body->cardPayments->payerTotalFees;
       $this->bankPayment_fee = $response->body->bankPayments->payerTotalFees;
+      $this->buildFeeSplit($response->body);
     } catch (Exception $e) {
         $this->log_message('get_split_fees exception: ' . print_r($e, true));
     }
@@ -768,6 +786,30 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     $this->log_message('get_split_fees Fees card: ' . $this->cardPayment_fee);
     $this->log_message('get_split_fees Fees bank: ' . $this->bankPayment_fee);
+  }
+
+  /**
+  * Builds FeeSplit objects from feeSplit response
+  */
+  function buildFeeSplit($splitFees){
+    try{
+      $this->feeSplitCard = array(
+        'subtotal' => $splitFees->cardPayments->subtotal,
+        'feeSplitType' => $splitFees->cardPayments->feeSplitType,
+        'customRate' => $splitFees->cardPayments->customRate,
+        'customFlat' => $splitFees->cardPayments->customFlat
+      );
+      $this->feeSplitBank = array(
+        'subtotal' => $splitFees->achBankPayments->subtotal,
+        'feeSplitType' => $splitFees->achBankPayments->feeSplitType,
+        'customRate' => $splitFees->achBankPayments->customRate,
+        'customFlat' => $splitFees->achBankPayments->customFlat
+      );
+      $this->total_amount_card = $splitFees->cardPayments->payerTotal;
+      $this->total_amount_bank = $splitFees->achBankPayments->payerTotal;
+    } catch (Exception $e) {
+      $this->log_message('get_split_fees exception: ' . print_r($e, true));
+    }
   }
 
   /**
