@@ -12,14 +12,14 @@ include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutToken.php');
 class PaystandCheckoutFactory
 {
 
-    public static function build($type , $data, $return_url){
+    public static function build($type, $environment, $data, $return_url){
 
         switch($type){
             case 'checkout_payment':
-                return new PaystandCheckoutPayment($type , $data, $return_url);
+                return new PaystandCheckoutPayment($type, $environment, $data, $return_url);
             break;
             case 'checkout_token':
-                return new PaystandCheckoutToken($type , $data, $return_url);
+                return new PaystandCheckoutToken($type, $environment, $data, $return_url);
             break;
             default:
                 throw Exception('Unsupported checkout type');

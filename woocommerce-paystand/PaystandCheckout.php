@@ -16,10 +16,11 @@ abstract class PaystandCheckout
     private $data = null;
     private $type = null;
 
-    public function __construct($type , $data, $return_url){
+    public function __construct($type, $environment, $data, $return_url){
         $this->type = $type;
         $this->data = $data;
         $this->return_url = $return_url;
+        $this->environment = $environment;
     }
 
     public function render_container(){
@@ -49,7 +50,7 @@ abstract class PaystandCheckout
         $data = $this->data;
         $order = $data['order'];
         $return_url = $this->return_url;
-        $environment = ($data['testmode'] == 'no') ? 'live' : 'sandbox';
+        $environment = $this->environment;
 
         if ($order) {
             $billing_full_name = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());

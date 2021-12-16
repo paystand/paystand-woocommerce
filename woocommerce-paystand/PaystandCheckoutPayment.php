@@ -11,8 +11,8 @@ include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckout.php');
 class PaystandCheckoutPayment extends PaystandCheckout
 {
 
-    public function __construct($type , $data, $return_url){
-        parent::__construct($type , $data, $return_url);
+    public function __construct($type, $environment, $data, $return_url){
+        parent::__construct($type, $environment, $data, $return_url);
     }
 
     public function render_header(){
