@@ -7,14 +7,14 @@
 
 
 /**
- * Tests WC_Gateway_Paystand
+ * Tests WCGatewayPaystandTest
  * 
  */
-class Test_WC_Gateway_Paystand extends \WP_Mock\Tools\TestCase {
+class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
 	/**
 	 * Setup WP_Mock for each test
 	 */
-	public function setUp() {
+	public function setUp(): void {
         \WP_Mock::setUp();
         \WP_Mock::userFunction('plugin_dir_path', array('return'=>'./woocommerce-paystand/'));
         \WP_Mock::userFunction('plugins_url', array('return'=>'./woocommerce-paystand/'));
@@ -58,7 +58,7 @@ class Test_WC_Gateway_Paystand extends \WP_Mock\Tools\TestCase {
 	/**
 	 * Clean up after the test is run
 	 */
-	public function tearDown() {
+	public function tearDown(): void {
 	    $this->addToAssertionCount(
 	        \Mockery::getContainer()->mockery_getExpectationCount()
 	        );

@@ -84,6 +84,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->live_api_url = 'https://api.paystand.com/v3/';
     $this->test_api_url = 'https://api.paystand.co/v3/';
     $this->notify_url = WC()->api_request_url('wc_gateway_paystand');
+    $this->paystand_checkout_config = $this->get_paystand_checkout_config();
     // Used to add fields directly in the checkout screen (for saved cards)
     $this->has_fields = true;
 
@@ -270,7 +271,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       }
 
       $ps_access_token = $this->get_ps_api_token();
-
       // call POST Payments
       $header = array('Authorization' => 'Bearer '. $ps_access_token ,
           'X-CUSTOMER-ID' => $this->customer_id,
@@ -309,14 +309,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       } catch (Exception $e) {
         $this->log_message('process_payment POST exception: ' . print_r($e, true));
       }
+      
       $this->log_message("post payment sent");
       $this->log_message("post payment response code" . $response->code);
-      $this->log_message("post payment response status" . $response->body->status);
       if($response->code!==200){
-          $this->log_message('process_payment POST error: ' . print_r($response->body, true));
-          return false;
+        $this->log_message('process_payment POST error: ' . print_r($response->body, true));
+        return false;
       }
-
+      
+      $this->log_message("post payment response status" . $response->body->status);
       $this->log_message('process_payment POST response: ' . print_r($response->body, true));
       if($response->body->status == 'processing') {
         $return_array = array(
@@ -399,7 +400,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   public function get_paystand_url()
   {
-    return ('yes' == $this->testmode) ?  $this->testurl : $this->liveurl;
+    // return ('yes' == $this->testmode) ?  $this->testurl : $this->liveurl;
+    return $this->paystand_checkout_config->checkout;
   }
 
   /**
@@ -407,7 +409,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
    */
   public function get_paystand_api_url()
   {
-    return ('yes' == $this->testmode) ? $this->test_api_url : $this->live_api_url;
+    // return ('yes' == $this->testmode) ? $this->test_api_url : $this->live_api_url;
+    return $this->paystand_checkout_config->api;
   }
   /**
    * Output for the thank you page.
@@ -431,6 +434,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $order = $order_id == null ? null : new WC_Order($order_id);
       $user_id = get_current_user_id();
       $currency = get_woocommerce_currency();
+      $checkout_env = $this->get_checkout_env();
 
       $data['paystand_url']=$this->get_paystand_url();
       $data['publishable_key']=$this->publishable_key;
@@ -447,7 +451,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       $data['show_payment_method'] = $this->show_payment_method;
       $data['view_funds'] = $this->view_funds;
 
-      $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $data, $return_url);
+      $ps_checkout = PaystandCheckoutFactory::build($checkout_type, $checkout_env, $data, $return_url);
       $ps_checkout->render();
   }
 
@@ -820,5 +824,22 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   function add_payment_method() {
      $this->log_message("Added new payment Method");
    }
+  
+  /**
+   * Get configurations
+   */
+  function get_paystand_checkout_config() {
+    $env = $this->get_checkout_env();
+    $config = json_decode(file_get_contents(plugin_dir_path( __FILE__ ) . 'config.json'));
+    
+    return $config->psCheckoutUrls->$env;
+  }
+
+  function get_checkout_env() {
+    $paystandEnv = \getenv('PAYSTAND_ENV');
+    $testmode = $this->get_option('testmode');
+    $env = ("yes" == $testmode) ? "sandbox" : ($paystandEnv ?: "live");
+    return $env;
+  }
 }
 
