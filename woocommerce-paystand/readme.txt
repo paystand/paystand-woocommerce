@@ -73,7 +73,7 @@ If you have any questions or feedback, please email us at support@paystand.com.
 = 2.4.3 =
 * Syncing config.json
 = 2.4.2 =
-* Tested with woocommerce version 5.2
+* Tested with woocommerce version 5.8.2
 = 2.4.1 =
 * Send the splitFee object with fund on file payment.
 = 2.4.0 =
