@@ -72,8 +72,3 @@ Unit tests are implemented with WordPress Plugin Unit Test Infrastructure. To ru
 ### Wordpress documentation and standards
 
 https://developer.wordpress.org/plugins/intro/
-
-## Author
-
-* **Omar Baqueiro** - *Initial work* -
-
