@@ -17,7 +17,7 @@ Note:  To access our v1.x plugins, please contact [support@paystand.com](mailto:
 1. Upload woocommerce-paystand to the `/wp-content/plugins` folder in your WooCommerce WordPress site.
 2. Activate the plugin through the 'Plugins' menu on the WordPress admin page.
 3. Under WooCommerce > Settings > Checkout > PayStand, click the Enable PayStand checkbox and add your Paystand Credentials.  Be sure to click the Save Settings button at the bottom of the page.  Your Credentails  can be found in your PayStand dashboard under Integrations > API Configuration Values.
-4. Copy the Webhook Url from the WooCommerce settings page and go to your [PayStand dashboard](https://dashboard.paystand.com/v2/) and enter it under Settings > Checkout Features > Webhook Url.
+4. Copy the Webhook Url from the WooCommerce settings page and go to your [PayStand dashboard](https://dashboard.paystand.com/v2/) and enter it under Integrations > Webhook Event URLs.
 5. Go shopping on your WooCommerce site and pay with PayStand!
 
 If you are interested in using the PayStand sandbox environment for testing, please contact us for additional details.
@@ -41,7 +41,7 @@ It adds payment processing to your WooCommerce site using PayStand.
 
 = What version of WooCommerce does this plugin work with? =
 
-This plugin works with WooCommerce version 3.0.0 and above.
+This plugin works with WooCommerce version 3.5.0 and above.
 
 == Upgrade Notice ==
 
