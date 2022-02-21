@@ -3,7 +3,7 @@ Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, echeck, ach, bitcoin
 Requires at least: 3.5
 Tested up to: 5.8.2
-Stable tag: 2.4.3
+Stable tag: 2.4.4
 
 The PayStand for WooCommerce plugin adds a WooCommerce payment gateway for PayStand.
 
@@ -70,6 +70,9 @@ Also, make sure the Enable PayStand checkbox is selected in your WordPress admin
 If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
+= 2.4.4 =
+* Updated instructions for finding webhook urls section
+* Updated works with to version 3.5.0
 = 2.4.3 =
 * Syncing config.json
 = 2.4.2 =
