@@ -1,6 +1,6 @@
 # Paystand WooCommerce Checkout Plugin
 
-WooCommerce Plugin to add Payments with Paystand checkout, allowing to use ACH, Card, E-check
+WooCommerce Plugin to add Payments with Paystand checkout, allowing to use ACH, Card, Bank
 
 ## Getting Started
 
@@ -28,23 +28,20 @@ Install the plugin
 
 ### Setup & configuration
 
-* In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `PayStand (CC, eCheck, ACH)`
+* In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `Paystand (CC, BANK, ACH)`
 
 * Fill the next fields with information provided in you paystand dashboard account (in your Paystand Dashboard go to `Integrations > API Configuration Values`)
-    * PayStand Publishable Key
-    * PayStand Customer Id
-    * PayStand Client Id
-    * PayStand Client Secret
-* In Paystand Dashboard Account configure webhook
-    * go to `Integrations > Webhook Event URLs` and click on `Enabled`
-    * Click on `Add WebHook URL` and paste the value given `ngrok http 80` at mapping your local ports
+    * Paystand Publishable Key
+    * Paystand Customer Id
+    * Paystand Client Id
+    * Paystand Client Secret
 
 ### How to use
 * Open Wordpress shop in your local env
 * Add products to your cart
 * Click on `Proceed to checkout`
 * Fill all required fields on `Billing details`
-* In your order summary choose `PayStand (CC, eCheck, ACH)`
+* In your order summary choose `Paystand (CC, BANK, ACH)`
 * Click on `Pay With Paystand`
 * Fill the Paystand checkout fields
 
@@ -62,12 +59,6 @@ Unit tests are implemented with WordPress Plugin Unit Test Infrastructure. To ru
 7. Run test init script  `bin/install-wp-tests.sh wordpress_test root 'root_password' db latest`
 8. Install PHP Unit (version [6.5.8](https://phar.phpunit.de/phpunit-6.5.8.phar) is the best version to use. 7.0 or older do not work at this time)
 9. Run tests using phpUnit with  `phpunit`
-
-
-### Deployment
-
-* Publish to Wordpress market store - 
-    * Follow the instructions in https://developer.wordpress.org/plugins/wordpress-org/how-to-use-subversion/
 
 ### Wordpress documentation and standards
 

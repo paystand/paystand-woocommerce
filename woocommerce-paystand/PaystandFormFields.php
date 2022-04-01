@@ -10,41 +10,41 @@ class PaystandFormFields
             'enabled' => array(
                 'title' => __('Enable/Disable', 'woocommerce-paystand'),
                 'type' => 'checkbox',
-                'label' => __('Enable PayStand', 'woocommerce-paystand'),
+                'label' => __('Enable Paystand', 'woocommerce-paystand'),
                 'default' => 'yes'
             ),
             'publishable_key' => array(
-                'title' => __('PayStand Publishable Key', 'woocommerce-paystand'),
+                'title' => __('Paystand Publishable Key', 'woocommerce-paystand'),
                 'type' => 'text',
-                'description' => __('Your PayStand publishable key from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+                'description' => __('Your Paystand publishable key from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
                 'default' => '',
                 'desc_tip' => true,
             ),
             'customer_id' => array(
-              'title' => __('PayStand Customer Id ', 'woocommerce-paystand'),
+              'title' => __('Paystand Customer Id ', 'woocommerce-paystand'),
               'type' => 'text',
-              'description' => __('Your PayStand customer_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+              'description' => __('Your Paystand customer_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
               'default' => '',
               'desc_tip' => true,
             ),
             'client_id' => array(
-              'title' => __('PayStand Client Id ', 'woocommerce-paystand'),
+              'title' => __('Paystand Client Id ', 'woocommerce-paystand'),
               'type' => 'text',
-              'description' => __('Your PayStand client_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+              'description' => __('Your Paystand client_id from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
               'default' => '',
               'desc_tip' => true,
             ),
             'client_secret' => array(
-              'title' => __('PayStand Client Secret', 'woocommerce-paystand'),
+              'title' => __('Paystand Client Secret', 'woocommerce-paystand'),
               'type' => 'text',
-              'description' => __('Your PayStand client_secret from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
+              'description' => __('Your Paystand client_secret from API configuration values in your Paystand Integrations dashboard.', 'woocommerce-paystand'),
               'default' => '',
               'desc_tip' => true,
             ),
             'webhook' => array(
                 'title' => __('Webhook', 'woocommerce-paystand'),
                 'type' => 'title',
-                'description' => 'Set your webhook url to <code>' . $data['notify_url'] . '</code> in your <a href="https://www.paystand.com/login" target="_blank">PayStand dashboard</a> under Settings > Checkout Features',
+                'description' => 'Set your webhook url to <code>' . $data['notify_url'] . '</code> in your <a href="https://www.paystand.com/login" target="_blank">Paystand dashboard</a> under Settings > Checkout Features',
             ),
 
             'behavior_title' => array('title' => __('Payment Processing Behavior', 'woocommerce-paystand'),'type' => 'title'),
@@ -74,8 +74,8 @@ class PaystandFormFields
               'view_funds' => array(
                 'title' => __('Type of funds to show ', 'woocommerce-paystand'),
                 'type' => 'text',
-                'description' => __('The type of funds to show during checkout. It can be ach, echeck or card; each one separated by a comma. Depending on your Paystand plan some might not be available.'),
-                'default' => 'ach,echeck,card',
+                'description' => __('The type of funds to show during checkout. It can be ach, bank or card; each one separated by a comma. Depending on your Paystand plan some might not be available.'),
+                'default' => 'ach,bank,card',
                 'desc_tip' => true,
               ),
 
@@ -116,9 +116,9 @@ class PaystandFormFields
            ),
             'dev_title' => array('title' => __('Development Settings', 'woocommerce-paystand'),'type' => 'title'),
             'testmode' => array(
-                'title' => __('PayStand Sandbox', 'woocommerce-paystand'),
+                'title' => __('Paystand Sandbox', 'woocommerce-paystand'),
                 'type' => 'checkbox',
-                'label' => __('Use PayStand Sandbox Server', 'woocommerce-paystand'),
+                'label' => __('Use Paystand Sandbox Server', 'woocommerce-paystand'),
                 'default' => 'no',
               ),
               'debug' => array(

@@ -1,15 +1,15 @@
 <?php
 /*
-Plugin Name: PayStand for WooCommerce
+Plugin Name: Paystand for WooCommerce
 Plugin URI: http://www.paystand.com/
-Description: Adds PayStand payment gateway to WooCommerce.
+Description: Adds Paystand payment gateway to WooCommerce.
 Version: 2.4.2
-Author: PayStand
+Author: Paystand
 Author URI: http://www.paystand.com/
 */
 
 /*
-Copyright 2014 PayStand Inc.
+Copyright 2014 Paystand Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
 
 function paystand_gateway_activate()
 {
-  $message = '<b>PayStand for WooCommerce is almost ready.</b> Add your PayStand Org ID and Public API Key to get started.';
+  $message = '<b>Paystand for WooCommerce is almost ready.</b> Add your Paystand Org ID and Public API Key to get started.';
   if (function_exists('wc_add_notice')) {
     wc_add_notice($message, 'notice');
   }
