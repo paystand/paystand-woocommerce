@@ -73,7 +73,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small_new.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('Paystand (CC, BANK, ACH)', 'woocommerce-paystand');
+    $this->title = __('Paystand (CC, Bank, ACH)', 'woocommerce-paystand');
     $this->method_title = $this->title;
     $this->description = "Use Paystand's modern checkout to pay securely with any major credit card, bank, or ACH.";
     $this->method_description = $this->description;

@@ -28,7 +28,7 @@ Install the plugin
 
 ### Setup & configuration
 
-* In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `Paystand (CC, BANK, ACH)`
+* In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `Paystand (CC, Bank, ACH)`
 
 * Fill the next fields with information provided in you paystand dashboard account (in your Paystand Dashboard go to `Integrations > API Configuration Values`)
     * Paystand Publishable Key
@@ -41,7 +41,7 @@ Install the plugin
 * Add products to your cart
 * Click on `Proceed to checkout`
 * Fill all required fields on `Billing details`
-* In your order summary choose `Paystand (CC, BANK, ACH)`
+* In your order summary choose `Paystand (CC, Bank, ACH)`
 * Click on `Pay With Paystand`
 * Fill the Paystand checkout fields
 
