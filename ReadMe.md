@@ -30,7 +30,7 @@ Install the plugin
 
 * In WordPress administration panel, go to `Woocommerce > Settings > Payments` and choose `Paystand (CC, Bank, ACH)`
 
-* Fill the next fields with information provided in you paystand dashboard account (in your Paystand Dashboard go to `Integrations > API Configuration Values`)
+* Fill the next fields with information provided in you Paystand dashboard account (in your Paystand Dashboard go to `Integrations > API Configuration Values`)
     * Paystand Publishable Key
     * Paystand Customer Id
     * Paystand Client Id
