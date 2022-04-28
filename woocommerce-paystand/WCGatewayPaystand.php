@@ -9,7 +9,7 @@ include_once( plugin_dir_path( __FILE__ ) . 'PaystandFormFields.php');
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 /*
-Copyright 2014 PayStand Inc.
+Copyright 2014 Paystand Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,15 +27,15 @@ limitations under the License.
 
 
 /**
- * PayStand Payment Gateway
+ * Paystand Payment Gateway
  *
- * Provides a PayStand Payment Gateway for WooCommerce.
+ * Provides a Paystand Payment Gateway for WooCommerce.
  *
- * @class      WC_Gateway_PayStand
+ * @class      WC_Gateway_Paystand
  * @extends    WC_Payment_Gateway
  * @version    1.0.4
  * @package    WooCommerce/Classes/Payment
- * @author     PayStand
+ * @author     Paystand
  */
 class WC_Gateway_PayStand extends WC_Payment_Gateway
 {
@@ -73,9 +73,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->id = 'paystand';
     $this->icon = apply_filters('woocommerce_paystand_icon', plugins_url('images/paystand_logo_small_new.png' , __FILE__));
     $this->has_fields = false;
-    $this->title = __('PayStand (CC, Bank, ACH)', 'woocommerce-paystand');
+    $this->title = __('Paystand (CC, Bank, ACH)', 'woocommerce-paystand');
     $this->method_title = $this->title;
-    $this->description = "Use PayStand's modern checkout to pay securely with any major credit card, bank, or ACH.";
+    $this->description = "Use Paystand's modern checkout to pay securely with any major credit card, bank, or ACH.";
     $this->method_description = $this->description;
 
     $this->order_button_text = __('Pay With Paystand ', 'woocommerce-paystand');
@@ -100,9 +100,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     // Because WooCommerce denies access to the logs folder by default,
     // the View Log File link gets a 403 Forbidden
-    //$this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $this->log_file_path, $this->log_file_url);
-    $this->debug_description = sprintf(__('Log PayStand events, such as payment requests, in <code>%s</code>.', 'woocommerce-paystand'), $this->log_file_path);
-    $this->testmode_description = sprintf(__('The PayStand sandbox server can be used to test payments. Contact us for a sandbox account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/');
+    //$this->debug_description = sprintf(__('Log Paystand events, such as payment requests, in <code>%s</code>.  <a href="%s" target="_blank">View Log File</a>', 'woocommerce-paystand'), $this->log_file_path, $this->log_file_url);
+    $this->debug_description = sprintf(__('Log Paystand events, such as payment requests, in <code>%s</code>.', 'woocommerce-paystand'), $this->log_file_path);
+    $this->testmode_description = sprintf(__('The Paystand sandbox server can be used to test payments. Contact us for a sandbox account <a href="%s">here</a>.', 'woocommerce-paystand'), 'https://www.paystand.com/');
 
     // Init settings
     $this->init_form_fields();
@@ -200,7 +200,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         echo $this->description;
       }
     } else {
-      echo "<b>*Saving PayStand Payment Method is not allowed.</b>";
+      echo "<b>*Saving Paystand Payment Method is not allowed.</b>";
     }
 
   }
@@ -361,13 +361,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   public function admin_options()
   {
     ?>
-    <h3>PayStand Checkout for WooCommerce</h3>
+    <h3>Paystand Checkout for WooCommerce</h3>
     <div class="paystand-banner updated" style="overflow:hidden;">
       <img style="float: right;height: 100px;margin: 10px 10px 10px 50px;" src="<?php echo plugins_url('images/paystand_logo_banner_new.png' , __FILE__); ?>" />
       <p class="main"><strong>Getting started</strong></p>
-      <p>PayStand is your payment processor and gateway rolled into one. Set up PayStand as your WooCommerce checkout solution to get access to your money quickly, make your payments highly secure, and offer a full suite of payment methods for your customers.</p>
+      <p>Paystand is your payment processor and gateway rolled into one. Set up Paystand as your WooCommerce checkout solution to get access to your money quickly, make your payments highly secure, and offer a full suite of payment methods for your customers.</p>
       <p>
-        <a href="http://www.paystand.com/signup" target="_blank" class="button button-primary">Sign up for PayStand</a>
+        <a href="http://www.paystand.com/signup" target="_blank" class="button button-primary">Sign up for Paystand</a>
         <a href="http://www.paystand.com/woocommerce-invoicing" target="_blank" class="button">Learn more</a>
       </p>
     </div>
@@ -377,7 +377,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       <?php $this->generate_settings_html(); ?>
       </table><!--/.form-table-->
     <?php else : ?>
-      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'woocommerce-paystand'); ?></strong>: <?php _e('PayStand does not support your store currency.', 'woocommerce-paystand'); ?></p></div>
+      <div class="inline error"><p><strong><?php _e('Gateway Disabled', 'woocommerce-paystand'); ?></strong>: <?php _e('Paystand does not support your store currency.', 'woocommerce-paystand'); ?></p></div>
     <?php
       endif;
   }
@@ -597,7 +597,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
   }
 
   /**
-   * Handle callback from PayStand.
+   * Handle callback from Paystand.
    *
    * @access public
    * @return void
@@ -607,7 +607,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     $this->log_message('paystand_callback');
 
     if (isset($_GET['status'])) {
-      wp_die("PayStand Callback Status: " . print_r($this, true), "PayStand", array('response' => 200));
+      wp_die("Paystand Callback Status: " . print_r($this, true), "Paystand", array('response' => 200));
     }
 
     if (isset($_GET['action'])) {
@@ -646,12 +646,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
       do_action("valid_paystand_callback", $response_webhook);
     } else {
       http_response_code(400);
-      wp_die("PayStand Callback Failure", "PayStand", array('response' => 200));
+      wp_die("Paystand Callback Failure", "Paystand", array('response' => 200));
     }
   }
 
   /**
-   * Valid PayStand callback
+   * Valid Paystand callback
    * This is called when a valid transaction has been received as a callback from
    * Paystand Webhooks
    * @access public
