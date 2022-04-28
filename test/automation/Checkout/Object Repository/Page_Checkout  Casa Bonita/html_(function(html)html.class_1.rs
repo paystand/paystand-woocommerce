@@ -140,7 +140,7 @@ img.emoji {
 		
 
   
-   // Move PayStand Div to the top of the page
+   // Move Paystand Div to the top of the page
    var psContainer = document.getElementById(&quot;ps_container_id&quot;);
    psContainer.parentNode.prepend(psContainer);  
   
