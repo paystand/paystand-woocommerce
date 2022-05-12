@@ -289,7 +289,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         'checkBalance' => true
       );
 
-      $this->get_split_fees($order->get_subtotal());
+      $this->get_split_fees($order->get_total());
 
       // add feeSplit object for card if we have one available
       if ($wc_payment_token->get_type() == 'CC' && is_array($this->feeSplitCard)){
