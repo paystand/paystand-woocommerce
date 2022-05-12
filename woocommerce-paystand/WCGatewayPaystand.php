@@ -291,17 +291,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
       $this->get_split_fees($order->get_total());
 
-      // add feeSplit object for card if we have one available
-      if ($wc_payment_token->get_type() == 'CC' && is_array($this->feeSplitCard)){
-        $body['feeSplit'] = $this->feeSplitCard;
-        $body['amount'] = $this->total_amount_card;
-      };
-      // add feeSplit object for bank if we have one available
-      if ($wc_payment_token->get_type() != 'CC' && is_array($this->feeSplitBank)){
-        $body['feeSplit'] = $this->feeSplitBank;
-        $body['amount'] = $this->total_amount_bank;
-      };
-
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
       $this->log_message("ready to send post payment");
       try{
