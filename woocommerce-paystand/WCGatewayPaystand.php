@@ -289,8 +289,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         'checkBalance' => true
       );
 
-      $this->get_split_fees($order->get_total());
-
       $endpoint = $this->get_paystand_api_url() . 'payments/secure';
       $this->log_message("ready to send post payment");
       try{
