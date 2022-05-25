@@ -70,6 +70,10 @@ Also, make sure the Enable Paystand checkbox is selected in your WordPress admin
 If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
+= 2.4.7 =
+* Adding versioning information and correcting tags
+= 2.4.6 =
+* Fixed the way shipping costs are collected in some payments
 = 2.4.4 =
 * Updated instructions for finding webhook urls section
 * Updated works with to version 3.5.0
