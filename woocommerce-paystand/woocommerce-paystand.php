@@ -59,7 +59,7 @@ function fundonfile_add_fee( $cart ) {
 */
 function fundonfile_fee_js() {
   if ( ! is_checkout() ) return;
-$js_code=<<<END
+$js_code="
       <script type="text/javascript">
       jQuery( function($){
           $('form.checkout').on('click', 'input[name=wc-paystand-payment-token]', function(e){
@@ -84,7 +84,7 @@ $js_code=<<<END
           });
       });
       </script>
-END;
+"
       echo esc_attr($js_code);
   }
 
