@@ -73,7 +73,7 @@ abstract class PaystandCheckout
               function fetchStatus()
               {
                 jQuery.ajax({
-                  url : '<?php echo site_url(); ?>/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=<?php echo $order->get_order_number(); ?>',
+                  url : '<?php echo site_url(); ?>/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=<?php echo esc_attr($order->get_order_number()); ?>',
                   type : 'get',
                   error : function(response){
                     console.log(response);
@@ -82,7 +82,7 @@ abstract class PaystandCheckout
                     let success = (response == "posted" || response == "paid");
                     if (success) {
                       clearInterval(window.refreshIntervalId);
-                      window.location = '<?php echo $_GET['redirectUrl'] ?>';
+                      window.location = '<?php echo esc_attr($_GET['redirectUrl']) ?>';
                     }
                   }
                 });
@@ -99,30 +99,30 @@ abstract class PaystandCheckout
     <script
       type="text/javascript"
       id="ps_checkout"
-      src="<?php echo $data['paystand_url']?>js/paystand.checkout.js"
-      ps-env="<?php echo $environment?>"
+      src="<?php echo esc_url($data['paystand_url'])?>js/paystand.checkout.js"
+      ps-env="<?php echo esc_attr($environment)?>"
       ps-viewLogo="hide"
-      ps-publishableKey="<?php echo  $data['publishable_key'] ?>"
+      ps-publishableKey="<?php echo esc_attr($data['publishable_key']) ?>"
       ps-containerId="ps_container_id"
-      ps-mode="<?php echo $data['render_mode']?>"
+      ps-mode="<?php echo esc_attr($data['render_mode'])?>"
       ps-show="true"
-      ps-checkoutType="<?php echo $data['checkout_type']?>"
-      ps-viewCheckout="<?php echo $data['view_checkout']?>"
-      ps-paymentAmount="<?php echo  $order->get_total() ?>"
+      ps-checkoutType="<?php echo esc_attr($data['checkout_type'])?>"
+      ps-viewCheckout="<?php echo esc_attr($data['view_checkout'])?>"
+      ps-paymentAmount="<?php echo esc_attr($order->get_total()) ?>"
       ps-viewClose="hide"
       ps-fixedAmount="true"
-      ps-payerName="<?php echo $billing_full_name?>"
-      ps-payerEmail="<?php echo $billing_email_address?>"
-      ps-payerAddressStreet = "<?php echo $billing_street?>"
-      ps-payerAddressCity = "<?php echo $billing_city?>"
-      ps-payerAddressCountry = "<?php echo $billing_country?>"
-      ps-payerAddressState = "<?php echo $billing_state?>"
-      ps-payerAddressPostal = "<?php echo $billing_postalcode?>"
-      ps-paymentMeta = '{ "order_id" : "<?php echo $order_id?>", "user_id":  "<?php echo  $data['user_id'] ?>" }'
-      ps-paymentCurrency =  "<?php echo  $data['currency'] ?>"
-      ps-width =  "<?php echo  $data['render_width'] ?>%"
-      ps-customPreset = "<?php echo  $data['custom_preset'] ?>"
-      ps-viewFunds = "<?php echo  $data['view_funds'] ?>"
+      ps-payerName="<?php echo esc_attr($billing_full_name)?>"
+      ps-payerEmail="<?php echo esc_attr($billing_email_address)?>"
+      ps-payerAddressStreet = "<?php echo esc_attr($billing_street)?>"
+      ps-payerAddressCity = "<?php echo esc_attr($billing_city)?>"
+      ps-payerAddressCountry = "<?php echo esc_attr($billing_country)?>"
+      ps-payerAddressState = "<?php echo esc_attr($billing_state)?>"
+      ps-payerAddressPostal = "<?php echo esc_attr($billing_postalcode)?>"
+      ps-paymentMeta = '{ "order_id" : "<?php echo esc_attr($order_id)?>", "user_id":  "<?php echo esc_attr($data['user_id']) ?>" }'
+      ps-paymentCurrency =  "<?php echo esc_attr($data['currency']) ?>"
+      ps-width =  "<?php echo esc_attr($data['render_width']) ?>%"
+      ps-customPreset = "<?php echo esc_attr($data['custom_preset']) ?>"
+      ps-viewFunds = "<?php echo esc_attr($data['view_funds']) ?>"
       >
 
     </script>
@@ -143,7 +143,7 @@ abstract class PaystandCheckout
                             <?php
                                 if(!empty($return_url)){
                             ?>
-                                    window.location.href = "<?php echo  $return_url ?>" ;
+                                    window.location.href = "<?php echo esc_url($return_url) ?>" ;
                             <?php
                                 }
                             ?>
@@ -151,7 +151,7 @@ abstract class PaystandCheckout
                         var data = {
                             object: "WC_Paystand_Event",
                             type:"save_payment",
-                            user_id : "<?php echo $data['user_id'] ?>",
+                            user_id : "<?php echo esc_attr($data['user_id']) ?>",
                             data: result.response.data
                         };
                         xhr.send(JSON.stringify(data));
@@ -159,7 +159,7 @@ abstract class PaystandCheckout
                         <?php
                         if(!empty($return_url)){
                         ?>
-                        window.location.href = "<?php echo  $return_url ?>" ;
+                        window.location.href = "<?php echo esc_url($return_url) ?>" ;
                         <?php
                         }
                         ?>

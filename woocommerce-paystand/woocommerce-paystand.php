@@ -35,7 +35,7 @@ if (!function_exists('add_action')) {
 function fundonfile_fee_ajax() {
   if ( isset($_POST['fee']) ){
       WC()->session->set('fee_chosen', $_POST['fee'] );
-      echo json_encode( $_POST['fee'] );
+      echo esc_attr(json_encode( $_POST['fee'] ));
   }
   die();
 }
@@ -85,7 +85,7 @@ $js_code=<<<END
       });
       </script>
 END;
-      echo $js_code;
+      echo esc_attr($js_code);
   }
 
 /**
