@@ -3,7 +3,7 @@
 Plugin Name: Paystand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds Paystand payment gateway to WooCommerce.
-Version: 2.4.8
+Version: 2.4.9
 Author: Paystand
 Author URI: http://www.paystand.com/
 */
@@ -60,7 +60,7 @@ function fundonfile_add_fee( $cart ) {
 function fundonfile_fee_js() {
   if ( ! is_checkout() ) return;
 $js_code="
-      <script type="text/javascript">
+      <script type='text/javascript'>
       jQuery( function($){
           $('form.checkout').on('click', 'input[name=wc-paystand-payment-token]', function(e){
               var fee = $(this).attr('fee');
@@ -84,7 +84,7 @@ $js_code="
           });
       });
       </script>
-"
+";
       echo esc_attr($js_code);
   }
 
