@@ -85,7 +85,7 @@ $js_code="
       });
       </script>
 ";
-      echo esc_attr($js_code);
+      echo $js_code;
   }
 
 /**
