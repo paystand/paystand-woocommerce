@@ -7,7 +7,7 @@
  */
 
 if (!function_exists('getISO3166_3_code')) {
-    include_once( plugin_dir_path( __FILE__ ) . 'includes/iso3166.php');
+    include_once plugin_dir_path(__FILE__) . 'includes/iso3166.php';
 };
 
 abstract class PaystandCheckout
@@ -16,27 +16,31 @@ abstract class PaystandCheckout
     private $data = null;
     private $type = null;
 
-    public function __construct($type, $environment, $data, $return_url){
+    public function __construct($type, $environment, $data, $return_url)
+    {
         $this->type = $type;
         $this->data = $data;
         $this->return_url = $return_url;
         $this->environment = $environment;
     }
 
-    public function render_container(){
+    public function render_container()
+    {
         ?>
         <div id="ps_container_id"></div>
         <?php
     }
 
-    public function render_header(){
+    public function render_header()
+    {
         $this->render_container();
     }
 
-    public function render( ){
+    public function render( )
+    {
         $data = $this->data;
 
-        if($data['show_payment_method']=='yes'){
+        if($data['show_payment_method']=='yes') {
             $this->render_header();
         }else{
             $this->render_container();
@@ -45,7 +49,8 @@ abstract class PaystandCheckout
         $this->render_body();
     }
 
-    public function render_body( ){
+    public function render_body( )
+    {
 
         $data = $this->data;
         $order = $data['order'];
@@ -63,8 +68,8 @@ abstract class PaystandCheckout
             $order_id = $data['order_id'];
         }
 
-        if(isset($_GET['processing']) && ($_GET['processing'] == 'true')){
-          ?>
+        if(isset($_GET['processing']) && ($_GET['processing'] == 'true')) {
+            ?>
             <div class="order-status" id="order_status">
               Your order is processing, please be patient.
             </div>
@@ -141,11 +146,11 @@ abstract class PaystandCheckout
                         xhr.onload = function () {
                             // We move to the "complete" screen once we get the response
                             <?php
-                                if(!empty($return_url)){
-                            ?>
+                            if(!empty($return_url)) {
+                                ?>
                                     window.location.href = "<?php echo esc_url($return_url) ?>" ;
-                            <?php
-                                }
+                                <?php
+                            }
                             ?>
                         };
                         var data = {
@@ -157,10 +162,10 @@ abstract class PaystandCheckout
                         xhr.send(JSON.stringify(data));
                     } else {
                         <?php
-                        if(!empty($return_url)){
-                        ?>
+                        if(!empty($return_url)) {
+                            ?>
                         window.location.href = "<?php echo esc_url($return_url) ?>" ;
-                        <?php
+                            <?php
                         }
                         ?>
                     }
