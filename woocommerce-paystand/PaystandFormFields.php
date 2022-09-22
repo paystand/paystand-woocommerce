@@ -1,7 +1,7 @@
 <?php
 
 /**
-Copyright 2014 Paystand Inc.
+Copyright 2022 Paystand Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@ limitations under the License.
 
 @category Paystand
 @package  Paystand
-@license  http://www.apache.org/licenses/LICENSE-2.0
-@author   Paystand
+@author   Paystand <noreply@paystand.com>
+@license  http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
 @link     https://github.com/paystand/paystand-woocommerce
  **/
 
 /**
  * Contains form fields for Paystand Checkout Configuration
+ * @category Paystand
  */
 class PaystandFormFields
 {
-    public static function get_init_form_fields($data)
+    public static function getInitFormFields($data)
     {
         return array(
             'enabled' => array(
@@ -153,6 +154,5 @@ class PaystandFormFields
               )
 
             );
-
     }
 }

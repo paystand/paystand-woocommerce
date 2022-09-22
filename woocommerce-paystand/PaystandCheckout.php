@@ -4,18 +4,43 @@
  * User: aldo
  * Date: 6/25/18
  * Time: 1:25 PM
+ *
+Copyright 2022 Paystand Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+@category Paystand
+@package  Paystand
+@author   Paystand <noreply@paystand.com>
+@license  http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+@link     https://github.com/paystand/paystand-woocommerce
  */
 
 if (!function_exists('getISO3166_3_code')) {
     include_once plugin_dir_path(__FILE__) . 'includes/iso3166.php';
 };
 
+/**
+ * Paystand Checkout
+ */
 abstract class PaystandCheckout
 {
     private $return_url = null;
     private $data = null;
     private $type = null;
 
+    /**
+     * Creates a new instance of PaystandCheckout
+     */
     public function __construct($type, $environment, $data, $return_url)
     {
         $this->type = $type;
@@ -24,32 +49,44 @@ abstract class PaystandCheckout
         $this->environment = $environment;
     }
 
-    public function render_container()
+    /**
+     * Render container
+     */
+    public function renderContainer()
     {
         ?>
         <div id="ps_container_id"></div>
         <?php
     }
 
-    public function render_header()
+    /**
+     * Render header
+     */
+    public function renderHeader()
     {
-        $this->render_container();
+        $this->renderContainer();
     }
 
-    public function render( )
+    /**
+     * Render
+     */
+    public function render()
     {
-        $data = $this->data;
+        $data = $this->_data;
 
-        if($data['show_payment_method']=='yes') {
-            $this->render_header();
-        }else{
-            $this->render_container();
+        if ($data['show_payment_method']=='yes') {
+            $this->renderHeader();
+        } else {
+            $this->renderContainer();
         }
 
-        $this->render_body();
+        $this->renderBody();
     }
 
-    public function render_body( )
+    /**
+     * render body
+     */
+    public function renderBody()
     {
 
         $data = $this->data;
@@ -68,7 +105,7 @@ abstract class PaystandCheckout
             $order_id = $data['order_id'];
         }
 
-        if(isset($_GET['processing']) && ($_GET['processing'] == 'true')) {
+        if (isset($_GET['processing']) && ($_GET['processing'] == 'true')) {
             ?>
             <div class="order-status" id="order_status">
               Your order is processing, please be patient.
@@ -97,8 +134,7 @@ abstract class PaystandCheckout
             </script>
 
             <?php
-        }
-        else {
+        } else {
             ?>
 
     <script
@@ -146,7 +182,7 @@ abstract class PaystandCheckout
                         xhr.onload = function () {
                             // We move to the "complete" screen once we get the response
                             <?php
-                            if(!empty($return_url)) {
+                            if (!empty($return_url)) {
                                 ?>
                                     window.location.href = "<?php echo esc_url($return_url) ?>" ;
                                 <?php
@@ -162,7 +198,7 @@ abstract class PaystandCheckout
                         xhr.send(JSON.stringify(data));
                     } else {
                         <?php
-                        if(!empty($return_url)) {
+                        if (!empty($return_url)) {
                             ?>
                         window.location.href = "<?php echo esc_url($return_url) ?>" ;
                             <?php

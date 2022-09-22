@@ -6,7 +6,8 @@ require_once plugin_dir_path(__FILE__) . 'PaystandCheckoutFactory.php';
 require_once plugin_dir_path(__FILE__) . 'PaystandFormFields.php';
 
 
-if (!defined('ABSPATH')) { exit; // Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
 }
 
 /*
@@ -176,7 +177,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      **/
     function init_form_fields()
     {
-        $this->form_fields = PaystandFormFields::get_init_form_fields(array('notify_url' => $this->notify_url));
+        $this->form_fields = PaystandFormFields::getInitFormFields(array('notify_url' => $this->notify_url));
     }
 
     /**

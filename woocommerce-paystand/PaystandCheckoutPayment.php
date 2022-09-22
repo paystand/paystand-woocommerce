@@ -16,7 +16,7 @@ class PaystandCheckoutPayment extends PaystandCheckout
         parent::__construct($type, $environment, $data, $return_url);
     }
 
-    public function render_header()
+    public function renderHeader()
     {
         ?>
         <div style="text-align: center; width: 100%;">  <label for= "savePaymentMethod">
@@ -25,7 +25,6 @@ class PaystandCheckoutPayment extends PaystandCheckout
         </label>
         </div>
         <?php
-        parent::render_header();
+        parent::renderHeader();
     }
-
 }
