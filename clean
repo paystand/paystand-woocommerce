@@ -2,7 +2,7 @@
 
 NAME=woocommerce-paystand
 DIR="${NAME}"
-DIST=./
+DIST=../../dist/woocommerce
 VERSION=`cat version.txt`
 
 echo Deleting ${DIST}/${NAME}-${VERSION}.zip
