@@ -3,7 +3,7 @@
 Plugin Name: Paystand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds Paystand payment gateway to WooCommerce.
-Version: 2.4.9
+Version: 2.4.8
 Author: Paystand
 Author URI: http://www.paystand.com/
 */
