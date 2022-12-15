@@ -1,12 +1,35 @@
 <?php
 
 /**
+Copyright 2022 Paystand Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+@category Paystand
+@package  Paystand
+@author   Paystand <noreply@paystand.com>
+@license  http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+@link     https://github.com/paystand/paystand-woocommerce
+ **/
+
+/**
  * Contains form fields for Paystand Checkout Configuration
+ * @category Paystand
  */
 class PaystandFormFields
 {
-    public static function get_init_form_fields($data) {
-       return array(
+    public static function getInitFormFields($data)
+    {
+        return array(
             'enabled' => array(
                 'title' => __('Enable/Disable', 'woocommerce-paystand'),
                 'type' => 'checkbox',
@@ -60,9 +83,11 @@ class PaystandFormFields
                 'type' => 'checkbox',
                 'label' => __('Automatic Order Set to "Processing"', 'woocommerce-paystand'),
                 'default' => 'no',
-                'description' => __('Selecting this will result in WooCommerce orders being given the status "Processing" any time your customer succeeds ' .
+                'description' => __(
+                    'Selecting this will result in WooCommerce orders being given the status "Processing" any time your customer succeeds ' .
                     'in checkout, regardless of the time it takes funds to be processed and transferred. This feature is useful when '.
-                    'using WooCommerce order status for non-financial business decisions (e.g., shipping).  ')
+                    'using WooCommerce order status for non-financial business decisions (e.g., shipping).  '
+                )
               ),
               'auto_complete' =>  array(
                 'title' => __('Order auto-completion', 'woocommerce-paystand'),
@@ -129,6 +154,5 @@ class PaystandFormFields
               )
 
             );
-
     }
 }
