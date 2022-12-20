@@ -6,15 +6,16 @@
  * Time: 1:25 PM
  */
 
-include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutPayment.php');
-include_once( plugin_dir_path( __FILE__ ) . 'PaystandCheckoutToken.php');
+require_once plugin_dir_path(__FILE__) . 'PaystandCheckoutPayment.php';
+require_once plugin_dir_path(__FILE__) . 'PaystandCheckoutToken.php';
 
 class PaystandCheckoutFactory
 {
 
-    public static function build($type, $environment, $data, $return_url){
+    public static function build($type, $environment, $data, $return_url)
+    {
 
-        switch($type){
+        switch ($type) {
             case 'checkout_payment':
                 return new PaystandCheckoutPayment($type, $environment, $data, $return_url);
             break;
@@ -24,7 +25,5 @@ class PaystandCheckoutFactory
             default:
                 throw Exception('Unsupported checkout type');
         }
-
     }
-
 }
