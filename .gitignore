@@ -5,3 +5,5 @@ composer.lock
 .env
 local-scripts.php
 .phpunit.result.cache
+*.tgz
+*.zip
