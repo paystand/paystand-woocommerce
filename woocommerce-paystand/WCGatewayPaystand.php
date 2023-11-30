@@ -400,8 +400,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      */
     public function get_paystand_url()
     {
-        return ('yes' == $this->testmode) ?  $this->testurl : $this->liveurl;
-        // return $this->paystand_checkout_config->checkout;
+        // return ('yes' == $this->testmode) ?  $this->testurl : $this->liveurl;
+        return $this->paystand_checkout_config->checkout;
     }
 
     /**
@@ -409,8 +409,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      */
     public function get_paystand_api_url()
     {
-        return ('yes' == $this->testmode) ? $this->test_api_url : $this->live_api_url;
-        // return $this->paystand_checkout_config->api;
+        // return ('yes' == $this->testmode) ? $this->test_api_url : $this->live_api_url;
+        return $this->paystand_checkout_config->api;
     }
     /**
      * Output for the thank you page.
