@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.4.8
+ * @version 2.4.9
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -55,6 +55,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     var $payment_status = null;
     var $order_id = null;
     var $paystand_fee = null;
+    var $paystand_discount = null;
     var $transaction_id = null;
     var $view_funds = null;
     var $cardPayment_fee = null;
@@ -123,6 +124,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->custom_preset = $this->get_option('custom_preset');
         $this->order_id = null;
         $this->paystand_fee = null;
+        $this->paystand_discount = null;
         $this->payment_status = null;
         $this->auto_complete = $this->get_option('auto_complete');
         $this->auto_processing = $this->get_option('auto_processing');
@@ -516,6 +518,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         if(isset($response->body->feeSplit)) { // apply fees
             $this->paystand_fee = $response->body->feeSplit->payerTotalFees;
         }
+        $this->paystand_discount = 0;
+        if(isset($response->body->feeSplit)) { // apply discount
+            $this->paystand_discount = $response->body->feeSplit->payerDiscount;
+        }
         $this->log_message('check_callback_data GET_payments meta: ' . print_r($meta, true));
         $this->log_message('check_callback_data GET_payments order_id: ' . $meta->order_id);
 
@@ -709,15 +715,30 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         if ($success) {
             $total = get_post_meta($order_id, '_order_total', true);
             $fee = $this->paystand_fee;
-            $item = array('order_item_name' => 'Processing Fee',
-            'order_item_type' => 'fee');
-            $item_id = wc_add_order_item($order_id, $item);
-            if ($item_id) {
-                wc_add_order_item_meta($item_id, '_tax_class', '0');
-                wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee));
-                wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+            $discount = $this->paystand_discount;
+
+            if ($fee > 0) {
+                $item = array('order_item_name' => 'Processing Fee',
+                'order_item_type' => 'fee');
+                $item_id = wc_add_order_item($order_id, $item);
+                if ($item_id) {
+                    wc_add_order_item_meta($item_id, '_tax_class', '0');
+                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee));
+                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+                }
             }
-            $total += $fee;
+
+            if ($discount > 0) {
+                $discount_item = array('order_item_name' => 'Paystand Discount',
+                'order_item_type' => 'fee');;
+                $item_id = wc_add_order_item($order_id, $discount_item);
+                if ($item_id) {
+                    wc_add_order_item_meta($item_id, '_tax_class', '0');
+                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal(-$discount));
+                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+                }
+            }
+            $total += $fee - $discount;
             update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
             $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
             $order->payment_complete($this->transaction_id);
