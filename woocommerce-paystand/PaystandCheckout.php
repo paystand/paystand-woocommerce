@@ -72,7 +72,7 @@ abstract class PaystandCheckout
      */
     public function render()
     {
-        $data = $this->_data;
+        $data = $this->data;
 
         if ($data['show_payment_method']=='yes') {
             $this->renderHeader();
