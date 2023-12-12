@@ -324,13 +324,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
             $note = (__('Payment completed', 'woocommerce-paystand') . ', Fund Type: ' . $source_type);
             if ($response->body->status == 'processing') {
-                if ($this->auto_processing) $order->update_status('processing', $note);
+                $order->update_status('processing', $note);
                 $return_array = array(
                     'result' => 'success',
                     'redirect' => $order->get_checkout_payment_url(true).'&processing=true&redirectUrl='.urlencode($order->get_checkout_order_received_url())
                 );
             } else if ($response->body->status == 'posted') {
-                if ($this->auto_processing) $order->update_status('processing', $note);
+                $order->update_status('processing', $note);
                 $return_array = array(
                 'result' => 'success',
                 'redirect' => $order->get_checkout_order_received_url()
