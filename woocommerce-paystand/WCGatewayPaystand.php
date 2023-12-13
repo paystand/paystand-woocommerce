@@ -476,7 +476,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         $this->log_message('receipt_page order_id: ' . $order_id);
         $order = new WC_Order($order_id);
-        $order->update_status('processing');
+        $order->update_status('on-hold');
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
         $return_url = $order->get_checkout_order_received_url();
