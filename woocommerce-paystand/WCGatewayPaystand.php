@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.4.9
+ * @version 2.5.0
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -314,15 +314,23 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 $this->log_message('process_payment POST error: ' . print_r($response->body, true));
                 return false;
             }
-      
+
             $this->log_message("post payment response status" . $response->body->status);
             $this->log_message('process_payment POST response: ' . print_r($response->body, true));
-            if($response->body->status == 'processing') {
+            $source_type = $response->body->source->object;
+            if ($source_type === 'bank') {
+                $source_type = $response->body->source->verified ? 'Bank' : 'ACH';
+            }
+
+            $note = (__('Payment completed', 'woocommerce-paystand') . ', Fund Type: ' . $source_type);
+            if ($response->body->status == 'processing') {
+                $order->update_status('processing', $note);
                 $return_array = array(
-                'result' => 'success',
-                'redirect' => $order->get_checkout_payment_url(true).'&processing=true&redirectUrl='.urlencode($order->get_checkout_order_received_url())
+                    'result' => 'success',
+                    'redirect' => $order->get_checkout_payment_url(true).'&processing=true&redirectUrl='.urlencode($order->get_checkout_order_received_url())
                 );
             } else if ($response->body->status == 'posted') {
+                $order->update_status('processing', $note);
                 $return_array = array(
                 'result' => 'success',
                 'redirect' => $order->get_checkout_order_received_url()
@@ -468,6 +476,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         $this->log_message('receipt_page order_id: ' . $order_id);
         $order = new WC_Order($order_id);
+        $order->update_status('on-hold');
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
         $return_url = $order->get_checkout_order_received_url();
@@ -740,7 +749,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             }
             $total += $fee - $discount;
             update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
-            $order->add_order_note(__('Payment completed', 'woocommerce-paystand'));
+
+            $source_type = $data['resource']['sourceType'];
+            if ($source_type === 'Bank') {
+                $source_type = $data['source']['verified'] ? 'Bank' : 'ACH';
+            }
+            $order->add_order_note(__('Payment completed', 'woocommerce-paystand') . ', Fund Type: ' . $source_type);
             $order->payment_complete($this->transaction_id);
 
             if ('yes' == $this->auto_complete) {
