@@ -96,6 +96,14 @@ class PaystandFormFields
                 'default' => 'no',
                 'description' => 'Setting this will cause all orders to be automatically updated from processing to completed upon successful payment.  This is useful for situations where all of your orders do not require fulfillment, such as donations or virtual products.',
               ),
+              'on_complete_status' => array(
+                'title' => __('Order status on successful payment', 'woocommerce-paystand'),
+                'type' => 'select',
+                'label' => __('Select status', 'woocommerce-paystand'),
+                'default' => 'default',
+                'description' => __('Choose order status after a successful payment', 'woocommerce-paystand'),
+                'options' => array('default' =>'Default', 'processing' => 'Processing', 'pending' => 'Pending payment', 'on-hold' => 'On hold')
+              ),
               'view_funds' => array(
                 'title' => __('Type of funds to show ', 'woocommerce-paystand'),
                 'type' => 'text',
