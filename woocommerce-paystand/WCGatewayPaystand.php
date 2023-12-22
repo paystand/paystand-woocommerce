@@ -131,6 +131,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->auto_processing = $this->get_option('auto_processing');
         $this->show_payment_method = $this->get_option('show_payment_method');
         $this->on_complete_status = $this->get_option('on_complete_status');
+        $this->enable_saved_payment_checkout = $this->get_option('enable_saved_payment_checkout');
         $this->view_funds = $this->get_option('view_funds');
 
         // Logs
@@ -199,7 +200,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         if($this->show_payment_method=='yes') {
             // We only show the available payment methods during Checkout.
-            if (is_checkout() &&  count($this->get_tokens()) > 0) {
+            if (is_checkout() &&  count($this->get_tokens()) > 0 && $this->enable_saved_payment_checkout == 'yes') {
                 $total_payment =  WC()->cart->get_total($context = '') - WC()->cart->get_fee_total();
                 $this->get_split_fees($total_payment);
                 $this->saved_payment_methods();

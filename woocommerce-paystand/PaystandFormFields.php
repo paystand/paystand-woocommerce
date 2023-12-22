@@ -78,6 +78,13 @@ class PaystandFormFields
               'default' => 'yes',
               'description' => __('Selecting this will allow your customers to save their Paystand Payment Methods for future use')
             ),
+            'enable_saved_payment_checkout' => array(
+              'title' => __('Enable Saved Payment Checkout', 'woocommerce-paystand'),
+              'type' => 'checkbox',
+              'label' => __('Enable saved payment checkout', 'woocommerce-paystand'),
+              'default' => 'yes',
+              'description' => __('Selecting this will allow your customers to use their saved Paystand Payment Methods in checkout')
+            ),
             'auto_processing' => array(
                 'title' => __('Auto ACH/Bank Clearance', 'woocommerce-paystand'),
                 'type' => 'checkbox',
