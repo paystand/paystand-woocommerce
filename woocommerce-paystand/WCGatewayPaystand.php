@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.0
+ * @version 2.5.1
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -47,6 +47,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     var $client_id;
     var $client_secret;
     var $auto_complete;
+    var $on_complete_status;
     var $log_file_hash;
     var $log_file_path;
     var $log_file_url;
@@ -129,7 +130,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->auto_complete = $this->get_option('auto_complete');
         $this->auto_processing = $this->get_option('auto_processing');
         $this->show_payment_method = $this->get_option('show_payment_method');
+        $this->on_complete_status = $this->get_option('on_complete_status');
+        $this->enable_saved_payment_checkout = $this->get_option('enable_saved_payment_checkout');
         $this->view_funds = $this->get_option('view_funds');
+        $this->checkout_description = $this->get_option('checkout_description');
+        $this->new_method_label = $this->get_option('checkout_description');
 
         // Logs
         if ('yes' == $this->debug) {
@@ -197,7 +202,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         if($this->show_payment_method=='yes') {
             // We only show the available payment methods during Checkout.
-            if (is_checkout() &&  count($this->get_tokens()) > 0) {
+            if (is_checkout() &&  count($this->get_tokens()) > 0 && $this->enable_saved_payment_checkout == 'yes') {
                 $total_payment =  WC()->cart->get_total($context = '') - WC()->cart->get_fee_total();
                 $this->get_split_fees($total_payment);
                 $this->saved_payment_methods();
@@ -205,7 +210,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 // During "add payment method" option, we render Paystand Checkout in Token Saving mode
                 $this->render_ps_checkout('checkout_token', null, wc_get_endpoint_url('payment-methods'));
             } else {
-                echo esc_attr($this->description);
+                echo esc_attr($this->checkout_description);
             }
         } else {
             echo "<b>*Saving Paystand Payment Method is not allowed.</b>";
@@ -476,7 +481,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         $this->log_message('receipt_page order_id: ' . $order_id);
         $order = new WC_Order($order_id);
-        $order->update_status('on-hold');
+        $this->log_message('render_ps_checkout on_complete_status:' . $this->on_complete_status);
+        if ($this->on_complete_status !== 'default') {
+            $order->update_status($this->on_complete_status);
+        }
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
         $return_url = $order->get_checkout_order_received_url();
@@ -487,6 +495,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     {
         if (empty($post_data) || !is_array($post_data)) {
             $this->log_message('check_callback_data POST data is empty');
+            return false;
+        }
+
+        if ($post_data["sourceType"] !== 'Payment') {
+            $this->log_message('check_callback_data POST data is not valid');
             return false;
         }
 
@@ -542,7 +555,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $order = false;
         if (isset($this->order_id)) {
             $order = new WC_Order($this->order_id);
-            $order_is_finalized = (($order->get_status()===$COMPLETED || $order->get_status()===$PROCESSING) || ($order->get_status()===$FAILED));
+            $order_is_finalized = ($order->get_status()===$COMPLETED || $order->get_status()===$FAILED);
             if($order_is_finalized) {
                 $this->log_message('check_callback_data already processed :' . $this->payment_status);
                 return false;
