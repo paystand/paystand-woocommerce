@@ -111,6 +111,13 @@ class PaystandFormFields
                 'description' => __('Choose order status after a successful payment', 'woocommerce-paystand'),
                 'options' => array('default' =>'Default', 'processing' => 'Processing', 'pending' => 'Pending payment', 'on-hold' => 'On hold')
               ),
+              'checkout_description' => array(
+                'title' => __('Checkout Description', 'woocommerce-paystand'),
+                'type' => 'text',
+                'description' => __('The message that will appear in the checkout page', 'woocommerce-paystand'),
+                'default' => 'Use Paystand\'s modern checkout to pay securely with any major credit card, bank, or ACH',
+                'desc_tip' => true,
+              ),
               'view_funds' => array(
                 'title' => __('Type of funds to show ', 'woocommerce-paystand'),
                 'type' => 'text',

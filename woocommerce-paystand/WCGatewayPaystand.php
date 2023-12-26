@@ -133,6 +133,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->on_complete_status = $this->get_option('on_complete_status');
         $this->enable_saved_payment_checkout = $this->get_option('enable_saved_payment_checkout');
         $this->view_funds = $this->get_option('view_funds');
+        $this->checkout_description = $this->get_option('checkout_description');
+        $this->new_method_label = $this->get_option('checkout_description');
 
         // Logs
         if ('yes' == $this->debug) {
@@ -208,7 +210,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 // During "add payment method" option, we render Paystand Checkout in Token Saving mode
                 $this->render_ps_checkout('checkout_token', null, wc_get_endpoint_url('payment-methods'));
             } else {
-                echo esc_attr($this->description);
+                echo esc_attr($this->checkout_description);
             }
         } else {
             echo "<b>*Saving Paystand Payment Method is not allowed.</b>";
