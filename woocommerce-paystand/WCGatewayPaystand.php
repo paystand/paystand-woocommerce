@@ -498,7 +498,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             return false;
         }
 
-        if ($post_data["object"] !== 'payment') {
+        if ($post_data["sourceType"] !== 'Payment') {
             $this->log_message('check_callback_data POST data is not valid');
             return false;
         }
@@ -773,6 +773,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             if ('yes' == $this->auto_complete) {
                 $order->update_status('completed', 'Order auto-completed.');
                 $this->log_message('Order auto-completed: ' . $order_id);
+            }
+            if ('PAID' === $payment_status) {
+                $order->update_status('completed', 'Order completed.');
+                $this->log_message('Order completed: ' . $order_id);
             }
         } else {
             $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
