@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.1
+ * @version 2.5.2
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -498,7 +498,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             return false;
         }
 
-        if ($post_data["sourceType"] !== 'Payment') {
+        if ($post_data["object"] !== 'payment') {
             $this->log_message('check_callback_data POST data is not valid');
             return false;
         }
