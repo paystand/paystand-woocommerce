@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.1
+ * @version 2.5.2
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -769,11 +769,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             }
             $order->add_order_note(__('Payment completed', 'woocommerce-paystand') . ', Fund Type: ' . $source_type);
             $order->payment_complete($this->transaction_id);
-
-            if ('yes' == $this->auto_complete) {
-                $order->update_status('completed', 'Order auto-completed.');
-                $this->log_message('Order auto-completed: ' . $order_id);
-            }
+            $order->update_status('completed', 'Order completed.');
+            $this->log_message('Order auto-completed: ' . $order_id);
         } else {
             $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
         }

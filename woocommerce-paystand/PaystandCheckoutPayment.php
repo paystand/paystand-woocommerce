@@ -20,7 +20,7 @@ class PaystandCheckoutPayment extends PaystandCheckout
     {
         ?>
         <div style="text-align: center; width: 100%;">  <label for= "savePaymentMethod">
-            <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Pament Method"/>
+            <input type="checkbox" id="savePaymentMethod" name="savePaymentMethod" value="Save Payment Method"/>
             Save This Payment Method
         </label>
         </div>
