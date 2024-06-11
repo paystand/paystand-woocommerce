@@ -1,7 +1,7 @@
 {
     "psCheckoutUrls": {
         "local": {
-            "checkout": " https://localhost:3002/",
+            "checkout": " https://localhost:3003/",
             "api": "https://localhost:3001/api/v3/"
         },
         "development": {
