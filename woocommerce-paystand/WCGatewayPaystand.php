@@ -603,7 +603,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             if(true == $event['save_payment_method']) {
                 $this->process_payment_save_callback($event);
             }
-            if ($this->on_complete_status !== 'default' && $this->check_callback_data($event)) {
+            if ($this->check_callback_data($event)) {
                 $order_id = $event['order_id'];
                 $this->log_message('process_wc_paystand_event - order_id: ' . $order_id);
                 $order = new WC_Order($order_id);
@@ -612,7 +612,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                     return;
                 }
                 $payment_status = $event['data']['status'];
-                $new_order_status = $payment_status == 'failed' ? 'failed' : $this->on_complete_status;
+                $new_order_status = $payment_status == 'failed' ? 'failed' : ($this->on_complete_status == 'default' ? 'completed' : $this->on_complete_status);
                 $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
                 $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
                 $this->update_order_total_paid($order);
