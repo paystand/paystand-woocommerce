@@ -186,7 +186,7 @@ abstract class PaystandCheckout
                         <?php
                         if (!empty($return_url)) {
                             ?>
-                                window.location.href = "<?php echo esc_url($return_url) ?>" ;
+                                window.location.href = "<?php echo $return_url ?>" ;
                             <?php
                         }
                         ?>
@@ -203,41 +203,10 @@ abstract class PaystandCheckout
                     <?php
                         if (!empty($return_url)) {
                             ?>
-                        window.location.href = "<?php echo esc_url($return_url) ?>" ;
+                        window.location.href = "<?php echo $return_url ?>" ;
                             <?php
                         }
                     ?>
-                    // if (document.getElementById('savePaymentMethod').checked == true) {
-                    //     // If "remember me" option is selected, send request to WooCommerce to save card
-                    //     var xhr = new XMLHttpRequest();
-                    //     xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-                    //     xhr.setRequestHeader('Content-type', 'application/json');
-                    //     xhr.onload = function () {
-                    //         // We move to the "complete" screen once we get the response
-                    //         <?php
-                    //         if (!empty($return_url)) {
-                    //             ?>
-                    //                 window.location.href = "<?php echo esc_url($return_url) ?>" ;
-                    //             <?php
-                    //         }
-                    //         ?>
-                    //     };
-                    //     var data = {
-                    //         object: "WC_Paystand_Event",
-                    //         type:"payment_complete",
-                    //         user_id : "<?php echo esc_attr($data['user_id']) ?>",
-                    //         data: result.response.data
-                    //     };
-                    //     xhr.send(JSON.stringify(data));
-                    // } else {
-                    //     <?php
-                    //     if (!empty($return_url)) {
-                    //         ?>
-                    //     window.location.href = "<?php echo esc_url($return_url) ?>" ;
-                    //         <?php
-                    //     }
-                    //     ?>
-                    // }
                 });
             });
         </script>

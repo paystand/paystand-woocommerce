@@ -609,7 +609,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             }
         } catch (Exception $e) {
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
-            // $this->log_message('process_wc_paystand_event exception: ' . print_r($e, true));
             return;
         }
     }
@@ -619,11 +618,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      */
     function process_payment_save_callback($response)
     {
-
-        $this->log_message('process_payment_save_callback -'. print_r($response, true));
         $valid_event_types = array('save_payment', 'payment_complete');
+        $event_type = $response["type"];
 
-        if ($response["object"] != "WC_Paystand_Event" || !in_array($response["type"], $valid_event_types) || empty($response['data'])) {
+        $this->log_message('process_payment_save_callback - event type' . $event_type . ': '. print_r($response, true));
+
+        if ($response["object"] != "WC_Paystand_Event" || !in_array($event_type, $valid_event_types) || empty($response['data'])) {
             $this->log_message('process_payment_save_callback - Invalid response');
             return;
         }
