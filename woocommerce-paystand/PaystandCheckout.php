@@ -198,6 +198,9 @@ abstract class PaystandCheckout
                         order_id : "<?php echo esc_attr($order_id) ?>",
                         save_payment_method: savePaymentMethod,
                         data: payment,
+                        // These are used to verified payment from Paystand in WCGatewayPaystand->check_callback_data()
+                        sourceType: "Payment",
+                        sourceId: payment.id,
                     };
                     xhr.send(JSON.stringify(data));
                     <?php

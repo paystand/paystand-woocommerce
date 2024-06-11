@@ -81,6 +81,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     var $enable_saved_payment_checkout = null;
     var $checkout_description = null;
     var $log = null;
+    var $order_total_paid = null;
 
     /**
      * Constructor for the gateway.
@@ -335,6 +336,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 $this->log_message('process_payment POST error: ' . print_r($response->body, true));
                 return false;
             }
+            $this->order_total_paid = $response->body->amount;
+            if (isset($response->body->feeSplit)) {
+                $this->order_total_paid = $response->body->feeSplit->payerTotal;
+            }
+            $this->update_order_total_paid($order);
 
             $this->log_message("post payment response status" . $response->body->status);
             $this->log_message('process_payment POST response: ' . print_r($response->body, true));
@@ -498,9 +504,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->log_message('receipt_page order_id: ' . $order_id);
         $order = new WC_Order($order_id);
         $this->log_message('render_ps_checkout on_complete_status:' . $this->on_complete_status);
-        // if ($this->on_complete_status !== 'default') {
-        //     $order->update_status($this->on_complete_status);
-        // }
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
         $return_url = $order->get_checkout_order_received_url();
@@ -552,9 +555,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $meta = $response->body->meta;
         $this->order_id = $meta->order_id;
         $this->payment_status = $response->body->status;
+        $this->order_total_paid = $response->body->amount;
         $this->paystand_fee = 0;
         if(isset($response->body->feeSplit)) { // apply fees
             $this->paystand_fee = $response->body->feeSplit->payerTotalFees;
+            $this->order_total_paid = $response->body->feeSplit->payerTotal;
         }
         $this->paystand_discount = 0;
         if(isset($response->body->feeSplit)) { // apply discount
@@ -568,6 +573,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             return false;
         }
 
+        $is_wc_event = isset($post_data['type']) && $post_data['type'] === 'payment_complete';
+        if ($is_wc_event && !empty($post_data['order_id'])) {
+            return true;
+        }
         $order = false;
         if (isset($this->order_id)) {
             $order = new WC_Order($this->order_id);
@@ -594,7 +603,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             if(true == $event['save_payment_method']) {
                 $this->process_payment_save_callback($event);
             }
-            if (!empty($event['order_id'])) {
+            if ($this->on_complete_status !== 'default' && $this->check_callback_data($event)) {
                 $order_id = $event['order_id'];
                 $this->log_message('process_wc_paystand_event - order_id: ' . $order_id);
                 $order = new WC_Order($order_id);
@@ -606,6 +615,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 $new_order_status = $payment_status == 'failed' ? 'failed' : $this->on_complete_status;
                 $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
                 $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
+                $this->update_order_total_paid($order);
                 $order->update_status($new_order_status, $note);
             }
         } catch (Exception $e) {
@@ -819,6 +829,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order->add_order_note(__('Payment completed', 'woocommerce-paystand') . ', Fund Type: ' . $source_type);
             $order->payment_complete($this->transaction_id);
             $order->update_status('completed', 'Order completed.');
+            $this->update_order_total_paid($order);
             $this->log_message('Order auto-completed: ' . $order_id);
         } else {
             $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
@@ -943,6 +954,19 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $testmode = $this->get_option('testmode');
         $env = ("yes" == $testmode) ? "sandbox" : ($paystandEnv ?: "live");
         return $env;
+    }
+
+    /**
+     * Update total paid
+     */
+    function update_order_total_paid($order) {
+        if (empty($order) && isset($this->order_id)) {
+            $order = new WC_Order($this->order_id);
+        }
+        if (!empty($order) && isset($this->order_total_paid)) {
+            $order->set_total($this->order_total_paid);
+            $order->save();
+        }
     }
 }
 
