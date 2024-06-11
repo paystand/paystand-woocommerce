@@ -603,9 +603,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                     return;
                 }
                 $payment_status = $event['data']['status'];
-                $new_order_status = $payment_status == 'failed' ? 'payment-failed' : $this->on_complete_status;
+                $new_order_status = $payment_status == 'failed' ? 'failed' : $this->on_complete_status;
+                $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
                 $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
-                $order->update_status($new_order_status);
+                $order->update_status($new_order_status, $note);
             }
         } catch (Exception $e) {
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
