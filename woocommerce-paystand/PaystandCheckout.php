@@ -37,6 +37,7 @@ abstract class PaystandCheckout
     private $return_url = null;
     private $data = null;
     private $type = null;
+    private $environment = null;
 
     /**
      * Creates a new instance of PaystandCheckout
@@ -173,38 +174,70 @@ abstract class PaystandCheckout
                 psCheckout.onceComplete( function(result) {
                     //TODO:  It could be the case that the payment  is not successful... check response and do not send xhr
                     // TODO:  Check that payment was completed succesfully (not failed)
-
-                    if (document.getElementById('savePaymentMethod').checked == true) {
-                        // If "remember me" option is selected, send request to WooCommerce to save card
-                        var xhr = new XMLHttpRequest();
-                        xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-                        xhr.setRequestHeader('Content-type', 'application/json');
-                        xhr.onload = function () {
-                            // We move to the "complete" screen once we get the response
-                            <?php
-                            if (!empty($return_url)) {
-                                ?>
-                                    window.location.href = "<?php echo esc_url($return_url) ?>" ;
-                                <?php
-                            }
-                            ?>
-                        };
-                        var data = {
-                            object: "WC_Paystand_Event",
-                            type:"save_payment",
-                            user_id : "<?php echo esc_attr($data['user_id']) ?>",
-                            data: result.response.data
-                        };
-                        xhr.send(JSON.stringify(data));
-                    } else {
+                    const savePaymentMethod = document.getElementById('savePaymentMethod').checked;
+                    const response = result.response || {};
+                    const payment = response.data || {};
+                    // If "remember me" option is selected, send request to WooCommerce to save card
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+                    xhr.setRequestHeader('Content-type', 'application/json');
+                    xhr.onload = function () {
+                        // We move to the "complete" screen once we get the response
                         <?php
+                        if (!empty($return_url)) {
+                            ?>
+                                window.location.href = "<?php echo esc_url($return_url) ?>" ;
+                            <?php
+                        }
+                        ?>
+                    };
+                    var data = {
+                        object: "WC_Paystand_Event",
+                        type:"payment_complete",
+                        user_id : "<?php echo esc_attr($data['user_id']) ?>",
+                        order_id : "<?php echo esc_attr($order_id) ?>",
+                        save_payment_method: savePaymentMethod,
+                        data: payment,
+                    };
+                    xhr.send(JSON.stringify(data));
+                    <?php
                         if (!empty($return_url)) {
                             ?>
                         window.location.href = "<?php echo esc_url($return_url) ?>" ;
                             <?php
                         }
-                        ?>
-                    }
+                    ?>
+                    // if (document.getElementById('savePaymentMethod').checked == true) {
+                    //     // If "remember me" option is selected, send request to WooCommerce to save card
+                    //     var xhr = new XMLHttpRequest();
+                    //     xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+                    //     xhr.setRequestHeader('Content-type', 'application/json');
+                    //     xhr.onload = function () {
+                    //         // We move to the "complete" screen once we get the response
+                    //         <?php
+                    //         if (!empty($return_url)) {
+                    //             ?>
+                    //                 window.location.href = "<?php echo esc_url($return_url) ?>" ;
+                    //             <?php
+                    //         }
+                    //         ?>
+                    //     };
+                    //     var data = {
+                    //         object: "WC_Paystand_Event",
+                    //         type:"payment_complete",
+                    //         user_id : "<?php echo esc_attr($data['user_id']) ?>",
+                    //         data: result.response.data
+                    //     };
+                    //     xhr.send(JSON.stringify(data));
+                    // } else {
+                    //     <?php
+                    //     if (!empty($return_url)) {
+                    //         ?>
+                    //     window.location.href = "<?php echo esc_url($return_url) ?>" ;
+                    //         <?php
+                    //     }
+                    //     ?>
+                    // }
                 });
             });
         </script>

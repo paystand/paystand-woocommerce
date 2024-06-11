@@ -65,6 +65,22 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     var $feeSplitBank = null;
     var $total_amount_card = null;
     var $total_amount_bank = null;
+    var $liveurl = null;
+    var $testurl = null;
+    var $live_api_url = null;
+    var $test_api_url = null;
+    var $paystand_checkout_config = null;
+    var $testmode = null;
+    var $view_checkout = null;
+    var $render_mode = null;
+    var $debug = null;
+    var $render_width = null;
+    var $custom_preset = null;
+    var $auto_processing = null;
+    var $show_payment_method = null;
+    var $enable_saved_payment_checkout = null;
+    var $checkout_description = null;
+    var $log = null;
 
     /**
      * Constructor for the gateway.
@@ -482,9 +498,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->log_message('receipt_page order_id: ' . $order_id);
         $order = new WC_Order($order_id);
         $this->log_message('render_ps_checkout on_complete_status:' . $this->on_complete_status);
-        if ($this->on_complete_status !== 'default') {
-            $order->update_status($this->on_complete_status);
-        }
+        // if ($this->on_complete_status !== 'default') {
+        //     $order->update_status($this->on_complete_status);
+        // }
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
         $return_url = $order->get_checkout_order_received_url();
@@ -569,14 +585,46 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
     /**
+     * Process WC Paystand Event
+     */
+    function process_wc_paystand_event($event)
+    {
+        try {
+            $this->log_message('process_wc_paystand_event -'. print_r($event, true));
+            if(true == $event['save_payment_method']) {
+                $this->process_payment_save_callback($event);
+            }
+            if (!empty($event['order_id'])) {
+                $order_id = $event['order_id'];
+                $this->log_message('process_wc_paystand_event - order_id: ' . $order_id);
+                $order = new WC_Order($order_id);
+                if (!$order) {
+                    $this->log_message('Order not found for order id: ' . $order_id);
+                    return;
+                }
+                $payment_status = $event['data']['status'];
+                $new_order_status = $payment_status == 'failed' ? 'payment-failed' : $this->on_complete_status;
+                $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
+                $order->update_status($new_order_status);
+            }
+        } catch (Exception $e) {
+            error_log('process_wc_paystand_event exception: ' . print_r($e, true));
+            // $this->log_message('process_wc_paystand_event exception: ' . print_r($e, true));
+            return;
+        }
+    }
+
+    /**
      * Processes a callback from the frontend asking to save a payment method
      */
     function process_payment_save_callback($response)
     {
 
         $this->log_message('process_payment_save_callback -'. print_r($response, true));
+        $valid_event_types = array('save_payment', 'payment_complete');
 
-        if ($response["object"] != "WC_Paystand_Event" || $response["type"] != "save_payment") {
+        if ($response["object"] != "WC_Paystand_Event" || !in_array($response["type"], $valid_event_types) || empty($response['data'])) {
+            $this->log_message('process_payment_save_callback - Invalid response');
             return;
         }
 
@@ -662,7 +710,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
         // If we got a WC_Paystand event, we process it separatedly from the standard callback objects
         if($response_webhook['object'] == 'WC_Paystand_Event') {
-            $this->process_payment_save_callback($response_webhook);
+            $this->process_wc_paystand_event($response_webhook);
             return;
         }
 

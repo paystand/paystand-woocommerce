@@ -109,7 +109,7 @@ class PaystandFormFields
                 'label' => __('Select status', 'woocommerce-paystand'),
                 'default' => 'default',
                 'description' => __('Choose order status after a successful payment', 'woocommerce-paystand'),
-                'options' => array('default' =>'Default', 'processing' => 'Processing', 'pending' => 'Pending payment', 'on-hold' => 'On hold')
+                'options' => array('default' =>'Default', 'processing' => 'Processing', 'pending' => 'Pending payment', 'on-hold' => 'On hold', 'payment-failed' => 'Payment failed')
               ),
               'checkout_description' => array(
                 'title' => __('Checkout Description', 'woocommerce-paystand'),
