@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>span_Alabama</name>
+   <tag></tag>
+   <elementGuidId>b7161f62-2f0e-4c62-b241-cdbc070f31d9</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>BASIC</key>
+         <value>id(&quot;ul-19&quot;)/li[@class=&quot;ng-scope&quot;]/md-autocomplete-parent-scope[@class=&quot;ng-scope&quot;]/span[1][count(. | //*[@ref_element = 'Object Repository/Page_My Account  MyWordpress/iframe_paystand_checkout_ifram']) = count(//*[@ref_element = 'Object Repository/Page_My Account  MyWordpress/iframe_paystand_checkout_ifram'])]</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>BASIC</selectorMethod>
+   <useRalativeImagePath>false</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>span</value>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>md-highlight-text</name>
+      <type>Main</type>
+      <value>vm.searchText</value>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Alabama</value>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;ul-19&quot;)/li[@class=&quot;ng-scope&quot;]/md-autocomplete-parent-scope[@class=&quot;ng-scope&quot;]/span[1]</value>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>ref_element</name>
+      <type>Main</type>
+      <value>Object Repository/Page_My Account  MyWordpress/iframe_paystand_checkout_ifram</value>
+   </webElementProperties>
+</WebElementEntity>
