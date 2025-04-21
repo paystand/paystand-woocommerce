@@ -129,13 +129,16 @@ function paystand_hide_order_action_buttons() {
   ?>
   <script type="text/javascript">
   jQuery(document).ready(function($) {
-    // Find all rows in the orders table
-    $('.woocommerce-orders-table tr.order').each(function() {
-      // Check if this row contains text indicating it's a PayStand order
-      if ($(this).html().indexOf('paystand') > -1 || 
-          $(this).find('.woocommerce-orders-table__cell-order-payment-method').text().toLowerCase().indexOf('paystand') > -1) {
-        // Hide the actions cell for this row
-        $(this).find('.woocommerce-orders-table__cell-order-actions').hide();
+    // Find all rows in the orders table using escaped selectors
+    jQuery('.woocommerce-orders-table').find('tr.order').each(function() {
+      var $row = jQuery(this);
+      var $paymentMethod = $row.find('.woocommerce-orders-table__cell-order-payment-method');
+      var paymentText = $paymentMethod.text();
+      
+      // Safely check if this is a PayStand order
+      if (paymentText && paymentText.toLowerCase().indexOf('paystand') > -1) {
+        // Hide actions cell using escaped selector
+        $row.find('.woocommerce-orders-table__cell-order-actions').hide();
       }
     });
   });
@@ -147,6 +150,11 @@ add_action('wp_footer', 'paystand_hide_order_action_buttons');
 // Remove action buttons programmatically ONLY for PayStand orders
 add_filter('woocommerce_my_account_my_orders_actions', 'paystand_remove_order_actions', 10, 2);
 function paystand_remove_order_actions($actions, $order) {
+  // Validate that $order is a WC_Order object
+  if (!is_a($order, 'WC_Order')) {
+    return $actions;
+  }
+
   // Check if the order payment method is PayStand
   if ($order->get_payment_method() === 'paystand') {
     // Remove all actions for PayStand orders
@@ -165,11 +173,3 @@ function paystand_remove_actions_from_emails($order) {
     remove_action('woocommerce_order_details_after_order_table', 'woocommerce_order_again_button');
   }
 }
-
-add_action('woocommerce_email_styles', 'paystand_hide_action_buttons_in_emails');
-function paystand_hide_action_buttons_in_emails($css) {
-  // We can't easily target specific payment methods in email CSS
-  // We'll handle this through the PHP filter above
-  return $css;
-}
-
