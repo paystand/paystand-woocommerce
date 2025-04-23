@@ -3,7 +3,7 @@
 Plugin Name: Paystand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds Paystand payment gateway to WooCommerce.
-Version: 2.5.2
+Version: 2.5.4
 Author: Paystand
 Author URI: http://www.paystand.com/
 */
@@ -121,3 +121,55 @@ function paystand_gateway_activate()
 }
 //register_activation_hook(__FILE__, 'paystand_gateway_activate');
 
+/**
+ * Hide WooCommerce order action buttons (PAY and CANCEL) ONLY for PayStand orders
+ */
+function paystand_hide_order_action_buttons() {
+  // Add JavaScript to hide action buttons only for PayStand orders
+  ?>
+  <script type="text/javascript">
+  jQuery(document).ready(function($) {
+    // Find all rows in the orders table using escaped selectors
+    jQuery('.woocommerce-orders-table').find('tr.order').each(function() {
+      var $row = jQuery(this);
+      var $paymentMethod = $row.find('.woocommerce-orders-table__cell-order-payment-method');
+      var paymentText = $paymentMethod.text();
+      
+      // Safely check if this is a PayStand order
+      if (paymentText && paymentText.toLowerCase().indexOf('paystand') > -1) {
+        // Hide actions cell using escaped selector
+        $row.find('.woocommerce-orders-table__cell-order-actions').hide();
+      }
+    });
+  });
+  </script>
+  <?php
+}
+add_action('wp_footer', 'paystand_hide_order_action_buttons');
+
+// Remove action buttons programmatically ONLY for PayStand orders
+add_filter('woocommerce_my_account_my_orders_actions', 'paystand_remove_order_actions', 10, 2);
+function paystand_remove_order_actions($actions, $order) {
+  // Validate that $order is a WC_Order object
+  if (!is_a($order, 'WC_Order')) {
+    return $actions;
+  }
+
+  // Check if the order payment method is PayStand
+  if ($order->get_payment_method() === 'paystand') {
+    // Remove all actions for PayStand orders
+    return array();
+  }
+  
+  // Return original actions for other payment methods
+  return $actions;
+}
+
+// Hide action buttons in emails ONLY for PayStand orders
+add_action('woocommerce_email_before_order_table', 'paystand_remove_actions_from_emails', 10, 1);
+function paystand_remove_actions_from_emails($order) {
+  // Check if the order payment method is PayStand
+  if ($order->get_payment_method() === 'paystand') {
+    remove_action('woocommerce_order_details_after_order_table', 'woocommerce_order_again_button');
+  }
+}
