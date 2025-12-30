@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.2
+ * @version 2.5.5
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -819,8 +819,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                     wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
                 }
             }
-            $total += $fee - $discount;
-            update_post_meta($order_id, '_order_total', wc_format_decimal($total, get_option('woocommerce_price_num_decimals')));
+            // Note: The order total is set by update_order_total_paid() below using the payerTotal from Paystand API
+            // which already includes fees and discounts, so we don't manually update it here
 
             $source_type = $data['resource']['sourceType'];
             if ($source_type === 'Bank') {
