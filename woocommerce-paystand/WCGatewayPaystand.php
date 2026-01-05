@@ -552,7 +552,21 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
 
         $this->transaction_id = $response->body->id;
+
+        // Check if meta exists before accessing it
+        if (!isset($response->body->meta) || empty($response->body->meta)) {
+            $this->log_message('check_callback_data GET_payments meta is missing or empty');
+            return false;
+        }
+        
         $meta = $response->body->meta;
+        
+        // Check if order_id exists in meta
+        if (!isset($meta->order_id) || empty($meta->order_id)) {
+            $this->log_message('check_callback_data GET_payments meta->order_id is missing or empty');
+            return false;
+        }
+
         $this->order_id = $meta->order_id;
         $this->payment_status = $response->body->status;
         $this->order_total_paid = $response->body->amount;
