@@ -609,29 +609,96 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     /**
      * Process WC Paystand Event
+     * This is called from the JavaScript onceComplete callback, so we already have the payment data.
+     * We don't need to verify via API call since the data comes from our own frontend.
      */
     function process_wc_paystand_event($event)
     {
         try {
             $this->log_message('process_wc_paystand_event -'. print_r($event, true));
+            
             if(true == $event['save_payment_method']) {
                 $this->process_payment_save_callback($event);
             }
-            if ($this->check_callback_data($event)) {
-                $order_id = $event['order_id'];
-                $this->log_message('process_wc_paystand_event - order_id: ' . $order_id);
-                $order = new WC_Order($order_id);
-                if (!$order) {
-                    $this->log_message('Order not found for order id: ' . $order_id);
-                    return;
-                }
-                $payment_status = $event['data']['status'];
-                $new_order_status = $payment_status == 'failed' ? 'failed' : ($this->on_complete_status == 'default' ? 'completed' : $this->on_complete_status);
-                $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
-                $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
-                $this->update_order_total_paid($order);
-                $order->update_status($new_order_status, $note);
+            
+            // Get order_id directly from the event (already validated by JavaScript)
+            $order_id = isset($event['order_id']) ? $event['order_id'] : null;
+            if (!$order_id) {
+                $this->log_message('process_wc_paystand_event - No order_id in event');
+                return;
             }
+            
+            $this->log_message('process_wc_paystand_event - order_id: ' . $order_id);
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                $this->log_message('Order not found for order id: ' . $order_id);
+                return;
+            }
+
+            // Extract fee and discount from payment data
+            // First check top-level properties (explicitly sent from JavaScript)
+            $payerDiscount = isset($event['payerDiscount']) ? floatval($event['payerDiscount']) : 0.0;
+            $payerTotalFees = isset($event['payerTotalFees']) ? floatval($event['payerTotalFees']) : 0.0;
+            $payerTotal = isset($event['payerTotal']) ? floatval($event['payerTotal']) : 0.0;
+            
+            // Fallback: check if feeSplit exists in the nested payment data
+            $payment_data = isset($event['data']) ? $event['data'] : array();
+            if (($payerDiscount == 0.0 && $payerTotalFees == 0.0) && isset($payment_data['feeSplit'])) {
+                $payerDiscount = isset($payment_data['feeSplit']['payerDiscount']) ? floatval($payment_data['feeSplit']['payerDiscount']) : 0.0;
+                $payerTotalFees = isset($payment_data['feeSplit']['payerTotalFees']) ? floatval($payment_data['feeSplit']['payerTotalFees']) : 0.0;
+                $payerTotal = isset($payment_data['feeSplit']['payerTotal']) ? floatval($payment_data['feeSplit']['payerTotal']) : 0.0;
+            }
+            
+            $this->log_message('process_wc_paystand_event - payerDiscount: ' . $payerDiscount . ', payerTotalFees: ' . $payerTotalFees . ', payerTotal: ' . $payerTotal);
+            
+            // Remove any existing Processing Fee or Paystand Discount items
+            $existing_fees = $order->get_items('fee');
+            foreach ($existing_fees as $item_id => $item) {
+                if ($item->get_name() === 'Processing Fee' || $item->get_name() === 'Paystand Discount') {
+                    wc_delete_order_item($item_id);
+                    $this->log_message('process_wc_paystand_event - Removed existing fee/discount item: ' . $item_id);
+                }
+            }
+
+            // Apply discount (negative adjustment) if present
+            if ($payerDiscount != 0.0) {
+                $discount_amount = abs($payerDiscount); // Ensure positive for display
+                $discount_item = array('order_item_name' => 'Paystand Discount', 'order_item_type' => 'fee');
+                $item_id = wc_add_order_item($order_id, $discount_item);
+                if ($item_id) {
+                    wc_add_order_item_meta($item_id, '_tax_class', '0');
+                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal(-$discount_amount)); // Negative for discount
+                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+                    $this->log_message('process_wc_paystand_event - Added Paystand Discount: -' . $discount_amount);
+                }
+            }
+            // Apply fee (positive adjustment) if present and no discount
+            elseif ($payerTotalFees != 0.0) {
+                $fee_amount = abs($payerTotalFees); // Ensure positive
+                $item = array('order_item_name' => 'Processing Fee', 'order_item_type' => 'fee');
+                $item_id = wc_add_order_item($order_id, $item);
+                if ($item_id) {
+                    wc_add_order_item_meta($item_id, '_tax_class', '0');
+                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee_amount)); // Positive for fee
+                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
+                    $this->log_message('process_wc_paystand_event - Added Processing Fee: ' . $fee_amount);
+                }
+            }
+
+            // Update order total if we have payerTotal from fee split
+            if ($payerTotal > 0) {
+                $this->order_total_paid = $payerTotal;
+                $this->log_message('process_wc_paystand_event - Setting order total to payerTotal: ' . $payerTotal);
+            }
+            
+            $this->update_order_total_paid($order);
+            
+            $payment_status = isset($event['data']['status']) ? $event['data']['status'] : 'posted';
+            $new_order_status = $payment_status == 'failed' ? 'failed' : ($this->on_complete_status == 'default' ? 'completed' : $this->on_complete_status);
+            $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
+            $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
+            $order->update_status($new_order_status, $note);
+            
         } catch (Exception $e) {
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
             return;

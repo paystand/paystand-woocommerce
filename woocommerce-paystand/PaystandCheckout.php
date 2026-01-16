@@ -177,7 +177,24 @@ abstract class PaystandCheckout
                     const savePaymentMethod = document.getElementById('savePaymentMethod').checked;
                     const response = result.response || {};
                     const payment = response.data || {};
-                    // If "remember me" option is selected, send request to WooCommerce to save card
+                    
+                    // Extract fee split data from payment response
+                    const feeSplit = payment.feeSplit || {};
+                    const payerDiscount = feeSplit.payerDiscount || 0;
+                    const payerTotalFees = feeSplit.payerTotalFees || 0;
+                    const payerTotal = feeSplit.payerTotal || payment.amount || 0;
+                    
+                    console.log('Paystand payment complete:', {
+                        paymentId: payment.id,
+                        status: payment.status,
+                        amount: payment.amount,
+                        payerDiscount: payerDiscount,
+                        payerTotalFees: payerTotalFees,
+                        payerTotal: payerTotal,
+                        feeSplit: feeSplit
+                    });
+                    
+                    // Send payment data to WooCommerce backend
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
                     xhr.setRequestHeader('Content-type', 'application/json');
@@ -193,23 +210,21 @@ abstract class PaystandCheckout
                     };
                     var data = {
                         object: "WC_Paystand_Event",
-                        type:"payment_complete",
-                        user_id : "<?php echo esc_attr($data['user_id']) ?>",
-                        order_id : "<?php echo esc_attr($order_id) ?>",
+                        type: "payment_complete",
+                        user_id: "<?php echo esc_attr($data['user_id']) ?>",
+                        order_id: "<?php echo esc_attr($order_id) ?>",
                         save_payment_method: savePaymentMethod,
                         data: payment,
-                        // These are used to verified payment from Paystand in WCGatewayPaystand->check_callback_data()
+                        // Explicitly include fee data for easier backend access
+                        payerDiscount: payerDiscount,
+                        payerTotalFees: payerTotalFees,
+                        payerTotal: payerTotal,
+                        // These are used to verify payment from Paystand in WCGatewayPaystand->check_callback_data()
                         sourceType: "Payment",
                         sourceId: payment.id,
                     };
                     xhr.send(JSON.stringify(data));
-                    <?php
-                        if (!empty($return_url)) {
-                            ?>
-                        window.location.href = "<?php echo $return_url ?>" ;
-                            <?php
-                        }
-                    ?>
+                    // Redirect is handled in xhr.onload after server confirms order update
                 });
             });
         </script>
