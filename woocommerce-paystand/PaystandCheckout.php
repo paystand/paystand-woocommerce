@@ -184,16 +184,6 @@ abstract class PaystandCheckout
                     const payerTotalFees = feeSplit.payerTotalFees || 0;
                     const payerTotal = feeSplit.payerTotal || payment.amount || 0;
                     
-                    console.log('Paystand payment complete:', {
-                        paymentId: payment.id,
-                        status: payment.status,
-                        amount: payment.amount,
-                        payerDiscount: payerDiscount,
-                        payerTotalFees: payerTotalFees,
-                        payerTotal: payerTotal,
-                        feeSplit: feeSplit
-                    });
-                    
                     // Send payment data to WooCommerce backend
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
