@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.5
+ * @version 2.5.6
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
