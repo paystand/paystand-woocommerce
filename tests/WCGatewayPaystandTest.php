@@ -48,11 +48,37 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         \WP_Mock::userFunction('wc_clean', array( 'return'=>$order_id));
         \WP_Mock::userFunction('get_current_user_id',  array('return'=>1));
 
-        $mocked= \Mockery::mock($this->wc_paystand);
+        $mocked = \Mockery::mock('WC_Gateway_PayStand[do_http_post]');
         $mocked->shouldReceive('do_http_post')->andReturn(new HttpfulResponse(200));
 
         $result = $mocked->process_payment(1);
         $this->assertEquals('success', $result['result']);
+    }
+
+    /**
+     * Test that the payment request body includes meta source 'woocommerce'
+     */
+    public function test_payment_meta_source() {
+        $_POST['wc-paystand-payment-token'] = '1';
+        \WP_Mock::userFunction('wc_clean', array('return' => 2));
+        \WP_Mock::userFunction('get_current_user_id', array('return' => 1));
+
+        $captured_body = null;
+        $mocked = \Mockery::mock('WC_Gateway_PayStand[do_http_post]');
+        $mocked->shouldReceive('do_http_post')
+            ->with(
+                \Mockery::any(),
+                \Mockery::any(),
+                \Mockery::on(function($body) use (&$captured_body) {
+                    $captured_body = $body;
+                    return true;
+                })
+            )
+            ->andReturn(new HttpfulResponse(200));
+
+        $mocked->process_payment(1);
+
+        $this->assertEquals('woocommerce', $captured_body['meta']['source']);
     }
 
 	/**

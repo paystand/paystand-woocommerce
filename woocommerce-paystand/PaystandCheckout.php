@@ -160,7 +160,7 @@ abstract class PaystandCheckout
       ps-payerAddressCountry = "<?php echo esc_attr($billing_country)?>"
       ps-payerAddressState = "<?php echo esc_attr($billing_state)?>"
       ps-payerAddressPostal = "<?php echo esc_attr($billing_postalcode)?>"
-      ps-paymentMeta = '{ "order_id" : "<?php echo esc_attr($order_id)?>", "user_id":  "<?php echo esc_attr($data['user_id']) ?>" }'
+      ps-paymentMeta = '{ "order_id" : "<?php echo esc_attr($order_id)?>", "user_id":  "<?php echo esc_attr($data['user_id']) ?>", "source": "woocommerce" }'
       ps-paymentCurrency =  "<?php echo esc_attr($data['currency']) ?>"
       ps-width =  "<?php echo esc_attr($data['render_width']) ?>%"
       ps-customPreset = "<?php echo esc_attr($data['custom_preset']) ?>"
