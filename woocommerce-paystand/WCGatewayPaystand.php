@@ -35,7 +35,7 @@ limitations under the License.
  *
  * @class   WC_Gateway_Paystand
  * @extends WC_Payment_Gateway
- * @version 2.5.5
+ * @version 2.5.6
  * @package WooCommerce/Classes/Payment
  * @author  Paystand
  */
@@ -317,7 +317,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             'payerId' => $wc_payment_token->get_meta('payerId'),
             'meta' => array(
             'order_id' => $order_id ,
-            'user_id'  => get_current_user_id()
+            'user_id'  => get_current_user_id(),
+            'source'   => 'woocommerce'
             ),
             'checkBalance' => true
             );

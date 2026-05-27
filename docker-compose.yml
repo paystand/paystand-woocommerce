@@ -1,0 +1,7 @@
+services:
+  tests:
+    image: php:8.1-cli
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: ./vendor/bin/phpunit

@@ -2,7 +2,7 @@
          colors="true">
     <testsuites>
         <testsuite name="Tests">
-	        <directory prefix="test-" suffix=".php">tests/</directory>	
+	        <directory suffix=".php">tests/</directory>
         </testsuite>
     </testsuites>
     <groups>

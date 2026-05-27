@@ -60,6 +60,9 @@ class WC_Order {
     public function get_subtotal() {
         return 1;
     }
+    public function update_status($status, $note = '') {}
+    public function set_total($total) { $this->total = $total; }
+    public function save() {}
  }
 
 /**
@@ -94,8 +97,15 @@ class WC_Payment_Tokens {
     }
 }
 class HttpfulResponse {
-    public function __construct($response) {
-        $this->response = $response;
+    public $code;
+    public $body;
+
+    public function __construct($code) {
+        $this->code = $code;
+        $this->body = (object)[
+            'amount' => 10,
+            'status' => 'posted',
+            'source' => (object)['object' => 'card'],
+        ];
     }
-    
 }
