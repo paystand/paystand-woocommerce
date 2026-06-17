@@ -190,6 +190,53 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
     }
 
+    /**
+     * Fire-and-forget log to Cloudflare Analytics Engine via the plugin log worker.
+     *
+     * Uses the same /ingest endpoint as the Magento plugin for now.
+     * A dedicated WooCommerce worker URL will replace this once provisioned.
+     *
+     * Field mapping vs. Magento worker schema:
+     *   quote_id       → WooCommerce order_id
+     *   magento_version → WooCommerce version (WC_VERSION)
+     *
+     * @param  string $event_type  e.g. 'checkout_rendered', 'payment_complete', 'payment_failed', 'webhook_received'
+     * @param  array  $extra       Optional keys: order_id, payment_id, error_message
+     */
+    private function send_cf_log($event_type, $extra = array())
+    {
+        if (empty($this->publishable_key)) {
+            return;
+        }
+
+        $env = $this->get_checkout_env();
+        // Worker only validates keys against api.paystand.com or api.paystand.co.
+        // Map 'live' → 'com', everything else (sandbox/development/local) → 'co'.
+        $ps_env = ($env === 'live') ? 'com' : 'co';
+
+        $payload = array(
+            'customer_id'     => $this->customer_id ?: 'unknown',
+            'publishable_key' => $this->publishable_key,
+            'event_type'      => $event_type,
+            'quote_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
+            'payment_id'      => isset($extra['payment_id'])    ? (string) $extra['payment_id']    : '',
+            'error_message'   => isset($extra['error_message']) ? (string) $extra['error_message'] : '',
+            'magento_version' => defined('WC_VERSION') ? WC_VERSION : '',
+            'plugin_version'  => '2.5.6',
+            'env'             => $ps_env,
+        );
+
+        wp_remote_post(
+            'https://magento-plugin-logs.paystand-core-services.workers.dev/ingest',
+            array(
+                'body'    => wp_json_encode($payload),
+                'headers' => array('Content-Type' => 'application/json'),
+                'blocking' => false,
+                'timeout'  => 5,
+            )
+        );
+    }
+
     private function isValidStatus($status)
     {
          $allowed_status = array("PAID", "FAILED", "CREATED", "PROCESSING", "POSTED");
@@ -507,6 +554,8 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->log_message('render_ps_checkout on_complete_status:' . $this->on_complete_status);
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
+        $this->send_cf_log('checkout_rendered', array('order_id' => $order_id));
+
         $return_url = $order->get_checkout_order_received_url();
         $this->render_ps_checkout('checkout_payment', $order_id, $return_url);
     }
@@ -699,6 +748,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $note = sprintf(__('Payment %s.', 'woocommerce-paystand'), $payment_status);
             $this->log_message('process_wc_paystand_event - new_order_status: ' . $new_order_status);
             $order->update_status($new_order_status, $note);
+
+            $payment_id = isset($event['data']['id']) ? $event['data']['id'] : '';
+            $cf_event   = ($payment_status === 'failed') ? 'payment_failed' : 'payment_complete';
+            $this->send_cf_log($cf_event, array(
+                'order_id'   => $order_id,
+                'payment_id' => $payment_id,
+            ));
             
         } catch (Exception $e) {
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
@@ -807,6 +863,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             return;
         }
 
+        $this->send_cf_log('webhook_received', array(
+            'payment_id' => isset($response_webhook['sourceId']) ? $response_webhook['sourceId'] : '',
+        ));
+
         if(is_object($response_webhook)) {
             $this->log_message('WebHook call: ' . print_r($response_webhook->resource, true));
         }
@@ -879,7 +939,6 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $total = get_post_meta($order_id, '_order_total', true);
             $fee = $this->paystand_fee;
             $discount = $this->paystand_discount;
-
             if ($fee > 0) {
                 $item = array('order_item_name' => 'Processing Fee',
                 'order_item_type' => 'fee');
@@ -913,8 +972,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order->update_status('completed', 'Order completed.');
             $this->update_order_total_paid($order);
             $this->log_message('Order auto-completed: ' . $order_id);
+            $this->send_cf_log('webhook_payment_complete', array(
+                'order_id'   => $order_id,
+                'payment_id' => $this->transaction_id,
+            ));
         } else {
             $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
+            $this->send_cf_log('webhook_payment_failed', array(
+                'order_id'     => $order_id,
+                'payment_id'   => $this->transaction_id,
+                'error_message' => $payment_status,
+            ));
         }
     }
 
