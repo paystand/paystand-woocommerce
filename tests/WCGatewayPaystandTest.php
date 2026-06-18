@@ -81,6 +81,160 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $this->assertEquals('woocommerce', $captured_body['meta']['source']);
     }
 
+    // ── send_cf_log tests ────────────────────────────────────────────────────
+
+    /**
+     * send_cf_log bails immediately when publishable_key is empty —
+     * wp_remote_post must never be called.
+     */
+    public function test_send_cf_log_skips_when_no_publishable_key() {
+        \WP_Mock::userFunction('wp_remote_post')->never();
+
+        // Override the option so publishable_key comes back empty
+        \WP_Mock::userFunction('get_option', array('return' => ''));
+
+        $gw = new WC_Gateway_PayStand();
+        // Force the property to empty to simulate a mis-configured gateway
+        $ref = new \ReflectionProperty(WC_Gateway_PayStand::class, 'publishable_key');
+        $ref->setAccessible(true);
+        $ref->setValue($gw, '');
+
+        // Call via reflection (private method)
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method->setAccessible(true);
+        $method->invoke($gw, 'checkout_rendered', array());
+
+        // WP_Mock will fail the test if wp_remote_post was called
+        $this->assertTrue(true);
+    }
+
+    /**
+     * send_cf_log posts to the WooCommerce worker URL (not the Magento one).
+     */
+    public function test_send_cf_log_uses_woocommerce_worker_url() {
+        $captured_url = null;
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) { return json_encode($data); },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array(
+            'times' => 1,
+            'return' => function($url, $args) use (&$captured_url) {
+                $captured_url = $url;
+                return array();
+            },
+        ));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method->setAccessible(true);
+        $method->invoke($this->wc_paystand, 'checkout_rendered', array('order_id' => 42));
+
+        $this->assertStringContainsString(
+            'woocommerce-plugin-logs.paystand-core-services.workers.dev',
+            $captured_url,
+            'send_cf_log must post to the WooCommerce worker, not the Magento one'
+        );
+        $this->assertStringNotContainsString(
+            'magento-plugin-logs',
+            $captured_url,
+            'send_cf_log must not post to the Magento worker URL'
+        );
+    }
+
+    /**
+     * send_cf_log payload uses order_id and wc_version, not quote_id / magento_version.
+     */
+    public function test_send_cf_log_payload_uses_woocommerce_field_names() {
+        $captured_body = null;
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) use (&$captured_body) {
+                $captured_body = $data;
+                return json_encode($data);
+            },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array(
+            'return' => array(),
+        ));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method->setAccessible(true);
+        $method->invoke($this->wc_paystand, 'payment_complete', array(
+            'order_id'      => '99',
+            'payment_id'    => 'pay_abc',
+            'error_message' => '',
+        ));
+
+        $this->assertArrayHasKey('order_id',    $captured_body, 'payload must contain order_id');
+        $this->assertArrayHasKey('wc_version',  $captured_body, 'payload must contain wc_version');
+        $this->assertArrayNotHasKey('quote_id',       $captured_body, 'payload must not contain quote_id (Magento field)');
+        $this->assertArrayNotHasKey('magento_version', $captured_body, 'payload must not contain magento_version (Magento field)');
+        $this->assertEquals('99', $captured_body['order_id']);
+    }
+
+    /**
+     * send_cf_log uses blocking=false (fire-and-forget).
+     */
+    public function test_send_cf_log_is_non_blocking() {
+        $captured_args = null;
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) { return json_encode($data); },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array(
+            'return' => function($url, $args) use (&$captured_args) {
+                $captured_args = $args;
+                return array();
+            },
+        ));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method->setAccessible(true);
+        $method->invoke($this->wc_paystand, 'webhook_received', array());
+
+        $this->assertFalse(
+            $captured_args['blocking'],
+            'send_cf_log must be fire-and-forget (blocking => false)'
+        );
+    }
+
+    /**
+     * send_cf_log maps env=live to ps_env=com, and sandbox to co.
+     */
+    public function test_send_cf_log_env_mapping() {
+        $bodies = array();
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) use (&$bodies) {
+                $bodies[] = $data;
+                return json_encode($data);
+            },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array(
+            'return' => array(),
+        ));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method->setAccessible(true);
+
+        // live env → com
+        putenv('PAYSTAND_ENV=live');
+        $method->invoke($this->wc_paystand, 'checkout_rendered', array());
+
+        // sandbox env → co
+        putenv('PAYSTAND_ENV=sandbox');
+        $method->invoke($this->wc_paystand, 'checkout_rendered', array());
+
+        putenv('PAYSTAND_ENV='); // reset
+
+        $this->assertEquals('com', $bodies[0]['env'], 'live env should map to com');
+        $this->assertEquals('co',  $bodies[1]['env'], 'sandbox env should map to co');
+    }
+
 	/**
 	 * Clean up after the test is run
 	 */

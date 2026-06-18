@@ -191,14 +191,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
     /**
-     * Fire-and-forget log to Cloudflare Analytics Engine via the plugin log worker.
+     * Fire-and-forget log to Cloudflare Analytics Engine via the WooCommerce plugin log worker.
      *
-     * Uses the same /ingest endpoint as the Magento plugin for now.
-     * A dedicated WooCommerce worker URL will replace this once provisioned.
+     * Endpoint: https://woocommerce-plugin-logs.paystand-core-services.workers.dev/ingest
+     * Dataset:  woocommerce_analytics
      *
-     * Field mapping vs. Magento worker schema:
-     *   quote_id       → WooCommerce order_id
-     *   magento_version → WooCommerce version (WC_VERSION)
+     * Field mapping:
      *
      * @param  string $event_type  e.g. 'checkout_rendered', 'payment_complete', 'payment_failed', 'webhook_received'
      * @param  array  $extra       Optional keys: order_id, payment_id, error_message
@@ -218,16 +216,16 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             'customer_id'     => $this->customer_id ?: 'unknown',
             'publishable_key' => $this->publishable_key,
             'event_type'      => $event_type,
-            'quote_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
+            'order_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
             'payment_id'      => isset($extra['payment_id'])    ? (string) $extra['payment_id']    : '',
             'error_message'   => isset($extra['error_message']) ? (string) $extra['error_message'] : '',
-            'magento_version' => defined('WC_VERSION') ? WC_VERSION : '',
+            'wc_version'      => defined('WC_VERSION') ? WC_VERSION : '',
             'plugin_version'  => '2.5.6',
             'env'             => $ps_env,
         );
 
         wp_remote_post(
-            'https://magento-plugin-logs.paystand-core-services.workers.dev/ingest',
+            'https://woocommerce-plugin-logs.paystand-core-services.workers.dev/ingest',
             array(
                 'body'    => wp_json_encode($payload),
                 'headers' => array('Content-Type' => 'application/json'),
