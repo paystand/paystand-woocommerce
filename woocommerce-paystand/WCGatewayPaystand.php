@@ -191,25 +191,30 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
     /**
-     * Fire-and-forget log to Cloudflare Analytics Engine via the WooCommerce plugin log worker.
+     * Fire-and-forget analytics event to the Cloudflare Analytics Engine via the WooCommerce plugin log worker.
      *
-     * Endpoint: https://woocommerce-plugin-logs.paystand-core-services.workers.dev/ingest
-     * Dataset:  woocommerce_analytics
+     * Non-blocking (does not wait for a response) so it never stalls checkout or webhook paths.
+     * Uses the same /ingest endpoint as the Magento plugin until a dedicated WooCommerce worker
+     * URL is provisioned and supplied by the team.
      *
-     * Field mapping:
+     * Field mapping (worker schema field → WooCommerce value):
+     *   quote_id        → WooCommerce order_id
+     *   magento_version → WC_VERSION (WooCommerce core version)
      *
-     * @param  string $event_type  e.g. 'checkout_rendered', 'payment_complete', 'payment_failed', 'webhook_received'
-     * @param  array  $extra       Optional keys: order_id, payment_id, error_message
+     * @param string $event_type One of: checkout_rendered, payment_complete, payment_failed,
+     *                           processing_error, processing_skipped, webhook_received,
+     *                           webhook_payment_complete, webhook_payment_failed
+     * @param array  $extra      Optional keys: order_id, payment_id, error_message
      */
-    private function send_cf_log($event_type, $extra = array())
+    private function send_analytics_event($event_type, $extra = array())
     {
         if (empty($this->publishable_key)) {
             return;
         }
 
         $env = $this->get_checkout_env();
-        // Worker only validates keys against api.paystand.com or api.paystand.co.
-        // Map 'live' → 'com', everything else (sandbox/development/local) → 'co'.
+        // Worker validates publishable_key against api.paystand.com (live) or api.paystand.co (all others).
+        // 'development' and 'local' envs deliberately fold into 'co' (sandbox) to avoid polluting prod data.
         $ps_env = ($env === 'live') ? 'com' : 'co';
 
         $payload = array(
@@ -220,19 +225,23 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             'payment_id'      => isset($extra['payment_id'])    ? (string) $extra['payment_id']    : '',
             'error_message'   => isset($extra['error_message']) ? (string) $extra['error_message'] : '',
             'wc_version'      => defined('WC_VERSION') ? WC_VERSION : '',
-            'plugin_version'  => '2.5.6',
+            'plugin_version'  => defined('PAYSTAND_WC_VERSION') ? PAYSTAND_WC_VERSION : 'unknown',
             'env'             => $ps_env,
         );
 
-        wp_remote_post(
-            'https://woocommerce-plugin-logs.paystand-core-services.workers.dev/ingest',
+        $result = wp_remote_post(
+            'https://magento-plugin-logs.paystand-core-services.workers.dev/ingest',
             array(
-                'body'    => wp_json_encode($payload),
-                'headers' => array('Content-Type' => 'application/json'),
+                'body'     => wp_json_encode($payload),
+                'headers'  => array('Content-Type' => 'application/json'),
                 'blocking' => false,
-                'timeout'  => 5,
+                'timeout'  => 1,
             )
         );
+
+        if (is_wp_error($result)) {
+            $this->log_message('send_analytics_event failed: ' . $result->get_error_message());
+        }
     }
 
     private function isValidStatus($status)
@@ -552,7 +561,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->log_message('render_ps_checkout on_complete_status:' . $this->on_complete_status);
         $this->log_message('Generating payment form for order ' . $order->get_order_number() . '. Notify URL: ' . $this->notify_url);
 
-        $this->send_cf_log('checkout_rendered', array('order_id' => $order_id));
+        $this->send_analytics_event('checkout_rendered', array('order_id' => $order_id));
 
         $return_url = $order->get_checkout_order_received_url();
         $this->render_ps_checkout('checkout_payment', $order_id, $return_url);
@@ -673,6 +682,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order_id = isset($event['order_id']) ? $event['order_id'] : null;
             if (!$order_id) {
                 $this->log_message('process_wc_paystand_event - No order_id in event');
+                $this->send_analytics_event('processing_skipped', array(
+                    'error_message' => 'no_order_id_in_event',
+                ));
                 return;
             }
             
@@ -680,6 +692,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order = wc_get_order($order_id);
             if (!$order) {
                 $this->log_message('Order not found for order id: ' . $order_id);
+                $this->send_analytics_event('processing_skipped', array(
+                    'order_id'      => $order_id,
+                    'error_message' => 'order_not_found',
+                ));
                 return;
             }
 
@@ -749,13 +765,17 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
             $payment_id = isset($event['data']['id']) ? $event['data']['id'] : '';
             $cf_event   = ($payment_status === 'failed') ? 'payment_failed' : 'payment_complete';
-            $this->send_cf_log($cf_event, array(
+            $this->send_analytics_event($cf_event, array(
                 'order_id'   => $order_id,
                 'payment_id' => $payment_id,
             ));
             
         } catch (Exception $e) {
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
+            $this->send_analytics_event('processing_error', array(
+                'order_id'      => isset($order_id) ? $order_id : '',
+                'error_message' => substr($e->getMessage(), 0, 512),
+            ));
             return;
         }
     }
@@ -857,19 +877,30 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
         // If we got a WC_Paystand event, we process it separatedly from the standard callback objects
         if($response_webhook['object'] == 'WC_Paystand_Event') {
+            // Log before handing off so both checkout-JS and server-webhook paths are covered (R1-B2).
+            $this->send_analytics_event('webhook_received', array(
+                'order_id'   => isset($response_webhook['order_id']) ? $response_webhook['order_id'] : '',
+                'payment_id' => isset($response_webhook['sourceId']) ? $response_webhook['sourceId'] : '',
+            ));
             $this->process_wc_paystand_event($response_webhook);
             return;
         }
-
-        $this->send_cf_log('webhook_received', array(
-            'payment_id' => isset($response_webhook['sourceId']) ? $response_webhook['sourceId'] : '',
-        ));
 
         if(is_object($response_webhook)) {
             $this->log_message('WebHook call: ' . print_r($response_webhook->resource, true));
         }
 
+        // For server-originated Paystand webhooks: only log AFTER check_callback_data() validates
+        // the payload via a back-channel API re-fetch (R1-B3 — prevent unauthenticated log writes).
         if ($this->check_callback_data($response_webhook)) { // set status & order_id & fees
+            // R1-C2: payment_id is nested under resource, not at the top level.
+            $webhook_payment_id = isset($response_webhook['resource']['id'])
+                ? $response_webhook['resource']['id']
+                : (isset($response_webhook['sourceId']) ? $response_webhook['sourceId'] : '');
+            $this->send_analytics_event('webhook_received', array(
+                'order_id'   => $this->order_id ? (string) $this->order_id : '',
+                'payment_id' => $webhook_payment_id,
+            ));
             header('HTTP/1.1 200 OK');
             do_action("valid_paystand_callback", $response_webhook);
         } else {
@@ -970,15 +1001,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order->update_status('completed', 'Order completed.');
             $this->update_order_total_paid($order);
             $this->log_message('Order auto-completed: ' . $order_id);
-            $this->send_cf_log('webhook_payment_complete', array(
+            $this->send_analytics_event('webhook_payment_complete', array(
                 'order_id'   => $order_id,
                 'payment_id' => $this->transaction_id,
             ));
         } else {
             $order->update_status('failed', sprintf(__('Payment failed: %s', 'woocommerce-paystand'), $payment_status));
-            $this->send_cf_log('webhook_payment_failed', array(
-                'order_id'     => $order_id,
-                'payment_id'   => $this->transaction_id,
+            $this->send_analytics_event('webhook_payment_failed', array(
+                'order_id'      => $order_id,
+                'payment_id'    => $this->transaction_id,
                 'error_message' => $payment_status,
             ));
         }

@@ -81,13 +81,13 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $this->assertEquals('woocommerce', $captured_body['meta']['source']);
     }
 
-    // ── send_cf_log tests ────────────────────────────────────────────────────
+    // ── send_analytics_event tests ───────────────────────────────────────────
 
     /**
-     * send_cf_log bails immediately when publishable_key is empty —
+     * send_analytics_event bails immediately when publishable_key is empty —
      * wp_remote_post must never be called.
      */
-    public function test_send_cf_log_skips_when_no_publishable_key() {
+    public function test_send_analytics_event_skips_when_no_publishable_key() {
         \WP_Mock::userFunction('wp_remote_post')->never();
 
         // Override the option so publishable_key comes back empty
@@ -100,7 +100,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $ref->setValue($gw, '');
 
         // Call via reflection (private method)
-        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_analytics_event');
         $method->setAccessible(true);
         $method->invoke($gw, 'checkout_rendered', array());
 
@@ -109,9 +109,10 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * send_cf_log posts to the WooCommerce worker URL (not the Magento one).
+     * send_analytics_event posts to the shared worker URL.
+     * (Dedicated WooCommerce worker URL will replace this once provisioned.)
      */
-    public function test_send_cf_log_uses_woocommerce_worker_url() {
+    public function test_send_analytics_event_uses_worker_url() {
         $captured_url = null;
 
         \WP_Mock::userFunction('wp_json_encode', array(
@@ -126,26 +127,23 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             },
         ));
 
-        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_analytics_event');
         $method->setAccessible(true);
         $method->invoke($this->wc_paystand, 'checkout_rendered', array('order_id' => 42));
 
         $this->assertStringContainsString(
-            'woocommerce-plugin-logs.paystand-core-services.workers.dev',
+            'paystand-core-services.workers.dev',
             $captured_url,
-            'send_cf_log must post to the WooCommerce worker, not the Magento one'
-        );
-        $this->assertStringNotContainsString(
-            'magento-plugin-logs',
-            $captured_url,
-            'send_cf_log must not post to the Magento worker URL'
+            'send_analytics_event must post to the plugin log worker'
         );
     }
 
     /**
-     * send_cf_log payload uses order_id and wc_version, not quote_id / magento_version.
+     * send_analytics_event payload uses order_id and wc_version, not quote_id / magento_version.
      */
-    public function test_send_cf_log_payload_uses_woocommerce_field_names() {
+    public function test_send_analytics_event_payload_uses_woocommerce_field_names() {
         $captured_body = null;
 
         \WP_Mock::userFunction('wp_json_encode', array(
@@ -159,7 +157,9 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             'return' => array(),
         ));
 
-        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_analytics_event');
         $method->setAccessible(true);
         $method->invoke($this->wc_paystand, 'payment_complete', array(
             'order_id'      => '99',
@@ -169,15 +169,15 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
 
         $this->assertArrayHasKey('order_id',    $captured_body, 'payload must contain order_id');
         $this->assertArrayHasKey('wc_version',  $captured_body, 'payload must contain wc_version');
-        $this->assertArrayNotHasKey('quote_id',       $captured_body, 'payload must not contain quote_id (Magento field)');
-        $this->assertArrayNotHasKey('magento_version', $captured_body, 'payload must not contain magento_version (Magento field)');
+        $this->assertArrayNotHasKey('quote_id',        $captured_body, 'payload must not contain quote_id (Magento field)');
+        $this->assertArrayNotHasKey('magento_version',  $captured_body, 'payload must not contain magento_version (Magento field)');
         $this->assertEquals('99', $captured_body['order_id']);
     }
 
     /**
-     * send_cf_log uses blocking=false (fire-and-forget).
+     * send_analytics_event uses blocking=false (fire-and-forget).
      */
-    public function test_send_cf_log_is_non_blocking() {
+    public function test_send_analytics_event_is_non_blocking() {
         $captured_args = null;
 
         \WP_Mock::userFunction('wp_json_encode', array(
@@ -191,20 +191,22 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             },
         ));
 
-        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_analytics_event');
         $method->setAccessible(true);
         $method->invoke($this->wc_paystand, 'webhook_received', array());
 
         $this->assertFalse(
             $captured_args['blocking'],
-            'send_cf_log must be fire-and-forget (blocking => false)'
+            'send_analytics_event must be fire-and-forget (blocking => false)'
         );
     }
 
     /**
-     * send_cf_log maps env=live to ps_env=com, and sandbox to co.
+     * send_analytics_event maps env=live to ps_env=com, and sandbox to co.
      */
-    public function test_send_cf_log_env_mapping() {
+    public function test_send_analytics_event_env_mapping() {
         $bodies = array();
 
         \WP_Mock::userFunction('wp_json_encode', array(
@@ -218,7 +220,9 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             'return' => array(),
         ));
 
-        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_cf_log');
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $method = new \ReflectionMethod(WC_Gateway_PayStand::class, 'send_analytics_event');
         $method->setAccessible(true);
 
         // live env → com
@@ -235,6 +239,88 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $this->assertEquals('co',  $bodies[1]['env'], 'sandbox env should map to co');
     }
 
+    /**
+     * R1-B1: process_wc_paystand_event fires processing_skipped when order_id is missing.
+     */
+    public function test_process_wc_paystand_event_logs_skipped_when_no_order_id() {
+        $logged_events = array();
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) use (&$logged_events) {
+                $logged_events[] = $data;
+                return json_encode($data);
+            },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array('return' => array()));
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $event = array(
+            'object'              => 'WC_Paystand_Event',
+            'type'                => 'payment_complete',
+            'save_payment_method' => false,
+            // order_id intentionally absent
+        );
+
+        $this->wc_paystand->process_wc_paystand_event($event);
+
+        $event_types = array_column($logged_events, 'event_type');
+        $this->assertContains(
+            'processing_skipped',
+            $event_types,
+            'A processing_skipped analytics event must fire when order_id is missing'
+        );
+
+        // Find the specific entry and check error_message
+        $skipped = array_values(array_filter($logged_events, function($e) {
+            return isset($e['event_type']) && $e['event_type'] === 'processing_skipped';
+        }));
+        $this->assertNotEmpty($skipped);
+        $this->assertStringContainsString('no_order_id', $skipped[0]['error_message']);
+    }
+
+    /**
+     * R1-B1: process_wc_paystand_event fires processing_skipped when order is not found.
+     */
+    public function test_process_wc_paystand_event_logs_skipped_when_order_not_found() {
+        $logged_events = array();
+
+        \WP_Mock::userFunction('wc_get_order', array('return' => false));
+
+        \WP_Mock::userFunction('wp_json_encode', array(
+            'return' => function($data) use (&$logged_events) {
+                $logged_events[] = $data;
+                return json_encode($data);
+            },
+        ));
+
+        \WP_Mock::userFunction('wp_remote_post', array('return' => array()));
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $event = array(
+            'object'              => 'WC_Paystand_Event',
+            'type'                => 'payment_complete',
+            'save_payment_method' => false,
+            'order_id'            => '42',
+        );
+
+        $this->wc_paystand->process_wc_paystand_event($event);
+
+        $event_types = array_column($logged_events, 'event_type');
+        $this->assertContains(
+            'processing_skipped',
+            $event_types,
+            'A processing_skipped analytics event must fire when wc_get_order returns false'
+        );
+
+        $skipped = array_values(array_filter($logged_events, function($e) {
+            return isset($e['event_type']) && $e['event_type'] === 'processing_skipped';
+        }));
+        $this->assertNotEmpty($skipped);
+        $this->assertEquals('42', $skipped[0]['order_id']);
+        $this->assertStringContainsString('order_not_found', $skipped[0]['error_message']);
+    }
+
 	/**
 	 * Clean up after the test is run
 	 */
@@ -245,4 +331,3 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
 		\WP_Mock::tearDown();
 	}
 }
-

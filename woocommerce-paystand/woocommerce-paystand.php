@@ -24,6 +24,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+if (!defined('PAYSTAND_WC_VERSION')) {
+    define('PAYSTAND_WC_VERSION', '2.5.6');
+}
+
 if (!function_exists('add_action')) {
   echo 'No direct access.';
   exit;
