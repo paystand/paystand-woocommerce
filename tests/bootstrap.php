@@ -63,6 +63,11 @@ class WC_Order {
     public function update_status($status, $note = '') {}
     public function set_total($total) { $this->total = $total; }
     public function save() {}
+    public function get_items($type = '') { return array(); }
+    public function add_meta_data($key, $value, $unique = false) {}
+    public function add_order_note($note) {}
+    public function payment_complete($transaction_id = '') {}
+    public function get_status() { return isset($this->status) ? $this->status : ''; }
  }
 
 /**
