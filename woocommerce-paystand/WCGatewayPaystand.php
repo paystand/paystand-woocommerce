@@ -232,15 +232,25 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
             $env = $this->get_checkout_env();
             // Worker validates publishable_key against api.paystand.com (live) or api.paystand.co
-            // (everything else). get_checkout_env() only ever returns 'live' or folds any other
-            // value — including a misconfigured/unrecognized PAYSTAND_ENV — into 'sandbox', so
-            // this mapping is exhaustive, not just development/local.
+            // (everything else). NOTE: get_checkout_env() itself does NOT sanitize/fold its return
+            // value — it returns getenv('PAYSTAND_ENV') verbatim (any string) unless testmode is
+            // 'yes'. The exhaustiveness comes from the `=== 'live'` comparison on the very next
+            // line: any value other than the literal string 'live' — including a malformed or
+            // unrecognized PAYSTAND_ENV — falls through to 'co'/sandbox here. A sibling call site
+            // (get_paystand_checkout_config()) reuses get_checkout_env() without this same
+            // defensive comparison and should not be assumed safe on that basis.
             $ps_env = ($env === 'live') ? 'com' : 'co';
 
             $payload = array(
+                // 'unknown' fallback: customer_id/plugin_version are properties of the merchant/
+                // plugin itself — if unset, that's a genuinely unknown/misconfigured state worth
+                // flagging distinctly in query results.
                 'customer_id'     => $this->customer_id ?: 'unknown',
                 'publishable_key' => $this->publishable_key,
                 'event_type'      => $event_type,
+                // '' fallback (not 'unknown'): these are per-event optional context — e.g.
+                // checkout_rendered has no payment_id yet — so an empty value means "not
+                // applicable to this event type", not "failed to determine".
                 // Worker schema field names (see docblock above) — NOT order_id/wc_version.
                 'quote_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
                 'payment_id'      => isset($extra['payment_id'])    ? (string) $extra['payment_id']    : '',
@@ -294,11 +304,25 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      * visibility into analytics outages. These are infrastructure-health signals, not verbose
      * request tracing, so they always go to the PHP error log; they're additionally mirrored
      * into the WC debug log when debug logging is enabled.
+     *
+     * Wrapped in its own try/catch so a fault in error_log() or a custom WC_Logger handler can
+     * never escape from here — send_analytics_event()'s "never throws" guarantee depends on this
+     * method being equally unable to throw.
      */
     private function log_analytics_failure($message)
     {
-        error_log('[paystand-woocommerce] ' . $message);
-        $this->log_message($message);
+        try {
+            $logged = error_log('[paystand-woocommerce] ' . $message);
+            if (false === $logged) {
+                // error_log() itself failed (e.g. disk-full/unwritable log path) — fall back to
+                // the WC debug log as a second attempt rather than silently dropping the signal.
+                $this->log_message('error_log() failed; ' . $message);
+            } else {
+                $this->log_message($message);
+            }
+        } catch (\Throwable $e) {
+            // Nothing further to do — this is already the last-resort failure path.
+        }
     }
 
     private function isValidStatus($status)
@@ -768,8 +792,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $order = wc_get_order($order_id);
             if (!$order) {
                 $this->log_message('Order not found for order id: ' . $order_id);
+                // Deliberately omit order_id here: wc_get_order() just failed to resolve it to a
+                // real order, so it's an unvalidated, attacker-suppliable value at this point —
+                // same reasoning as the pre-validation webhook_received fix. Downstream events
+                // (payment_complete/payment_failed/webhook_payment_complete/webhook_payment_failed)
+                // are unaffected and still carry order_id, since those only fire once wc_get_order()
+                // (or check_callback_data()) has already confirmed a real order.
                 $this->send_analytics_event(self::ANALYTICS_EVENT_PROCESSING_SKIPPED, array(
-                    'order_id'      => $order_id,
                     'error_message' => 'order_not_found',
                 ));
                 return;
@@ -850,12 +879,27 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             // Widened from `Exception` to `\Throwable` so real fatal-error scenarios
             // (TypeError, DivisionByZeroError, etc.) also reach the analytics event — a bare
             // `catch (Exception $e)` silently missed these, undermining the diagnostic goal.
-            error_log('process_wc_paystand_event exception: ' . print_r($e, true));
+            //
+            // Bounded summary (message/file/line) instead of print_r($e, true): a full object
+            // dump can include prior stack-frame arguments, which may carry raw request data —
+            // avoid writing that into error_log() unnecessarily.
+            error_log(sprintf(
+                'process_wc_paystand_event exception: %s in %s:%d',
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine()
+            ));
+
+            // mb_substr computed defensively: if mbstring isn't loaded, fall back to substr()
+            // rather than let a missing-function fatal escape unguarded from inside this catch
+            // block (which itself has nothing left to catch it).
+            $error_message = function_exists('mb_substr')
+                ? mb_substr($e->getMessage(), 0, 512)
+                : substr($e->getMessage(), 0, 512);
+
             $this->send_analytics_event(self::ANALYTICS_EVENT_PROCESSING_ERROR, array(
                 'order_id'      => isset($order_id) ? $order_id : '',
-                // mb_substr (not substr) to avoid splitting a multibyte character mid-sequence,
-                // which can otherwise produce invalid UTF-8 and make wp_json_encode() fail.
-                'error_message' => mb_substr($e->getMessage(), 0, 512),
+                'error_message' => $error_message,
             ));
             return;
         }

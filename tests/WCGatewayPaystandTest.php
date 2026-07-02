@@ -372,7 +372,10 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             return isset($e['event_type']) && $e['event_type'] === 'processing_skipped';
         }));
         $this->assertNotEmpty($skipped);
-        $this->assertEquals('42', $skipped[0]['quote_id']);
+        // order_id is deliberately omitted here: wc_get_order() failed to resolve it, so it's
+        // an unvalidated, attacker-suppliable value at this point (same reasoning as the
+        // webhook_received unauthenticated-write fix).
+        $this->assertEmpty($skipped[0]['quote_id'], 'order_not_found must not carry an unvalidated order_id');
         $this->assertStringContainsString('order_not_found', $skipped[0]['error_message']);
     }
 
@@ -457,6 +460,50 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
 
         $_POST = array();
     }
+
+    /**
+     * Regression guard: PAYSTAND_WC_VERSION's get_file_data() derivation must not be dead code.
+     * The constant is defined in woocommerce-paystand.php, which the test suite never
+     * requires/autoloads on its own (composer's classmap only covers woocommerce-paystand/*
+     * classes; the main plugin file declares none) — so without a dedicated test, a future
+     * regression in the get_file_data() call could ship silently green.
+     */
+    public function test_paystand_wc_version_constant_resolves_from_plugin_header() {
+        if (defined('PAYSTAND_WC_VERSION')) {
+            $this->markTestSkipped('PAYSTAND_WC_VERSION already defined by an earlier test in this process — cannot re-require the plugin file to test definition from a clean state.');
+        }
+
+        \WP_Mock::userFunction('add_action')->andReturnNull();
+        \WP_Mock::userFunction('add_filter')->andReturnNull();
+        \WP_Mock::userFunction('get_file_data', array(
+            'return' => array('Version' => '2.5.6'),
+        ));
+
+        require_once dirname(__DIR__) . '/woocommerce-paystand/woocommerce-paystand.php';
+
+        $this->assertTrue(defined('PAYSTAND_WC_VERSION'), 'PAYSTAND_WC_VERSION must be defined after requiring the main plugin file');
+        $this->assertEquals('2.5.6', PAYSTAND_WC_VERSION, 'PAYSTAND_WC_VERSION must resolve from get_file_data(), not a hardcoded fallback');
+    }
+
+    /**
+     * Regression guard: if get_file_data() is unavailable or returns no Version header,
+     * PAYSTAND_WC_VERSION must fall back to 'unknown' rather than fatal or resolve to an
+     * empty string.
+     */
+    public function test_paystand_wc_version_constant_falls_back_to_unknown_without_get_file_data() {
+        if (defined('PAYSTAND_WC_VERSION')) {
+            $this->markTestSkipped('PAYSTAND_WC_VERSION already defined by an earlier test in this process — cannot re-require the plugin file to test definition from a clean state.');
+        }
+
+        \WP_Mock::userFunction('add_action')->andReturnNull();
+        \WP_Mock::userFunction('add_filter')->andReturnNull();
+        // Deliberately do NOT mock get_file_data(), simulating function_exists('get_file_data') === false.
+
+        require_once dirname(__DIR__) . '/woocommerce-paystand/woocommerce-paystand.php';
+
+        $this->assertEquals('unknown', PAYSTAND_WC_VERSION, 'PAYSTAND_WC_VERSION must fall back to unknown, not fatal or resolve empty');
+    }
+
 
 	/**
 	 * Clean up after the test is run
