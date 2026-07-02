@@ -71,7 +71,7 @@ If you have any questions or feedback, please email us at support@paystand.com.
 
 == Changelog ==
 = 2.5.6 =
-* Add Cloudflare Analytics Engine logging to dedicated WooCommerce worker
+* Add Cloudflare Analytics Engine diagnostic logging (Phase 1 of PROD-15583) via the shared Magento plugin log worker; a dedicated WooCommerce worker will follow in a later release
 = 2.5.4 =
 * Hide action buttons (PAY and CANCEL) for PayStand orders
 = 2.4.9 =
