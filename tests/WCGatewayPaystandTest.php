@@ -109,8 +109,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * send_analytics_event posts to the shared worker URL.
-     * (Dedicated WooCommerce worker URL will replace this once provisioned.)
+     * send_analytics_event posts to the dedicated WooCommerce worker URL.
      */
     public function test_send_analytics_event_uses_worker_url() {
         $captured_url = null;
@@ -134,17 +133,17 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $method->invoke($this->wc_paystand, 'checkout_rendered', array('order_id' => 42));
 
         $this->assertStringContainsString(
-            'paystand-core-services.workers.dev',
+            'woocommerce-plugin-logs.paystand-core-services.workers.dev',
             $captured_url,
-            'send_analytics_event must post to the plugin log worker'
+            'send_analytics_event must post to the dedicated WooCommerce plugin log worker'
         );
     }
 
     /**
-     * send_analytics_event MUST send the worker's actual field names (quote_id /
-     * magento_version), not the WooCommerce-native names (order_id / wc_version).
-     * The worker (magento-log-worker/src/worker.js) destructures quote_id/magento_version —
-     * sending order_id/wc_version silently drops those values via destructuring defaults.
+     * send_analytics_event MUST send the dedicated worker's native field names
+     * (order_id / wc_version) — the shared Magento worker's legacy field names
+     * (quote_id / magento_version) are only a fallback the dedicated worker accepts
+     * for backward compatibility, not the primary schema.
      */
     public function test_send_analytics_event_payload_uses_worker_field_names() {
         $captured_body = null;
@@ -170,11 +169,11 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
             'error_message' => '',
         ));
 
-        $this->assertArrayHasKey('quote_id',        $captured_body, 'payload must use quote_id (worker schema field)');
-        $this->assertArrayHasKey('magento_version', $captured_body, 'payload must use magento_version (worker schema field)');
-        $this->assertArrayNotHasKey('order_id',  $captured_body, 'payload must not use order_id — worker does not read it');
-        $this->assertArrayNotHasKey('wc_version', $captured_body, 'payload must not use wc_version — worker does not read it');
-        $this->assertEquals('99', $captured_body['quote_id']);
+        $this->assertArrayHasKey('order_id',    $captured_body, 'payload must use order_id (dedicated worker field)');
+        $this->assertArrayHasKey('wc_version',  $captured_body, 'payload must use wc_version (dedicated worker field)');
+        $this->assertArrayNotHasKey('quote_id',        $captured_body, 'payload must not use quote_id — that is the legacy Magento fallback name');
+        $this->assertArrayNotHasKey('magento_version', $captured_body, 'payload must not use magento_version — that is the legacy Magento fallback name');
+        $this->assertEquals('99', $captured_body['order_id']);
         $this->assertEquals('woocommerce', $captured_body['platform'], 'payload should self-identify platform');
     }
 
@@ -375,7 +374,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         // order_id is deliberately omitted here: wc_get_order() failed to resolve it, so it's
         // an unvalidated, attacker-suppliable value at this point (same reasoning as the
         // webhook_received unauthenticated-write fix).
-        $this->assertEmpty($skipped[0]['quote_id'], 'order_not_found must not carry an unvalidated order_id');
+        $this->assertEmpty($skipped[0]['order_id'], 'order_not_found must not carry an unvalidated order_id');
         $this->assertStringContainsString('order_not_found', $skipped[0]['error_message']);
     }
 
@@ -450,7 +449,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
 
         $this->assertNotEmpty($webhook_received_events, 'webhook_received must still fire on the JS-callback path');
         $this->assertEmpty(
-            $webhook_received_events[0]['quote_id'],
+            $webhook_received_events[0]['order_id'],
             'webhook_received on the unauthenticated JS-callback path must not carry attacker-suppliable order_id'
         );
         $this->assertEmpty(

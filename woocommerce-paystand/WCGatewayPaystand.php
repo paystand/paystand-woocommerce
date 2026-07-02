@@ -203,19 +203,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     const ANALYTICS_EVENT_WEBHOOK_PAYMENT_FAILED    = 'webhook_payment_failed';
 
     /**
-     * Fire-and-forget analytics event to the Cloudflare Analytics Engine via the shared plugin
-     * log worker.
+     * Fire-and-forget analytics event to the Cloudflare Analytics Engine via the dedicated
+     * WooCommerce plugin log worker.
      *
      * Non-blocking (does not wait for a response) so it never stalls checkout or webhook paths.
-     * Uses the same /ingest endpoint as the Magento plugin until a dedicated WooCommerce worker
-     * is provisioned.
      *
-     * IMPORTANT: the worker (`magento-log-worker/src/worker.js`) destructures the payload with
-     * `quote_id` / `magento_version` as the field names — NOT `order_id` / `wc_version`. Sending
-     * the WooCommerce-native names silently drops those values (destructuring default kicks in),
-     * so this method sends the worker's actual expected keys on the wire, while using
-     * WooCommerce-native parameter/variable names internally for readability. This will flip back
-     * to `order_id` / `wc_version` once a dedicated WooCommerce worker with its own schema ships.
+     * The worker (`woocommerce-log-worker/src/worker.js`) accepts native WooCommerce field names
+     * (`order_id` / `wc_version`) directly, with `quote_id` / `magento_version` supported only as
+     * a legacy fallback for callers still on the old schema — so this payload uses the native
+     * names.
      *
      * This method never throws: any internal failure (encoding, transport) is caught and logged,
      * never propagated to the calling payment/webhook code path.
@@ -251,16 +247,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 // '' fallback (not 'unknown'): these are per-event optional context — e.g.
                 // checkout_rendered has no payment_id yet — so an empty value means "not
                 // applicable to this event type", not "failed to determine".
-                // Worker schema field names (see docblock above) — NOT order_id/wc_version.
-                'quote_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
+                'order_id'        => isset($extra['order_id'])      ? (string) $extra['order_id']      : '',
                 'payment_id'      => isset($extra['payment_id'])    ? (string) $extra['payment_id']    : '',
                 'error_message'   => isset($extra['error_message']) ? (string) $extra['error_message'] : '',
-                'magento_version' => defined('WC_VERSION') ? WC_VERSION : '',
+                'wc_version'      => defined('WC_VERSION') ? WC_VERSION : '',
                 'plugin_version'  => defined('PAYSTAND_WC_VERSION') ? PAYSTAND_WC_VERSION : 'unknown',
                 'env'             => $ps_env,
-                // Not read by the shared worker's destructuring today, but preserved in its
-                // raw_payload blob and will be picked up by a dedicated WooCommerce worker —
-                // disambiguates this dataset's WooCommerce vs. Magento origin.
                 'platform'        => 'woocommerce',
             );
 
@@ -273,7 +265,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             }
 
             $result = wp_remote_post(
-                'https://magento-plugin-logs.paystand-core-services.workers.dev/ingest',
+                'https://woocommerce-plugin-logs.paystand-core-services.workers.dev/ingest',
                 array(
                     'body'     => $body,
                     'headers'  => array('Content-Type' => 'application/json'),
