@@ -141,8 +141,8 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R2 regression: send_analytics_event MUST send the worker's actual field names
-     * (quote_id / magento_version), not the WooCommerce-native names (order_id / wc_version).
+     * send_analytics_event MUST send the worker's actual field names (quote_id /
+     * magento_version), not the WooCommerce-native names (order_id / wc_version).
      * The worker (magento-log-worker/src/worker.js) destructures quote_id/magento_version —
      * sending order_id/wc_version silently drops those values via destructuring defaults.
      */
@@ -175,7 +175,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $this->assertArrayNotHasKey('order_id',  $captured_body, 'payload must not use order_id — worker does not read it');
         $this->assertArrayNotHasKey('wc_version', $captured_body, 'payload must not use wc_version — worker does not read it');
         $this->assertEquals('99', $captured_body['quote_id']);
-        $this->assertEquals('woocommerce', $captured_body['platform'], 'payload should self-identify platform (R2-C3)');
+        $this->assertEquals('woocommerce', $captured_body['platform'], 'payload should self-identify platform');
     }
 
     /**
@@ -237,7 +237,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         putenv('PAYSTAND_ENV=sandbox');
         $method->invoke($this->wc_paystand, 'checkout_rendered', array());
 
-        // any other/malformed value → co (R2-S7: exhaustive fold, not just development/local)
+        // any other/malformed value → co (exhaustive fold, not just development/local)
         putenv('PAYSTAND_ENV=totally-bogus-value');
         $method->invoke($this->wc_paystand, 'checkout_rendered', array());
 
@@ -249,7 +249,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R2-C9/S4: wp_json_encode() returning false (e.g. invalid UTF-8) must not call
+     * wp_json_encode() returning false (e.g. invalid UTF-8) must not call
      * wp_remote_post() with a malformed body — the send must be skipped and logged instead.
      */
     public function test_send_analytics_event_skips_send_when_json_encode_fails() {
@@ -265,7 +265,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R2-C2/S3: send_analytics_event must never throw. A Throwable raised anywhere inside
+     * send_analytics_event must never throw. A Throwable raised anywhere inside
      * (e.g. from wp_remote_post itself) must be swallowed and logged, not propagated —
      * this method is frequently invoked from inside a payment-processing catch block, and
      * an uncaught error here would fatal the entire request.
@@ -295,7 +295,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R1-B1: process_wc_paystand_event fires processing_skipped when order_id is missing.
+     * process_wc_paystand_event fires processing_skipped when order_id is missing.
      */
     public function test_process_wc_paystand_event_logs_skipped_when_no_order_id() {
         $logged_events = array();
@@ -335,7 +335,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R1-B1: process_wc_paystand_event fires processing_skipped when order is not found.
+     * process_wc_paystand_event fires processing_skipped when order is not found.
      */
     public function test_process_wc_paystand_event_logs_skipped_when_order_not_found() {
         $logged_events = array();
@@ -377,7 +377,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R2-C11/S6: process_wc_paystand_event fires processing_skipped (not a fatal
+     * process_wc_paystand_event fires processing_skipped (not a fatal
      * "Array to string conversion" error) when order_id arrives as a non-scalar value.
      */
     public function test_process_wc_paystand_event_logs_skipped_when_order_id_not_scalar() {
@@ -410,7 +410,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
     }
 
     /**
-     * R2-B1 regression guard: the pre-validation webhook_received log fired from the
+     * Regression guard: the pre-validation webhook_received log fired from the
      * WC_Paystand_Event branch must NEVER include order_id/payment_id — those come straight
      * from unauthenticated client POST data on this path (no server-side authenticity check
      * exists for it, per process_wc_paystand_event()'s own docblock).

@@ -27,8 +27,8 @@ limitations under the License.
 if (!defined('PAYSTAND_WC_VERSION')) {
     // Derive from this file's own plugin header (the "Version: 2.5.6" line above) rather than
     // hardcoding a second literal — WordPress's get_file_data() reads the header directly, so
-    // there is exactly one place to bump on release (R1-C5 / R2-C7: this eliminates the drift
-    // risk instead of merely relocating the duplicate literal).
+    // there is exactly one place to bump on release, eliminating drift instead of merely
+    // relocating the duplicate literal.
     if (function_exists('get_file_data')) {
         $paystand_wc_plugin_data = get_file_data(__FILE__, array('Version' => 'Version'));
         define('PAYSTAND_WC_VERSION', !empty($paystand_wc_plugin_data['Version']) ? $paystand_wc_plugin_data['Version'] : 'unknown');

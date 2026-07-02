@@ -191,7 +191,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
     }
 
     /**
-     * Event type constants for send_analytics_event() (R2-S8: avoid magic strings at call sites).
+     * Event type constants for send_analytics_event() — avoids magic strings at call sites.
      */
     const ANALYTICS_EVENT_CHECKOUT_RENDERED        = 'checkout_rendered';
     const ANALYTICS_EVENT_PAYMENT_COMPLETE          = 'payment_complete';
@@ -218,7 +218,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      * to `order_id` / `wc_version` once a dedicated WooCommerce worker with its own schema ships.
      *
      * This method never throws: any internal failure (encoding, transport) is caught and logged,
-     * never propagated to the calling payment/webhook code path (R2-C2/R2-S3).
+     * never propagated to the calling payment/webhook code path.
      *
      * @param string $event_type One of the ANALYTICS_EVENT_* constants above.
      * @param array  $extra      Optional keys: order_id, payment_id, error_message
@@ -234,7 +234,7 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             // Worker validates publishable_key against api.paystand.com (live) or api.paystand.co
             // (everything else). get_checkout_env() only ever returns 'live' or folds any other
             // value — including a misconfigured/unrecognized PAYSTAND_ENV — into 'sandbox', so
-            // this mapping is exhaustive, not just development/local (R2-S7).
+            // this mapping is exhaustive, not just development/local.
             $ps_env = ($env === 'live') ? 'com' : 'co';
 
             $payload = array(
@@ -249,15 +249,15 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 'plugin_version'  => defined('PAYSTAND_WC_VERSION') ? PAYSTAND_WC_VERSION : 'unknown',
                 'env'             => $ps_env,
                 // Not read by the shared worker's destructuring today, but preserved in its
-                // raw_payload blob and will be picked up by a dedicated WooCommerce worker
-                // (R2-C3/R2-S2: disambiguates this dataset's WooCommerce vs. Magento origin).
+                // raw_payload blob and will be picked up by a dedicated WooCommerce worker —
+                // disambiguates this dataset's WooCommerce vs. Magento origin.
                 'platform'        => 'woocommerce',
             );
 
             $body = wp_json_encode($payload);
             if (false === $body) {
                 // wp_json_encode can fail on invalid-UTF-8 input (e.g. a truncated multibyte
-                // error message) — never send a malformed/empty body silently (R2-C9/R2-S4).
+                // error message) — never send a malformed/empty body silently.
                 $this->log_analytics_failure('send_analytics_event: wp_json_encode failed for event ' . $event_type);
                 return;
             }
@@ -275,14 +275,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             // NOTE: because this request is non-blocking, is_wp_error() only catches local
             // failures (DNS resolution, connection refused) — it cannot detect a worker-side
             // 5xx or a slow/degraded response, since WordPress never reads that far on a
-            // non-blocking request (R2-C4). Treat this as a narrow "did we even attempt to send"
+            // non-blocking request. Treat this as a narrow "did we even attempt to send"
             // signal, not full delivery confirmation.
             if (is_wp_error($result)) {
                 $this->log_analytics_failure('send_analytics_event transport failure: ' . $result->get_error_message());
             }
         } catch (\Throwable $e) {
             // This method must never fault the calling payment/webhook code path — especially
-            // when invoked from an existing catch block (R2-C2).
+            // when invoked from an existing catch block.
             $this->log_analytics_failure('send_analytics_event unexpected error: ' . $e->getMessage());
         }
     }
@@ -291,9 +291,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      * Surface an analytics-delivery failure regardless of the merchant's debug setting.
      *
      * log_message() only writes when debug=='yes', so most production merchants would get zero
-     * visibility into analytics outages (R2-C5/R2-S5). These are infrastructure-health signals,
-     * not verbose request tracing, so they always go to the PHP error log; they're additionally
-     * mirrored into the WC debug log when debug logging is enabled.
+     * visibility into analytics outages. These are infrastructure-health signals, not verbose
+     * request tracing, so they always go to the PHP error log; they're additionally mirrored
+     * into the WC debug log when debug logging is enabled.
      */
     private function log_analytics_failure($message)
     {
@@ -726,12 +726,12 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
      * This is called from the JavaScript onceComplete callback, so we already have the payment data.
      * We don't need to verify via API call since the data comes from our own frontend.
      *
-     * R2-B2 (acknowledged, pre-existing, out of scope for this instrumentation-only MR): this
+     * NOTE (acknowledged, pre-existing, out of scope for this instrumentation-only change): this
      * function mutates order status and fee/discount line items based entirely on unauthenticated,
      * client-supplied POST data, with no server-side re-verification against the Paystand API
      * (unlike the sibling webhook path, which re-validates via check_callback_data()). Tightening
-     * this trust boundary is a payments-security change, not observability, and belongs in the
-     * Phase 2 sync-defect fix tracked under PROD-15583, not this MR.
+     * this trust boundary is a payments-security change, not observability, and belongs in a
+     * separate sync-defect fix, not this instrumentation work.
      */
     function process_wc_paystand_event($event)
     {
@@ -752,10 +752,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
                 return;
             }
 
-            // R2-C11/R2-S6: order_id can arrive as an array/object from malformed client JSON —
-            // coerce to a scalar before it's used in string contexts (log messages, wc_get_order,
-            // and the analytics payload), rather than letting PHP silently coerce arrays to the
-            // literal string "Array".
+            // order_id can arrive as an array/object from malformed client JSON — coerce to a
+            // scalar before it's used in string contexts (log messages, wc_get_order, and the
+            // analytics payload), rather than letting PHP silently coerce arrays to the literal
+            // string "Array".
             if (!is_scalar($order_id)) {
                 $this->log_message('process_wc_paystand_event - order_id is not a scalar value');
                 $this->send_analytics_event(self::ANALYTICS_EVENT_PROCESSING_SKIPPED, array(
@@ -847,14 +847,14 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             ));
             
         } catch (\Throwable $e) {
-            // R2-C1: widened from `Exception` to `\Throwable` so real fatal-error scenarios
+            // Widened from `Exception` to `\Throwable` so real fatal-error scenarios
             // (TypeError, DivisionByZeroError, etc.) also reach the analytics event — a bare
             // `catch (Exception $e)` silently missed these, undermining the diagnostic goal.
             error_log('process_wc_paystand_event exception: ' . print_r($e, true));
             $this->send_analytics_event(self::ANALYTICS_EVENT_PROCESSING_ERROR, array(
                 'order_id'      => isset($order_id) ? $order_id : '',
                 // mb_substr (not substr) to avoid splitting a multibyte character mid-sequence,
-                // which can otherwise produce invalid UTF-8 and make wp_json_encode() fail (R2-C9).
+                // which can otherwise produce invalid UTF-8 and make wp_json_encode() fail.
                 'error_message' => mb_substr($e->getMessage(), 0, 512),
             ));
             return;
@@ -958,10 +958,10 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
         // If we got a WC_Paystand event, we process it separatedly from the standard callback objects
         if($response_webhook['object'] == 'WC_Paystand_Event') {
-            // R2-B1: the JS-callback path has no server-side authenticity check on this input
+            // The JS-callback path has no server-side authenticity check on this input
             // (process_wc_paystand_event()'s own docblock: "we already have the payment data...
             // don't need to verify via API call"). Moving this log to fire only after that
-            // function's internal checks would reintroduce R1-B2 (dead/conditional logging).
+            // function's internal checks would make it dead/conditional on downstream success.
             // Instead: log arrival with ONLY server-known, non-attacker-controlled fields
             // (event_type, customer_id — both from $this, never from $response_webhook) and
             // omit order_id/payment_id here. Once process_wc_paystand_event() itself validates
@@ -979,9 +979,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
 
         // For server-originated Paystand webhooks: only log AFTER check_callback_data() validates
-        // the payload via a back-channel API re-fetch (R1-B3 — prevent unauthenticated log writes).
+        // the payload via a back-channel API re-fetch — prevent unauthenticated log writes.
         if ($this->check_callback_data($response_webhook)) { // set status & order_id & fees
-            // R1-C2: payment_id is nested under resource, not at the top level.
+            // payment_id is nested under resource, not at the top level.
             $webhook_payment_id = isset($response_webhook['resource']['id'])
                 ? $response_webhook['resource']['id']
                 : (isset($response_webhook['sourceId']) ? $response_webhook['sourceId'] : '');
