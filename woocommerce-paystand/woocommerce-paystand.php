@@ -24,6 +24,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+if (!defined('PAYSTAND_WC_VERSION')) {
+    // Derive from this file's own plugin header (the "Version: 2.5.6" line above) rather than
+    // hardcoding a second literal — WordPress's get_file_data() reads the header directly, so
+    // this and the header itself are a single source of truth for *this constant specifically*.
+    // NOTE: version.txt and readme.txt's "Stable tag"/changelog remain separate, unlinked
+    // literals with no programmatic tie to this header — bumping the header does not update
+    // them, and vice versa. Fully closing that gap would mean generating version.txt/readme.txt
+    // from the header (or the reverse) at build/release time, which is out of scope here.
+    if (function_exists('get_file_data')) {
+        $paystand_wc_plugin_data = get_file_data(__FILE__, array('Version' => 'Version'));
+        define('PAYSTAND_WC_VERSION', !empty($paystand_wc_plugin_data['Version']) ? $paystand_wc_plugin_data['Version'] : 'unknown');
+    } else {
+        define('PAYSTAND_WC_VERSION', 'unknown');
+    }
+}
+
 if (!function_exists('add_action')) {
   echo 'No direct access.';
   exit;
