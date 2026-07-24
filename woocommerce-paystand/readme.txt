@@ -1,8 +1,8 @@
 === Paystand for WooCommerce ===
 Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, bank, ach, bitcoin
-Requires at least: 3.5
-Tested up to: 6.0.1
+Requires at least: 5.9
+Tested up to: 6.7
 Stable tag: 2.5.7
 
 The Paystand for WooCommerce plugin adds a WooCommerce payment gateway for Paystand.
@@ -73,6 +73,9 @@ If you have any questions or feedback, please email us at support@paystand.com.
 = 2.5.7 =
 * Fix fatal error on front-end pages when WooCommerce is not loaded (guarded is_checkout()/WC()->session calls in fee hooks)
 * Add WooCommerce Blocks (Cart/Checkout) support so Paystand appears on block-based checkout pages
+* Declare High-Performance Order Storage (HPOS) compatibility; webhook fee/discount line items now use the order-item CRUD
+* Clear the processing-fee session after block-checkout orders as well as classic checkout
+* Note: saved payment methods (and their per-method fee display) are supported on the classic [woocommerce_checkout] shortcode checkout only; on the block checkout Paystand always uses the standard redirect flow
 = 2.5.6 =
 * Add Cloudflare Analytics Engine diagnostic logging via the dedicated WooCommerce plugin log worker
 = 2.5.4 =

@@ -6,6 +6,10 @@ Description: Adds Paystand payment gateway to WooCommerce.
 Version: 2.5.7
 Author: Paystand
 Author URI: http://www.paystand.com/
+Requires at least: 5.9
+Requires PHP: 7.4
+WC requires at least: 6.0
+WC tested up to: 9.6
 */
 
 /*
@@ -135,15 +139,17 @@ function add_paystand_gateway_class($methods)
 add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
 
 /**
- * Declare compatibility with the WooCommerce Cart/Checkout Blocks feature.
+ * Declare compatibility with the WooCommerce Cart/Checkout Blocks and
+ * High-Performance Order Storage (custom order tables) features.
  */
-function paystand_declare_blocks_compatibility()
+function paystand_declare_wc_feature_compatibility()
 {
   if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
     \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
   }
 }
-add_action('before_woocommerce_init', 'paystand_declare_blocks_compatibility');
+add_action('before_woocommerce_init', 'paystand_declare_wc_feature_compatibility');
 
 /**
  * Register the Paystand payment method with the block-based Checkout.

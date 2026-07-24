@@ -165,6 +165,9 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
         // Actions
         add_action('woocommerce_checkout_order_processed', array($this,'order_processed'));
+        // Store API (block) checkout fires its own hook instead of woocommerce_checkout_order_processed;
+        // without this a stale fee_chosen session value would survive block-checkout orders.
+        add_action('woocommerce_store_api_checkout_order_processed', array($this,'order_processed'));
         add_action('woocommerce_update_options_payment_gateways_paystand', array($this, 'process_admin_options'));
         add_action('woocommerce_receipt_paystand', array($this, 'receipt_page'));
         add_action('woocommerce_api_wc_gateway_paystand', array($this, 'paystand_callback'));
@@ -176,8 +179,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
 
     /**
      * clean fee session
+     *
+     * Hooked to both woocommerce_checkout_order_processed (first arg: int order id)
+     * and woocommerce_store_api_checkout_order_processed (first arg: WC_Order object).
+     * The argument is intentionally unused so the callback works for both hooks;
+     * if the order is ever needed here, normalize with wc_get_order() first.
      **/
-    function order_processed($order_id)
+    function order_processed($order_id_or_order)
     {
         WC()->session->__unset('fee_chosen');
     }
@@ -813,10 +821,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $this->log_message('process_wc_paystand_event - payerDiscount: ' . $payerDiscount . ', payerTotalFees: ' . $payerTotalFees . ', payerTotal: ' . $payerTotal);
             
             // Remove any existing Processing Fee or Paystand Discount items
+            // (order-item CRUD, HPOS-safe; pending changes persist on $order->save())
             $existing_fees = $order->get_items('fee');
             foreach ($existing_fees as $item_id => $item) {
                 if ($item->get_name() === 'Processing Fee' || $item->get_name() === 'Paystand Discount') {
-                    wc_delete_order_item($item_id);
+                    $order->remove_item($item_id);
                     $this->log_message('process_wc_paystand_event - Removed existing fee/discount item: ' . $item_id);
                 }
             }
@@ -824,27 +833,25 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             // Apply discount (negative adjustment) if present
             if ($payerDiscount != 0.0) {
                 $discount_amount = abs($payerDiscount); // Ensure positive for display
-                $discount_item = array('order_item_name' => 'Paystand Discount', 'order_item_type' => 'fee');
-                $item_id = wc_add_order_item($order_id, $discount_item);
-                if ($item_id) {
-                    wc_add_order_item_meta($item_id, '_tax_class', '0');
-                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal(-$discount_amount)); // Negative for discount
-                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
-                    $this->log_message('process_wc_paystand_event - Added Paystand Discount: -' . $discount_amount);
-                }
+                $discount_item = new WC_Order_Item_Fee();
+                $discount_item->set_name('Paystand Discount');
+                $discount_item->set_tax_status('none');
+                $discount_item->set_total(wc_format_decimal(-$discount_amount)); // Negative for discount
+                $order->add_item($discount_item);
+                $this->log_message('process_wc_paystand_event - Added Paystand Discount: -' . $discount_amount);
             }
             // Apply fee (positive adjustment) if present and no discount
             elseif ($payerTotalFees != 0.0) {
                 $fee_amount = abs($payerTotalFees); // Ensure positive
-                $item = array('order_item_name' => 'Processing Fee', 'order_item_type' => 'fee');
-                $item_id = wc_add_order_item($order_id, $item);
-                if ($item_id) {
-                    wc_add_order_item_meta($item_id, '_tax_class', '0');
-                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee_amount)); // Positive for fee
-                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
-                    $this->log_message('process_wc_paystand_event - Added Processing Fee: ' . $fee_amount);
-                }
+                $fee_item = new WC_Order_Item_Fee();
+                $fee_item->set_name('Processing Fee');
+                $fee_item->set_tax_status('none');
+                $fee_item->set_total(wc_format_decimal($fee_amount)); // Positive for fee
+                $order->add_item($fee_item);
+                $this->log_message('process_wc_paystand_event - Added Processing Fee: ' . $fee_amount);
             }
+
+            $order->save();
 
             // Update order total if we have payerTotal from fee split
             if ($payerTotal > 0) {
@@ -1089,29 +1096,29 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         }
 
         if ($success) {
-            $total = get_post_meta($order_id, '_order_total', true);
             $fee = $this->paystand_fee;
             $discount = $this->paystand_discount;
+
+            // Use the order-item CRUD (HPOS-safe) rather than direct wc_add_order_item
+            // meta writes; tax_status 'none' preserves the old zero-tax line items.
             if ($fee > 0) {
-                $item = array('order_item_name' => 'Processing Fee',
-                'order_item_type' => 'fee');
-                $item_id = wc_add_order_item($order_id, $item);
-                if ($item_id) {
-                    wc_add_order_item_meta($item_id, '_tax_class', '0');
-                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($fee));
-                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
-                }
+                $fee_item = new WC_Order_Item_Fee();
+                $fee_item->set_name('Processing Fee');
+                $fee_item->set_tax_status('none');
+                $fee_item->set_total(wc_format_decimal($fee));
+                $order->add_item($fee_item);
             }
 
             if ($discount > 0) {
-                $discount_item = array('order_item_name' => 'Paystand Discount',
-                'order_item_type' => 'fee');;
-                $item_id = wc_add_order_item($order_id, $discount_item);
-                if ($item_id) {
-                    wc_add_order_item_meta($item_id, '_tax_class', '0');
-                    wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal(-$discount));
-                    wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal(0));
-                }
+                $discount_item = new WC_Order_Item_Fee();
+                $discount_item->set_name('Paystand Discount');
+                $discount_item->set_tax_status('none');
+                $discount_item->set_total(wc_format_decimal(-$discount));
+                $order->add_item($discount_item);
+            }
+
+            if ($fee > 0 || $discount > 0) {
+                $order->save();
             }
             // Note: The order total is set by update_order_total_paid() below using the payerTotal from Paystand API
             // which already includes fees and discounts, so we don't manually update it here
