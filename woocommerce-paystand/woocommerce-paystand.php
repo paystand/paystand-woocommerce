@@ -134,6 +134,32 @@ function add_paystand_gateway_class($methods)
 }
 add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
 
+/**
+ * Declare compatibility with the WooCommerce Cart/Checkout Blocks feature.
+ */
+function paystand_declare_blocks_compatibility()
+{
+  if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+  }
+}
+add_action('before_woocommerce_init', 'paystand_declare_blocks_compatibility');
+
+/**
+ * Register the Paystand payment method with the block-based Checkout.
+ */
+function paystand_register_blocks_support($payment_method_registry)
+{
+  // Older WooCommerce versions have no Blocks payment API; the require stays behind this
+  // guard so the class (whose parent would be missing) is never loaded there.
+  if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+    return;
+  }
+  require_once __DIR__ . '/blocks/class-wc-gateway-paystand-blocks-support.php';
+  $payment_method_registry->register(new WC_Gateway_PayStand_Blocks_Support());
+}
+add_action('woocommerce_blocks_payment_method_type_registration', 'paystand_register_blocks_support');
+
 function paystand_gateway_activate()
 {
   $message = '<b>Paystand for WooCommerce is almost ready.</b> Add your Paystand Org ID and Public API Key to get started.';
