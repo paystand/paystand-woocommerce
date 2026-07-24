@@ -49,6 +49,10 @@ if (!function_exists('add_action')) {
  * Ajax controller for fundonfile fee, must be declare here due to visibility nature on the wp_ajax_{NAME} API
  */
 function fundonfile_fee_ajax() {
+  // WooCommerce may be inactive or not yet loaded even though this plugin is active
+  if ( ! function_exists('WC') || ! WC() || ! WC()->session ) {
+    die();
+  }
   if ( isset($_POST['fee']) ){
       WC()->session->set('fee_chosen', $_POST['fee'] );
       echo esc_attr(json_encode( $_POST['fee'] ));
@@ -64,6 +68,7 @@ add_action( 'wp_ajax_nopriv_fundonfile_fee_ajax', 'fundonfile_fee_ajax');
 
 function fundonfile_add_fee( $cart ) {
   if ( is_admin() && ! defined( 'DOING_AJAX' ) ) return;
+  if ( ! function_exists('WC') || ! WC() || ! WC()->session ) return;
   $fee = WC()->session->get('fee_chosen');
   if(isset($fee)){
     $cart->add_fee( __('Processing Fee', 'woocommerce'), $fee );
@@ -74,7 +79,8 @@ function fundonfile_add_fee( $cart ) {
  * Inject JS code in footer cart's page
 */
 function fundonfile_fee_js() {
-  if ( ! is_checkout() ) return;
+  // wp_footer fires on every front-end page; is_checkout() only exists once WooCommerce is loaded
+  if ( ! function_exists('is_checkout') || ! is_checkout() ) return;
 $js_code="
       <script type='text/javascript'>
       jQuery( function($){
