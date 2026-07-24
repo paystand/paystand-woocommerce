@@ -12,6 +12,11 @@
     !window.wp ||
     !window.wp.element
   ) {
+    if (window.console && window.console.warn) {
+      window.console.warn(
+        '[paystand] WooCommerce Blocks globals unavailable; Paystand was not registered as a block checkout payment method.'
+      );
+    }
     return;
   }
 

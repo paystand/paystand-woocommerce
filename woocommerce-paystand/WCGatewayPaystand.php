@@ -190,6 +190,28 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         WC()->session->__unset('fee_chosen');
     }
 
+    /**
+     * Build a zero-tax fee/discount order line item (HPOS-safe order-item CRUD).
+     *
+     * tax_status 'none' keeps WooCommerce tax calculation off the line entirely,
+     * matching the legacy direct-meta writes this replaced (_line_tax = 0).
+     * No tax class is set: the legacy '_tax_class' => '0' meta was not a valid
+     * tax class slug (WC_Order_Item::set_tax_class() rejects it), and with
+     * tax_status 'none' the tax class is never consulted.
+     *
+     * @param string $name   Line item label, e.g. 'Processing Fee'
+     * @param float  $amount Signed amount (negative for discounts)
+     * @return WC_Order_Item_Fee
+     */
+    private function build_fee_item($name, $amount)
+    {
+        $fee_item = new WC_Order_Item_Fee();
+        $fee_item->set_name($name);
+        $fee_item->set_tax_status('none');
+        $fee_item->set_total(wc_format_decimal($amount));
+        return $fee_item;
+    }
+
     // Adds a text to the WordPress log object if it is defined
     function log_message($text)
     {
@@ -833,21 +855,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             // Apply discount (negative adjustment) if present
             if ($payerDiscount != 0.0) {
                 $discount_amount = abs($payerDiscount); // Ensure positive for display
-                $discount_item = new WC_Order_Item_Fee();
-                $discount_item->set_name('Paystand Discount');
-                $discount_item->set_tax_status('none');
-                $discount_item->set_total(wc_format_decimal(-$discount_amount)); // Negative for discount
-                $order->add_item($discount_item);
+                $order->add_item($this->build_fee_item('Paystand Discount', -$discount_amount)); // Negative for discount
                 $this->log_message('process_wc_paystand_event - Added Paystand Discount: -' . $discount_amount);
             }
             // Apply fee (positive adjustment) if present and no discount
             elseif ($payerTotalFees != 0.0) {
                 $fee_amount = abs($payerTotalFees); // Ensure positive
-                $fee_item = new WC_Order_Item_Fee();
-                $fee_item->set_name('Processing Fee');
-                $fee_item->set_tax_status('none');
-                $fee_item->set_total(wc_format_decimal($fee_amount)); // Positive for fee
-                $order->add_item($fee_item);
+                $order->add_item($this->build_fee_item('Processing Fee', $fee_amount)); // Positive for fee
                 $this->log_message('process_wc_paystand_event - Added Processing Fee: ' . $fee_amount);
             }
 
@@ -1100,21 +1114,13 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
             $discount = $this->paystand_discount;
 
             // Use the order-item CRUD (HPOS-safe) rather than direct wc_add_order_item
-            // meta writes; tax_status 'none' preserves the old zero-tax line items.
+            // meta writes; see build_fee_item() for the tax handling rationale.
             if ($fee > 0) {
-                $fee_item = new WC_Order_Item_Fee();
-                $fee_item->set_name('Processing Fee');
-                $fee_item->set_tax_status('none');
-                $fee_item->set_total(wc_format_decimal($fee));
-                $order->add_item($fee_item);
+                $order->add_item($this->build_fee_item('Processing Fee', $fee));
             }
 
             if ($discount > 0) {
-                $discount_item = new WC_Order_Item_Fee();
-                $discount_item->set_name('Paystand Discount');
-                $discount_item->set_tax_status('none');
-                $discount_item->set_total(wc_format_decimal(-$discount));
-                $order->add_item($discount_item);
+                $order->add_item($this->build_fee_item('Paystand Discount', -$discount));
             }
 
             if ($fee > 0 || $discount > 0) {

@@ -605,7 +605,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $logged_events = array();
 
         // wc_get_order() returns an order whose get_items('fee') includes a 'Processing Fee'
-        // item, so the code path reaches wc_delete_order_item() and triggers the exception below.
+        // item, so the code path reaches $order->remove_item() (order-item CRUD) and throws.
         \WP_Mock::userFunction('wc_get_order', array(
             'return' => new class(44) extends WC_Order {
                 public function get_items($type = '') {
@@ -613,12 +613,10 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
                         public function get_name() { return 'Processing Fee'; }
                     });
                 }
-            },
-        ));
-        // Force an exception inside the try block, after order_id validation succeeds.
-        \WP_Mock::userFunction('wc_delete_order_item', array(
-            'return' => function() {
-                throw new \RuntimeException('simulated fee-removal failure');
+                // Force an exception inside the try block, after order_id validation succeeds.
+                public function remove_item($item_id) {
+                    throw new \RuntimeException('simulated fee-removal failure');
+                }
             },
         ));
 

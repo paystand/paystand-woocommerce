@@ -1,7 +1,7 @@
 === Paystand for WooCommerce ===
 Contributors: paystand
 Tags: woocommerce, paystand, payment, credit card, bank, ach, bitcoin
-Requires at least: 5.9
+Requires at least: 3.5
 Tested up to: 6.7
 Stable tag: 2.5.7
 
@@ -76,6 +76,7 @@ If you have any questions or feedback, please email us at support@paystand.com.
 * Declare High-Performance Order Storage (HPOS) compatibility; webhook fee/discount line items now use the order-item CRUD
 * Clear the processing-fee session after block-checkout orders as well as classic checkout
 * Note: saved payment methods (and their per-method fee display) are supported on the classic [woocommerce_checkout] shortcode checkout only; on the block checkout Paystand always uses the standard redirect flow
+* Note: no enforced WP/PHP version floors are declared — new features are guarded at runtime and degrade gracefully on older WooCommerce; "WC tested up to" is informational
 = 2.5.6 =
 * Add Cloudflare Analytics Engine diagnostic logging via the dedicated WooCommerce plugin log worker
 = 2.5.4 =

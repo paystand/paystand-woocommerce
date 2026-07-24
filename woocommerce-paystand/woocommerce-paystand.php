@@ -6,11 +6,15 @@ Description: Adds Paystand payment gateway to WooCommerce.
 Version: 2.5.7
 Author: Paystand
 Author URI: http://www.paystand.com/
-Requires at least: 5.9
-Requires PHP: 7.4
-WC requires at least: 6.0
 WC tested up to: 9.6
 */
+/*
+ * No enforced WP/PHP/WC version floors ("Requires at least" / "Requires PHP"):
+ * WordPress blocks activation/updates when those headers exceed the running stack,
+ * and every feature added in 2.5.7 (Blocks checkout, HPOS declarations) is already
+ * gated behind class_exists()/function_exists() and degrades gracefully on older
+ * WooCommerce. "WC tested up to" above is informational only.
+ */
 
 /*
 Copyright 2014 Paystand Inc.
