@@ -24,6 +24,22 @@ function getCustomer() {
  * 
  */
 class WC_Payment_Gateway {
+    // Declared on the real WC_Payment_Gateway/WC_Settings_API; declaring them here too
+    // keeps the double faithful and avoids PHP 8.2 dynamic-property deprecations when
+    // the gateway assigns them.
+    public $id;
+    public $title;
+    public $description;
+    public $enabled;
+    public $icon;
+    public $has_fields;
+    public $method_title;
+    public $method_description;
+    public $supports;
+    public $form_fields;
+    public $new_method_label;
+    public $order_button_text;
+
     public function init_settings() {}
     public function get_option($option) {
         $options = new stdClass;
@@ -42,6 +58,10 @@ class WC_Payment_Gateway {
  * All its methods should be mocked using Mockery to run tests
  */
 class WC_Order {
+    public $id;
+    public $total;
+    public $status;
+
     public function __construct($id) {
         $this->id = $id;
     }
@@ -80,6 +100,8 @@ class WC {
 }
 
 class WC_Token {
+    public $id;
+
     public function __construct($id) {
         $this->id = $id;
     }

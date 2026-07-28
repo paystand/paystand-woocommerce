@@ -130,6 +130,11 @@ class WC_Gateway_PayStand extends WC_Payment_Gateway
         $this->init_settings();
 
         // User defined
+        // Merchant-configurable checkout label. Falls back to the hardcoded default
+        $configured_title = $this->get_option('title');
+        if (!empty($configured_title)) {
+            $this->title = $configured_title;
+        }
         $this->publishable_key = $this->get_option('publishable_key');
         $this->customer_id = $this->get_option('customer_id');
         $this->client_id = $this->get_option('client_id');
