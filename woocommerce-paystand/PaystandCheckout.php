@@ -169,6 +169,15 @@ abstract class PaystandCheckout
 
     </script>
 
+        <?php
+        // The status-poll fallback is only armed for an order that is still awaiting payment.
+        // Checking here rather than client-side means an order already reported as posted/paid
+        // (for example a paid order whose pay URL is re-opened) never arms the poll at all, so it
+        // cannot redirect a payer who has not just paid, and costs no extra request to discover.
+        $ps_poll_status = $order ? strtolower((string) $order->get_meta('paymentStatus')) : '';
+        $ps_poll_enabled = !empty($return_url) && !empty($order)
+            && !in_array($ps_poll_status, array('posted', 'paid'), true);
+        ?>
         <script type="text/javascript">
             // Single redirect guard shared by the widget's completion callback and the
             // status-poll fallback further down, so whichever fires first wins and the
@@ -182,6 +191,42 @@ abstract class PaystandCheckout
                 <?php } ?>
             };
 
+            // Fallback for environments where the widget never invokes onceComplete — its realtime
+            // channel can fail to deliver the completion event, which strands a payer who has
+            // already paid on this page. Polls the same order-status endpoint and the same status
+            // values the saved-token flow already relies on, and redirects once the webhook has
+            // recorded the payment. Independent of the widget callback; the shared psRedirected
+            // guard means whichever path fires first is the only one that navigates.
+            //
+            // Armed from onceLoaded rather than on page load, so merely opening the pay page (or
+            // abandoning it) does not generate polling traffic. If the widget never loads the payer
+            // cannot pay, so there is nothing for the poll to recover in that case.
+            var psPollArmed = false;
+            var psArmStatusPoll = function() {
+                <?php if ($ps_poll_enabled) { ?>
+                if (psPollArmed) { return; }
+                psPollArmed = true;
+                var STATUS_URL = <?php echo json_encode(site_url() . '/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=' . urlencode((string) $order->get_id())); ?>;
+                var attempts = 0, maxAttempts = 100; // ~5 minutes at 3s
+                var timer = setInterval(function() {
+                    if (psRedirected || ++attempts > maxAttempts) {
+                        clearInterval(timer);
+                        return;
+                    }
+                    var pr = new XMLHttpRequest();
+                    pr.open('GET', STATUS_URL, true);
+                    pr.onload = function() {
+                        var s = String(pr.responseText || '').trim().toLowerCase();
+                        if (s === 'posted' || s === 'paid') {
+                            clearInterval(timer);
+                            psGo();
+                        }
+                    };
+                    pr.send();
+                }, 3000);
+                <?php } ?>
+            };
+
             if (typeof psCheckout === 'undefined') {
                 // Without the widget script there is nothing to hook; log rather than throw so the
                 // status-poll fallback below still runs and can return the payer to the receipt page.
@@ -190,6 +235,7 @@ abstract class PaystandCheckout
                 }
             } else {
             psCheckout.onceLoaded(function() {
+                psArmStatusPoll();
                 psCheckout.onceComplete( function(result) {
                     //TODO:  It could be the case that the payment  is not successful... check response and do not send xhr
                     // TODO:  Check that payment was completed succesfully (not failed)
@@ -238,6 +284,12 @@ abstract class PaystandCheckout
                         xhr.ontimeout = psGo;
                         xhr.timeout = 8000;
                         xhr.send(JSON.stringify(wc_data));
+                        // Deliberate: if this POST takes longer than 3s the payer is redirected
+                        // anyway and the in-flight request is abandoned. Order completion does not
+                        // depend on it — Paystand's async webhook completes the order — so the only
+                        // thing lost on a slow server is the save_payment_method/fee payload. Not
+                        // stranding a payer who has already paid is the more important guarantee.
+                        // Do not "fix" this timeout without accounting for that trade.
                         setTimeout(psGo, 3000);
                     } catch (e) {
                         // The payment already succeeded at this point, and the order is completed
@@ -251,35 +303,6 @@ abstract class PaystandCheckout
                 });
             });
             } // end: psCheckout defined
-
-            <?php if (!empty($return_url) && !empty($order)) { ?>
-            // Fallback for environments where the widget never invokes onceComplete — its realtime
-            // channel can fail to deliver the completion event, which strands a payer who has
-            // already paid on this page. Polls the same order-status endpoint and the same status
-            // values the saved-token flow already relies on, and redirects once the webhook has
-            // recorded the payment. Independent of the widget callback; the shared psRedirected
-            // guard means whichever path fires first is the only one that navigates.
-            (function() {
-                var STATUS_URL = <?php echo json_encode(site_url() . '/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=' . $order->get_order_number()); ?>;
-                var attempts = 0, maxAttempts = 100; // ~5 minutes at 3s
-                var timer = setInterval(function() {
-                    if (psRedirected || ++attempts > maxAttempts) {
-                        clearInterval(timer);
-                        return;
-                    }
-                    var pr = new XMLHttpRequest();
-                    pr.open('GET', STATUS_URL, true);
-                    pr.onload = function() {
-                        var s = String(pr.responseText || '').trim().toLowerCase();
-                        if (s === 'posted' || s === 'paid') {
-                            clearInterval(timer);
-                            psGo();
-                        }
-                    };
-                    pr.send();
-                }, 3000);
-            })();
-            <?php } ?>
         </script>
 
         <div id="ps_checkout_load" style= " text-align: center" >
