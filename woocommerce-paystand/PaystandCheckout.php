@@ -184,20 +184,14 @@ abstract class PaystandCheckout
                     const payerTotalFees = feeSplit.payerTotalFees || 0;
                     const payerTotal = feeSplit.payerTotal || payment.amount || 0;
                     
-                    // Send payment data to WooCommerce backend
+                    // Fire-and-forget: notify the WooCommerce backend to update the order, but
+                    // do not wait for the response before redirecting. The order-received page
+                    // renders regardless of order status, and the async webhook will also update
+                    // the order — so blocking the redirect on this XHR only delays the user
+                    // without adding safety.
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
                     xhr.setRequestHeader('Content-type', 'application/json');
-                    xhr.onload = function () {
-                        // We move to the "complete" screen once we get the response
-                        <?php
-                        if (!empty($return_url)) {
-                            ?>
-                                window.location.href = "<?php echo $return_url ?>" ;
-                            <?php
-                        }
-                        ?>
-                    };
                     var data = {
                         object: "WC_Paystand_Event",
                         type: "payment_complete",
@@ -214,7 +208,10 @@ abstract class PaystandCheckout
                         sourceId: payment.id,
                     };
                     xhr.send(JSON.stringify(data));
-                    // Redirect is handled in xhr.onload after server confirms order update
+                    // Redirect immediately — do not wait for the XHR to complete
+                    <?php if (!empty($return_url)) { ?>
+                        window.location.href = "<?php echo $return_url ?>";
+                    <?php } ?>
                 });
             });
         </script>
