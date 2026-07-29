@@ -170,60 +170,116 @@ abstract class PaystandCheckout
     </script>
 
         <script type="text/javascript">
+            // Single redirect guard shared by the widget's completion callback and the
+            // status-poll fallback further down, so whichever fires first wins and the
+            // other becomes a no-op.
+            var psRedirected = false;
+            var psGo = function() {
+                <?php if (!empty($return_url)) { ?>
+                if (psRedirected) { return; }
+                psRedirected = true;
+                window.location.href = "<?php echo $return_url ?>";
+                <?php } ?>
+            };
+
+            if (typeof psCheckout === 'undefined') {
+                // Without the widget script there is nothing to hook; log rather than throw so the
+                // status-poll fallback below still runs and can return the payer to the receipt page.
+                if (window.console && window.console.error) {
+                    window.console.error('[paystand] psCheckout is undefined - the checkout widget script did not load');
+                }
+            } else {
             psCheckout.onceLoaded(function() {
                 psCheckout.onceComplete( function(result) {
                     //TODO:  It could be the case that the payment  is not successful... check response and do not send xhr
                     // TODO:  Check that payment was completed succesfully (not failed)
-                    const savePaymentMethod = document.getElementById('savePaymentMethod').checked;
-                    const response = result.response || {};
-                    const payment = response.data || {};
-                    
-                    // Extract fee split data from payment response
-                    const feeSplit = payment.feeSplit || {};
-                    const payerDiscount = feeSplit.payerDiscount || 0;
-                    const payerTotalFees = feeSplit.payerTotalFees || 0;
-                    const payerTotal = feeSplit.payerTotal || payment.amount || 0;
-                    
-                    var wc_data = {
-                        object: "WC_Paystand_Event",
-                        type: "payment_complete",
-                        user_id: "<?php echo esc_attr($data['user_id']) ?>",
-                        order_id: "<?php echo esc_attr($order_id) ?>",
-                        save_payment_method: savePaymentMethod,
-                        data: payment,
-                        payerDiscount: payerDiscount,
-                        payerTotalFees: payerTotalFees,
-                        payerTotal: payerTotal,
-                        sourceType: "Payment",
-                        sourceId: payment.id,
-                    };
-                    <?php if (!empty($return_url)) { ?>
-                    // Redirect as soon as the WC backend responds, with a 3-second hard timeout
-                    // so a slow server response never leaves the user stuck on the order-pay page.
-                    var redirected = false;
-                    var doRedirect = function() {
-                        if (!redirected) {
-                            redirected = true;
-                            window.location.href = "<?php echo $return_url ?>";
+
+                    try {
+                        // The savePaymentMethod checkbox is only rendered when the gateway's
+                        // "Allow to Save Payment Method" setting is enabled (see render()), so this
+                        // element is absent whenever that setting is off. Reading .checked straight
+                        // off the lookup threw a TypeError on the first line of this handler, which
+                        // aborted it before the XHR and the redirect ever ran — the payer was left
+                        // on the order-pay page even though the async webhook still completed the
+                        // order. No checkbox means saving is disabled, so false is the right value.
+                        var savePaymentMethodEl = document.getElementById('savePaymentMethod');
+                        var savePaymentMethod = savePaymentMethodEl ? savePaymentMethodEl.checked : false;
+
+                        var response = result.response || {};
+                        var payment = response.data || {};
+
+                        // Extract fee split data from payment response
+                        var feeSplit = payment.feeSplit || {};
+                        var payerDiscount = feeSplit.payerDiscount || 0;
+                        var payerTotalFees = feeSplit.payerTotalFees || 0;
+                        var payerTotal = feeSplit.payerTotal || payment.amount || 0;
+
+                        var wc_data = {
+                            object: "WC_Paystand_Event",
+                            type: "payment_complete",
+                            user_id: "<?php echo esc_attr($data['user_id']) ?>",
+                            order_id: "<?php echo esc_attr($order_id) ?>",
+                            save_payment_method: savePaymentMethod,
+                            data: payment,
+                            payerDiscount: payerDiscount,
+                            payerTotalFees: payerTotalFees,
+                            payerTotal: payerTotal,
+                            sourceType: "Payment",
+                            sourceId: payment.id,
+                        };
+
+                        // Redirect as soon as the WC backend responds, with a 3-second hard timeout
+                        // so a slow server response never leaves the user stuck on the order-pay page.
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+                        xhr.setRequestHeader('Content-type', 'application/json');
+                        xhr.onload = psGo;
+                        xhr.onerror = psGo;
+                        xhr.ontimeout = psGo;
+                        xhr.timeout = 8000;
+                        xhr.send(JSON.stringify(wc_data));
+                        setTimeout(psGo, 3000);
+                    } catch (e) {
+                        // The payment already succeeded at this point, and the order is completed
+                        // independently by Paystand's asynchronous webhook — so a failure here must
+                        // never strand the payer on the order-pay page.
+                        if (window.console && window.console.error) {
+                            window.console.error('[paystand] checkout completion handler failed', e);
                         }
-                    };
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-                    xhr.setRequestHeader('Content-type', 'application/json');
-                    xhr.onload = doRedirect;
-                    xhr.onerror = doRedirect;
-                    xhr.ontimeout = doRedirect;
-                    xhr.timeout = 8000;
-                    xhr.send(JSON.stringify(wc_data));
-                    setTimeout(doRedirect, 3000);
-                    <?php } else { ?>
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-                    xhr.setRequestHeader('Content-type', 'application/json');
-                    xhr.send(JSON.stringify(wc_data));
-                    <?php } ?>
+                        psGo();
+                    }
                 });
             });
+            } // end: psCheckout defined
+
+            <?php if (!empty($return_url) && !empty($order)) { ?>
+            // Fallback for environments where the widget never invokes onceComplete — its realtime
+            // channel can fail to deliver the completion event, which strands a payer who has
+            // already paid on this page. Polls the same order-status endpoint and the same status
+            // values the saved-token flow already relies on, and redirects once the webhook has
+            // recorded the payment. Independent of the widget callback; the shared psRedirected
+            // guard means whichever path fires first is the only one that navigates.
+            (function() {
+                var STATUS_URL = <?php echo json_encode(site_url() . '/?wc-api=wc_gateway_paystand&action=fetch_payment_status&order_id=' . $order->get_order_number()); ?>;
+                var attempts = 0, maxAttempts = 100; // ~5 minutes at 3s
+                var timer = setInterval(function() {
+                    if (psRedirected || ++attempts > maxAttempts) {
+                        clearInterval(timer);
+                        return;
+                    }
+                    var pr = new XMLHttpRequest();
+                    pr.open('GET', STATUS_URL, true);
+                    pr.onload = function() {
+                        var s = String(pr.responseText || '').trim().toLowerCase();
+                        if (s === 'posted' || s === 'paid') {
+                            clearInterval(timer);
+                            psGo();
+                        }
+                    };
+                    pr.send();
+                }, 3000);
+            })();
+            <?php } ?>
         </script>
 
         <div id="ps_checkout_load" style= " text-align: center" >
