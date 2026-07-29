@@ -3,10 +3,18 @@
 Plugin Name: Paystand for WooCommerce
 Plugin URI: http://www.paystand.com/
 Description: Adds Paystand payment gateway to WooCommerce.
-Version: 2.5.6
+Version: 2.5.7
 Author: Paystand
 Author URI: http://www.paystand.com/
+WC tested up to: 9.6
 */
+/*
+ * No enforced WP/PHP/WC version floors ("Requires at least" / "Requires PHP"):
+ * WordPress blocks activation/updates when those headers exceed the running stack,
+ * and every feature added in 2.5.7 (Blocks checkout, HPOS declarations) is already
+ * gated behind class_exists()/function_exists() and degrades gracefully on older
+ * WooCommerce. "WC tested up to" above is informational only.
+ */
 
 /*
 Copyright 2014 Paystand Inc.
@@ -49,6 +57,10 @@ if (!function_exists('add_action')) {
  * Ajax controller for fundonfile fee, must be declare here due to visibility nature on the wp_ajax_{NAME} API
  */
 function fundonfile_fee_ajax() {
+  // WooCommerce may be inactive or not yet loaded even though this plugin is active
+  if ( ! function_exists('WC') || ! WC() || ! WC()->session ) {
+    die();
+  }
   if ( isset($_POST['fee']) ){
       WC()->session->set('fee_chosen', $_POST['fee'] );
       echo esc_attr(json_encode( $_POST['fee'] ));
@@ -64,6 +76,7 @@ add_action( 'wp_ajax_nopriv_fundonfile_fee_ajax', 'fundonfile_fee_ajax');
 
 function fundonfile_add_fee( $cart ) {
   if ( is_admin() && ! defined( 'DOING_AJAX' ) ) return;
+  if ( ! function_exists('WC') || ! WC() || ! WC()->session ) return;
   $fee = WC()->session->get('fee_chosen');
   if(isset($fee)){
     $cart->add_fee( __('Processing Fee', 'woocommerce'), $fee );
@@ -74,7 +87,8 @@ function fundonfile_add_fee( $cart ) {
  * Inject JS code in footer cart's page
 */
 function fundonfile_fee_js() {
-  if ( ! is_checkout() ) return;
+  // wp_footer fires on every front-end page; is_checkout() only exists once WooCommerce is loaded
+  if ( ! function_exists('is_checkout') || ! is_checkout() ) return;
 $js_code="
       <script type='text/javascript'>
       jQuery( function($){
@@ -127,6 +141,34 @@ function add_paystand_gateway_class($methods)
   return $methods;
 }
 add_filter('woocommerce_payment_gateways', 'add_paystand_gateway_class');
+
+/**
+ * Declare compatibility with the WooCommerce Cart/Checkout Blocks and
+ * High-Performance Order Storage (custom order tables) features.
+ */
+function paystand_declare_wc_feature_compatibility()
+{
+  if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+  }
+}
+add_action('before_woocommerce_init', 'paystand_declare_wc_feature_compatibility');
+
+/**
+ * Register the Paystand payment method with the block-based Checkout.
+ */
+function paystand_register_blocks_support($payment_method_registry)
+{
+  // Older WooCommerce versions have no Blocks payment API; the require stays behind this
+  // guard so the class (whose parent would be missing) is never loaded there.
+  if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+    return;
+  }
+  require_once __DIR__ . '/blocks/class-wc-gateway-paystand-blocks-support.php';
+  $payment_method_registry->register(new WC_Gateway_PayStand_Blocks_Support());
+}
+add_action('woocommerce_blocks_payment_method_type_registration', 'paystand_register_blocks_support');
 
 function paystand_gateway_activate()
 {

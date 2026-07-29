@@ -11,6 +11,9 @@
  * 
  */
 class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
+	/** @var WC_Gateway_PayStand */
+	protected $wc_paystand;
+
 	/**
 	 * Setup WP_Mock for each test
 	 */
@@ -605,7 +608,7 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $logged_events = array();
 
         // wc_get_order() returns an order whose get_items('fee') includes a 'Processing Fee'
-        // item, so the code path reaches wc_delete_order_item() and triggers the exception below.
+        // item, so the code path reaches $order->remove_item() (order-item CRUD) and throws.
         \WP_Mock::userFunction('wc_get_order', array(
             'return' => new class(44) extends WC_Order {
                 public function get_items($type = '') {
@@ -613,12 +616,10 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
                         public function get_name() { return 'Processing Fee'; }
                     });
                 }
-            },
-        ));
-        // Force an exception inside the try block, after order_id validation succeeds.
-        \WP_Mock::userFunction('wc_delete_order_item', array(
-            'return' => function() {
-                throw new \RuntimeException('simulated fee-removal failure');
+                // Force an exception inside the try block, after order_id validation succeeds.
+                public function remove_item($item_id) {
+                    throw new \RuntimeException('simulated fee-removal failure');
+                }
             },
         ));
 
@@ -784,6 +785,36 @@ class WCGatewayPaystandTest extends \WP_Mock\Tools\TestCase {
         $this->assertEquals('56', $matches[0]['order_id']);
         $this->assertEquals('txn_declined_999', $matches[0]['payment_id']);
         $this->assertEquals('DECLINED', $matches[0]['error_message']);
+    }
+
+    /**
+     * The gateway title is merchant-configurable, but installs that never set it (every
+     * existing merchant on upgrade) must keep the original hardcoded label — the whole
+     * point of adding the setting rather than changing the hardcoded string.
+     */
+    public function test_title_falls_back_to_default_when_option_unset() {
+        // The mocked WC_Payment_Gateway::get_option() in bootstrap.php returns null for
+        // 'title', standing in for an install with no saved value for the new field.
+        $this->assertEquals('Paystand (CC, Bank, ACH)', $this->wc_paystand->title);
+    }
+
+    /**
+     * A merchant-configured title replaces the default customer-facing label.
+     */
+    public function test_configured_title_overrides_default() {
+        $gateway = new class extends WC_Gateway_PayStand {
+            public function get_option($option, $empty_value = null) {
+                if ('title' === $option) {
+                    return 'Paystand (CC)';
+                }
+                return parent::get_option($option);
+            }
+        };
+
+        $this->assertEquals('Paystand (CC)', $gateway->title);
+        // method_title is the admin-facing gateway name and is intentionally not
+        // affected by the customer-facing title setting.
+        $this->assertEquals('Paystand (CC, Bank, ACH)', $gateway->method_title);
     }
 
 	/**
