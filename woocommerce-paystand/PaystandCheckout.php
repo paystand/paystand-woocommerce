@@ -184,33 +184,43 @@ abstract class PaystandCheckout
                     const payerTotalFees = feeSplit.payerTotalFees || 0;
                     const payerTotal = feeSplit.payerTotal || payment.amount || 0;
                     
-                    // Fire-and-forget: notify the WooCommerce backend to update the order, but
-                    // do not wait for the response before redirecting. The order-received page
-                    // renders regardless of order status, and the async webhook will also update
-                    // the order — so blocking the redirect on this XHR only delays the user
-                    // without adding safety.
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
-                    xhr.setRequestHeader('Content-type', 'application/json');
-                    var data = {
+                    var wc_data = {
                         object: "WC_Paystand_Event",
                         type: "payment_complete",
                         user_id: "<?php echo esc_attr($data['user_id']) ?>",
                         order_id: "<?php echo esc_attr($order_id) ?>",
                         save_payment_method: savePaymentMethod,
                         data: payment,
-                        // Explicitly include fee data for easier backend access
                         payerDiscount: payerDiscount,
                         payerTotalFees: payerTotalFees,
                         payerTotal: payerTotal,
-                        // These are used to verify payment from Paystand in WCGatewayPaystand->check_callback_data()
                         sourceType: "Payment",
                         sourceId: payment.id,
                     };
-                    xhr.send(JSON.stringify(data));
-                    // Redirect immediately — do not wait for the XHR to complete
                     <?php if (!empty($return_url)) { ?>
-                        window.location.href = "<?php echo $return_url ?>";
+                    // Redirect as soon as the WC backend responds, with a 3-second hard timeout
+                    // so a slow server response never leaves the user stuck on the order-pay page.
+                    var redirected = false;
+                    var doRedirect = function() {
+                        if (!redirected) {
+                            redirected = true;
+                            window.location.href = "<?php echo $return_url ?>";
+                        }
+                    };
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+                    xhr.setRequestHeader('Content-type', 'application/json');
+                    xhr.onload = doRedirect;
+                    xhr.onerror = doRedirect;
+                    xhr.ontimeout = doRedirect;
+                    xhr.timeout = 8000;
+                    xhr.send(JSON.stringify(wc_data));
+                    setTimeout(doRedirect, 3000);
+                    <?php } else { ?>
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/?wc-api=wc_gateway_paystand', true);
+                    xhr.setRequestHeader('Content-type', 'application/json');
+                    xhr.send(JSON.stringify(wc_data));
                     <?php } ?>
                 });
             });
