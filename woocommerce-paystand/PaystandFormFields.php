@@ -36,6 +36,13 @@ class PaystandFormFields
                 'label' => __('Enable Paystand', 'woocommerce-paystand'),
                 'default' => 'yes'
             ),
+            'title' => array(
+                'title' => __('Title', 'woocommerce-paystand'),
+                'type' => 'text',
+                'description' => __('The payment method name your customers see during checkout.', 'woocommerce-paystand'),
+                'default' => __('Paystand (CC, Bank, ACH)', 'woocommerce-paystand'),
+                'desc_tip' => true,
+            ),
             'publishable_key' => array(
                 'title' => __('Paystand Publishable Key', 'woocommerce-paystand'),
                 'type' => 'text',
